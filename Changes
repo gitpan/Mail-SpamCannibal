@@ -1,5 +1,10 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.42  Sun Jun 27 14:01:44 PDT 2004
+	updated the documentation to include bastion host DNAT
+	instructions for setting up a tarpit connection where 
+	the server is behind the bastion host
+
 0.41  Sun Jun 27 09:04:56 PDT 2004
 	DNSBLserver 0.29
 	Added 'stop' variable for testing in main.c to intercept

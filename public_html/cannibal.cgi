@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 1.16, 2-4-04
+# version 1.17, 2-9-04
 #
 # Copyright 2003, 2004, Michael Robinton <michael@bizsystems.com>
 #   
@@ -221,7 +221,12 @@ document.whois.whois.value = '$IP';
 	my $cc = (@_ = Mail::SpamCannibal::IP2ccFlag::get($IP))
 		? qq|&nbsp;&nbsp;$_[0]</td><td><img src="$_[1]" alt="$_[0]" height=22 border=1>| : '';
 	require Mail::SpamCannibal::WhoisIP;
-	$html .= "<table cellspacing=5 cellpadding=0 border=0><tr valign=middle><td>Whois response for: <b>$IP</b>$cc</td></tr></table>";
+
+	my $lkup = qq|<a href="#top"
+onClick="document.whois.lookup.value = '$IP';document.whois.page.value = 'lookup';document.whois.submit();return false;"
+onMouseOver="return(show('lookup |. $IP .qq|'));" onMouseOut="return(off());">$IP</a>|;
+
+	$html .= "<table cellspacing=5 cellpadding=0 border=0><tr valign=middle><td>Whois response for: ${lkup}$cc</td></tr></table>";
 
 	my $socket = rlook_send($IP,$timeout);
 	my $wtxt = &Mail::SpamCannibal::WhoisIP::whoisIP($IP);
@@ -318,7 +323,7 @@ IP address:	$query{IP}
     if ($IP) {
       if ($ENV{HTTP_REFERER} !~ /$ENV{SERVER_NAME}/i || $ENV{HTTP_REFERER} =~ m|/\?|) {
 	$html .= qq|
-Automated lookups not allowed.
+Automated lookups not allowed, click SUBMIT to continue.
 <script language=javascript1.1>
 document.lookup.lookup.value = '$IP';
 </script>

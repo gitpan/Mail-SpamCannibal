@@ -5,7 +5,7 @@ use strict;
 #use diagnostics;
 use vars qw($VERSION);
 
-$VERSION = do { my @r = (q$Revision: 0.26 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.27 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 sub DESTROY {};
 
@@ -129,6 +129,12 @@ This script examines the databases and removes records that do not have the
 appropriate corresponding matching records in sister database files.
 
 It should be run periodically to keep things tidy.
+
+=item * sc_country_origin.pl
+
+This script prints a sorted list (by count) of countries of origin (by
+country code) and the number of IP addresses that appear in the 'tarpit'
+database.
 
 =back
 

@@ -1,5 +1,8 @@
 Revision history for Perl extension Mail::SpamCannibal::BDBreader
 
+0.14  Mon Feb  9 15:56:51 PST 2004
+        rewrite 'restart' logic in rc.bdbaccess v0.5
+
 0.13  Wed Oct  8 11:36:59 PDT 2003
 	add Makefile entry to copy rc.bdbaccess to install script directory
 	update test suites to accomodate libdbtarpit change

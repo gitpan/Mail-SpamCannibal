@@ -1,5 +1,8 @@
 Revision history for Perl extension Mail::SpamCannibal::DNSBLserver.
 
+0.22  Mon Feb  9 15:56:51 PST 2004
+	rewrite 'restart' logic in rc.dnsbls v0.8
+
 0.21  Thu Oct 16 13:22:15 PDT 2003
 	correct logic in ns.c to report 127.x.x.x codes in zone transfers
 

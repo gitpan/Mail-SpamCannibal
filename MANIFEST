@@ -87,6 +87,7 @@ scripts/sc_admin.pl
 scripts/sc_BLcheck.pl
 scripts/sc_BLpreen.pl
 scripts/sc_cleanup.pl
+scripts/sc_country_origin.pl
 scripts/sc_initdb.pl
 scripts/sc_mailfilter.pl
 scripts/sc_remote.pl

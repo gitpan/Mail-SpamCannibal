@@ -1,5 +1,20 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.27  Mon Feb  9 16:20:27 PST 2004
+	Re-write 'restart' routines for:
+	DNSBLserver/rc.dnsbls v0.8
+	BDBaccess/rc.bdbaccess v0.5
+	scripts/rc.sc_lbdaemon v1.04
+
+	Change wording in cannibal.cgi v1.17 for LOOKUP warning to:
+	Automated lookups not allowed, click SUBMIT to continue.
+
+	Add 'lookup' link to 'Whois' page in 
+	cannibal.cgi v1.16, whois.incl v1.02
+
+	Add script sc_country_origin.pl to analyze the number
+	of IP's from a particular country in the tarpit
+
 0.26  Wed Feb  4 17:36:21 PST 2004
 	Oops! -- left debug statement
 	"print STDERR" 

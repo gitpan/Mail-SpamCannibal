@@ -204,3 +204,14 @@ spamcannibal databases for the web admin interface.
 
   delete        returns OK or (error text)
                 deletes dot.quad.ip.addr in all databases
+
+=head2 sc_country_origin.pl
+
+This script prints a sorted list (by count) of countries of origin (by
+country code) and the number of IP addresses that appear in the 'tarpit'
+database.
+
+  US 12345
+  CN 7543
+  KR 1234
+  ... and so on...

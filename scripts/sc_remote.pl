@@ -2,7 +2,7 @@
 #
 # sc_remote.pl
 #
-# version 1.03, 10-11-03
+# version 1.04, 10-30-03
 #
 #################################################################
 # WARNING! if you modify this script, make a backup copy.	#
@@ -63,14 +63,14 @@ $comment
 Syntax:	sc_session.pl command [arg1] [arg2] ...
 
   sc_session.pl admin	on | off (command line only)
-  sc_session.pl	newsess	user password 
-  sc_session.pl updpass	session_id expire user newpass oldpass
-  sc_session.pl	chksess session_id expire (relative)
-  sc_session.pl rmvsess	session_id
-  sc_session.pl getC24	session_id expire dot.quad.ip.addr
-  sc_session.pl insBL	session_id expire dot.quad.ip.addr stuff...
-  sc_session.pl	insEVD	session_id expire dot.quad.ip.addr stuff...
-  sc_session.pl insEBLK	session_id expire dot.quad.ip.addr stuff...
+  sc_session.pl	newsess	  user password 
+  sc_session.pl updpass	  session_id expire user newpass oldpass
+  sc_session.pl	chksess   session_id expire (relative)
+  sc_session.pl rmvsess	  session_id
+  sc_session.pl getC24	  session_id expire dot.quad.ip.addr
+  sc_session.pl insBL	  session_id expire dot.quad.ip.addr stuff...
+  sc_session.pl	insEVD	  session_id expire dot.quad.ip.addr stuff...
+  sc_session.pl insEBLKnn session_id expire dot.quad.ip.addr stuff...
   sc_session.pl delete	session_id expire dot.quad.ip.addr
   sc_session.pl delBLK	session_id expire dot.quad.ip.addr
 
@@ -101,8 +101,9 @@ Syntax:	sc_session.pl command [arg1] [arg2] ...
 	message terminated on the last line by a single
 	.
 
-  insEBLK	same as insEVD except that the insertion is done for
-		the entire CIDR/24 block specified by the IP address
+  insEBLKnn	same as insEVD except that the insertion is done for
+		the entire CIDR/nn block specified by the IP address
+		where nn is 31 - 24
 
   delete	returns OK or (error text)
 		deletes dot.quad.ip.addr in all databases
@@ -134,7 +135,7 @@ elsif ($action =~ /^insBL/) {	# insert a Black List item
 elsif ($action =~ /^insEVD/) {	# insert an Evidence item
   $rv = InsEVD(@ARGV[0,1,2]);
 }
-elsif ($action =~ /^insEBLK/) {  # insert an Evidence CIDR/24 block
+elsif ($action =~ /^insEBLK/) {  # insert an Evidence CIDR/nn block
   $rv = InsEVD(@ARGV[0,1,2]);
 }
 elsif ($action =~ /^delete/) {	# delete and address from database

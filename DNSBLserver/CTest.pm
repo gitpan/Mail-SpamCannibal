@@ -95,6 +95,11 @@ the the 'C' pieces for F<dnsbls>
   set the value of "parent"
   return the previous value
 
+=item * t_set_qflag(val);
+
+  set the value of "qflag"
+  return the previous value
+
 =item * $pid = t_pidrun()
 
   input:	none

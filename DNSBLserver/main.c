@@ -92,7 +92,7 @@ char * zone_name = NULL, * contact = NULL, rname[MAXDNAME], undef_err[] = "undef
 u_int32_t * Astart, * Aptr;
 char mybuffer[1024], * rtn;
 int logopen = 0, datalog = 0, savedatalog = 0;
-int run, zone_name_len, zoneEQlocal, port = 53, dflag = 0, oflag = 0, bflag = 0, zflag = 0;
+int run, zone_name_len, zoneEQlocal, port = 53, dflag = 0, oflag = 0, bflag = 0, zflag = 0, qflag = 0;
 int fdUDP = 0, fdTCPlisten = 0, fdTCP = 0;
 u_int32_t refresh = 43200, retry = 3600, expire = 86400, minimum = 10800;
 pid_t pidrun, parent = 1;
@@ -365,6 +365,8 @@ Error_nsname:
     sprintf(rtn, "Error: -e, you must specify a default error message");
     goto ErrorExit;
   }
+  else if (strchr(errormsg,'?') != NULL)
+    	qflag = 1;			/* error message contains question mark, append address	*/
   
   if((pidpathname = chk4pid(NULL)) == NULL) {	/* bail if another dnsbls is running	*/
     rtn = mybuffer;

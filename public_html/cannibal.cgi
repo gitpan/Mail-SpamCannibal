@@ -487,7 +487,8 @@ function wIP(ip) {
       $CONFIG->{bdbDAEMON} = $sc->{SPMCNBL_ENVIRONMENT} .'/bdbread';
     }
 
-    my $action = ($query{submit} =~ /CIDR/) ? 'insEBLK' : 'insEVD';
+# is this a CIDR insertion request for CIDR/24 - CIDR/31
+    my $action = ($query{submit} =~ /^(\d+)$/ && $1 < 32 && $1 >23) ? 'insEBLK'.$1 : 'insEVD';
 
     foreach(0..$#spam) {
       $spam[$_] = '>'. $spam[$_]

@@ -1,6 +1,5 @@
 #!/usr/bin/perl
 package Mail::SpamCannibal::ScriptSupport;
-my $perl = '/usr/bin/perl';	# need to know where perl lives
 
 use strict;
 #use diagnostics;
@@ -13,10 +12,11 @@ BEGIN {
   $_ccode = inet_aton('127.0.0.3');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.10 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.14 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 #use AutoLoader 'AUTOLOAD';
 
+use Config;
 use IPTables::IPv4::DBTarpit::Tools;
 
 use NetAddr::IP;
@@ -84,6 +84,7 @@ require Exporter;
 	revIP   
 	query   
 	dns_ans 
+	dns_ns
 	zone_def
 	valid127
 	validIP
@@ -121,9 +122,10 @@ Mail::SpamCannibal::ScriptSupport - A collection of script helpers
 	DNSBL_Entry
 	id
 	question
-	revIP   
-	query   
-	dns_ans 
+	revIP
+	query
+	dns_ans
+	dns_ns
 	zone_def
 	valid127
 	validIP
@@ -151,7 +153,8 @@ Mail::SpamCannibal::ScriptSupport - A collection of script helpers
   $rev = revIP($ip);
   $response = query(\$buffer,$timeout);
   ($aptr,$tptr,$auth_zone) = dns_ans(\$buffer);
-  ($expire,$error,$dnresp)=zone_def($zone,\%dnsbl);
+  $nsptr = dns_ns(\$buffer);
+  ($expire,$error,$dnresp,$timeout)=zone_def($zone,\%dnsbl);
   $dotquad = valid127($dotquad);
   $dotquad = validIP($dotquad);
   $rv = job_died(\%jobstatus,$directory);
@@ -196,7 +199,7 @@ sub DO($) {
 	-e $file &&
 	-f $file &&
 	-r $file;
-  $_ = $perl;		# bring perl into scope
+  $_ = $Config{perlpath};		# bring perl into scope
   return undef if eval q|system($_, '-w', $file)|;
   do $file;
 }
@@ -369,10 +372,6 @@ sub query {
 Parse a DNS answer and return pointer to an array of B<A> response records
 and B<TXT> records blessed into the callers namespace.
 
-If no answer records are found, the authority zone name will be returned
-if an SOA record is found. This is always returned if the question zone does
-not exist or can not be found.
-
   input:	DNS answer
   returns:	pointers to two arrays,
 		auth_zone name or ''
@@ -381,6 +380,9 @@ Returns an empty array unless there is at least ONE B<A> record found.
 
 The first array contains packed IPv4 addresses of the form
 returned by inet_aton (text). The second array contains text strings.
+
+auth_zone will contain the zone name if an SOA record is found, otherwise
+it will contain ''.
 
 =cut
 
@@ -439,6 +441,71 @@ sub dns_ans {
   bless $aptr, $caller;
   bless $tptr, $caller;
   return($aptr,$tptr,$zone);
+}
+
+=item * $nsptr = dns_ns(\$buffer);
+
+Parse a DNS NS request answer and return pointer to a hash of name servers
+and TTL's.
+
+  $ptr->{hostname}--->{addr} = netaddr
+		   |
+		   *->{ttl}  = seconds
+
+If no records are found, undef is returned
+
+  input:	pointer to response buffer
+  returns:	pointer to hash or undef
+
+=cut
+
+sub dns_ns {
+  my $bp = shift;
+  my $nsptr = {};
+  my @ns;
+  my ($caller) = caller;
+  my ($off,$id,$qr,$opcode,$aa,$tc,$rd,$ra,$mbz,$ad,$cd,$rcode,
+	$qdcount,$ancount,$nscount,$arcount)
+	= gethead($bp);
+
+  DECODE:
+  while(1) {
+    last if
+	$tc ||
+	$opcode != QUERY ||
+	$rcode != NOERROR ||
+	$qdcount != 1 ||
+	$ancount < 1 ||
+	$arcount < 1;
+
+    my ($get,$put,$parse) = new Net::DNS::ToolKit::RR;
+    my ($off,$name,$type,$class) = $get->Question($bp,$off);
+    last unless $class == C_IN;
+
+    foreach(0..$ancount -1) {
+      ($off,$name,$type,$class,my($ttl,$rdlength,@rdata)) =
+	$get->next($bp,$off);
+      if ($type == T_NS) {
+	push @ns, @rdata;
+      }
+    }
+    last unless @ns;		# end if there is no answer
+    foreach(0..$nscount -1) {
+      ($off,@_) = $get->next($bp,$off); # toss these
+    }
+    foreach(0..$arcount -1) {
+      ($off,$name,$type,$class,my($ttl,$rdlength,@rdata)) =
+	$get->next($bp,$off);
+      if ($type == T_A && grep($name eq $_,@ns)) {
+	$nsptr->{"$name"}->{addr} = $rdata[0];	# return first available ns address
+	$nsptr->{"$name"}->{ttl} = $ttl;
+      }
+    }
+    last;
+  }
+  return undef unless keys %$nsptr;
+  bless $nsptr, $caller;
+  return $nsptr;
 }
 
 =item * ($expire,$error,$dnresp,$timeout)=zone_def($zone,\%dnsbl);
@@ -934,7 +1001,7 @@ is the timeout for a DNS query.
 
 sub BLcheck {
   my($DNSBL,$default) = @_;
-
+  my %count;
 # extract vars
   my $DEBUG	= $default->{DEBUG} || 0;
   my $VERBOSE	= $default->{VERBOSE} || 0;
@@ -956,12 +1023,33 @@ sub BLcheck {
 
   my %deadDNSBL;
   foreach(keys %$DNSBL) {
-    $deadDNSBL{"$_"} = ($_ eq 'IGNORE')	# always skip the IGNOR entry, it's not a DNSBL
-	? $numberoftries + 1	# big !
-	: 1;
+    next unless $_ =~ /.+\..+/;	# skip non-dnsbl entries
+    $deadDNSBL{"$_"} = 1;
+    $count{"$_"} = 0;		# set up statistics counters for preferential sort
   }
-  my $cursor = 1;		# carefull!! bdb starts with a cursor of 1, not zero
 
+# set up statistics file for DNSBL's if configured
+  my $stats = '';
+  my $statinit = '# stats since '. localtime(time) ."\n";
+
+  if ($DNSBL->{STATS}) {				# stats entry??
+    if ( -e $DNSBL->{STATS}) {				# old file exists
+      if (open(S,$DNSBL->{STATS})) {			# skip if bad open
+	foreach(<S>) {
+	  $statinit = $_ if $_ =~ /# stats since/;	# use old init time if present
+	  next unless $_ =~ /^(\d+)\s+(.+)/;
+	  $count{"$2"} = $1 if exists $count{"$2"}	# add only existing dnsbls
+	}
+	close S;
+      }
+      $stats = $DNSBL->{STATS};
+    }
+    elsif ($DNSBL->{STATS} =~ m|[^/]+$| && -d $`) {	# directory exists, no file yet
+      $stats = $DNSBL->{STATS};				# ok to proceed
+    }
+  }
+
+  my $cursor = 1;		# carefull!! bdb starts with a cursor of 1, not zero
   my $key;
   Record:
   while ($run && ($key = $tool->getrecno($archive,$cursor))) {
@@ -979,7 +1067,7 @@ sub BLcheck {
     my $dnsblIP = revIP($IP);			# get the reversed IP address
 # check in each available DNSBL until exhausted or entry is found
    CheckZone:
-    foreach my $zone (keys %$DNSBL) {
+    foreach my $zone (sort {$count{"$b"} <=> $count{"$a"}} keys %count) {
       last Record unless $run;			# SIGTERM ?
       next CheckZone if $deadDNSBL{"$zone"} > $numberoftries;
       my ($expire,$error,$dnresp,$timeout) = zone_def($zone,$DNSBL);
@@ -1033,6 +1121,7 @@ sub BLcheck {
 	  }
 
 	  $expire += time;		# absolute expiration time
+	  ++$count{"$zone"};
 # create a text record of the form:
 # response_code."\0".error_message."\0".dnsbl_code."\0".expire."\0".zone."\0".host
 
@@ -1063,8 +1152,8 @@ zone => $zone response => $ipA
 		$tool->sync($tarpit);
 	      }
 	    }
-	    last CheckZone;
 	  }
+	  last CheckZone;
 	}
       }
     } # CheckZone
@@ -1080,6 +1169,23 @@ zone => $zone response => $ipA
     }
   }
 
+  if ($VERBOSE) {
+    foreach(sort {$count{"$b"} <=> $count{"$a"}} keys %count) {
+      print $count{"$_"}, "\t$_\n";
+    }
+  }
+
+  if ($stats) {		# record stats on DNSBL lookups
+    if (open(S,'>'. $stats .'.tmp')) {
+      print S '# last update '. localtime(time) ."\n";
+      print S $statinit;
+      foreach(sort {$count{"$b"} <=> $count{"$a"}} keys %count) {
+	print S $count{"$_"}, "\t$_\n";
+      }
+      close S;
+    }
+    rename $stats .'.tmp', $stats;
+  }
   $tool->closedb;
   return '';
 }
@@ -1134,9 +1240,9 @@ sub BLpreen {
 
   my %deadDNSBL;
   foreach(keys %$DNSBL) {
-    $deadDNSBL{"$_"} = ($_ eq 'IGNORE')	# always skip the IGNOR entry, it's not a DNSBL
-	? $numberoftries + 1	# big !
-	: 1;
+    $deadDNSBL{"$_"} = ($_ =~ /.+\..+/)	# skip non-dnsbl entries
+	? 1
+	: $numberoftries + 1	# big... to force skip
   }
   my $cursor = 1;		# carefull!! bdb starts with a cursor of 1, not zero
 

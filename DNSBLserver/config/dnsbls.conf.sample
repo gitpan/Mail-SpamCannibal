@@ -97,6 +97,7 @@ my $DNSBLS = {
 # [ REQUIRED ]
 
 	'127.0.0.2'	=> 'ERROR: connection tarpitted. See: http://www.mydomain.com',
+#	'127.0.0.2'	=> 'blocked, see: http://www.spamcannibal.org/cannibal.cgi?page=lookup&lookup=',
 #
 
 # Specify additional test response codes for 'dnsbls'

@@ -1,5 +1,12 @@
 Revision history for Perl extension Mail::SpamCannibal::DNSBLserver.
 
+0.21  Thu Oct 16 13:22:15 PDT 2003
+	correct logic in ns.c to report 127.x.x.x codes in zone transfers
+
+	add logic to main.c and ns.c to append the text of the IP address
+	to standard TXT responses if the error message is default and 
+	contains the character ? as in http://xxx.com?abc=
+
 0.20  Sat Oct 11 08:28:02 PDT 2003
 	modify util_pid.c and misc.c to include unlinkOK as in BDBaccess.
 	update options.t to test correctly when default /var/run/dbtarpit 

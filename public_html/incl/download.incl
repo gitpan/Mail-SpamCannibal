@@ -1,4 +1,4 @@
-<!-- last updated 9-20-03 -->
+<!-- last updated 11-7-03 -->
 <font size=+1>SpamCannibal Required Modules and Dependencies</font>
 <p>
 <a href="http://search.cpan.org/search?query=IPTables::IPv4::DBTarpit">IPTables::IPv4::DBTarpit</a>
@@ -55,9 +55,17 @@ outside US:   PGP 2.6.3i or PGP 6.5.8<br>
 <a href="http://www.pgpi.org/">www.pgpi.org</a> pgpsrc658unix-gnu.tar.gz,  PGPcmdln_6.5.8.Lnx_FW.tar.gz, or  PGPcmdln_6.5.8.Lnx_FW.rpm.tar
 </ul>
 
-  For optional web dbtarpit statistics support:
+For optional web dbtarpit statistics support:
 <ul>
 <li><a href="http://search.cpan.org/search?query=LaBrea::Tarpit">LaBrea::Tarpit</a>
     available on <a href="http://CPAN.org/">CPAN.org</a><br>
 </ul>
+
+For Optional optimized DNSBL polling for your MTA<br>
+using common SpamCannibal configuration files:
+<ul>
+<li><a href="http://search.cpan.org/search?query=Net::DNSBL::MultiDaemon">Net::DNSBL::MultiDaemon</a>
+    available on <a href="http://CPAN.org/">CPAN.org</a><br>
+</ul>
+
 </blockquote>

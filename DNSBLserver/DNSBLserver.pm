@@ -1,7 +1,7 @@
 # /*	all lines except VERSION are C comments
 package Mail::SpamCannibal::DNSBLserver;
 use vars qw($VERSION);
-$VERSION = do { q| */ char version[] = "dnsbls 0.20, 10-10-03"; /* | =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
+$VERSION = do { q| */ char version[] = "dnsbls 0.21, 10-16-03"; /* | =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
 # returns $VERSION which is non-zero
 __END__
 

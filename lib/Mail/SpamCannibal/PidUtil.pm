@@ -8,7 +8,7 @@ use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
 require Exporter;
 @ISA = qw(Exporter);
 
-$VERSION = do { my @r = (q$Revision: 0.04 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.05 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 %EXPORT_TAGS = (
   all	=> [qw(
@@ -68,13 +68,20 @@ Note: also exits if $path is false
 
 sub if_run_exit {
   my($path,$message) = @_;
-  exit unless $path;
   my $me = get_script_name();
+  unless ($path) {
+    print STDERR "$me: $path not found\n";
+    exit;
+  }
+  unless (-w $path) {
+    print STDERR "$me: $path not writable, check permissions\n";
+    exit;
+  }
   my $pidfile = $path .'/'. $me . '.pid';
 
   my $job = is_running($pidfile);
   if ($job) {
-    print "$me: $job, $message\n"
+    print STDERR "$me: $job, $message\n"
 	if $message;
     exit;   
   }

@@ -423,6 +423,24 @@ u_char validchars[] = {
 	'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0',
 };
 
+/*	append an IP address to end of text string if qflag is present	*/
+
+struct in_addr in;
+
+char *
+errIP()
+{
+  extern int qflag;
+  extern struct in_addr in;
+  extern char mybuffer[], * errormsg;
+
+  if (qflag) {
+    sprintf(mybuffer,"%s%s",errormsg,inet_ntoa(in));
+    return(mybuffer);
+  }
+  return(errormsg);
+}
+
 /*	verify that the requested IP address
  *	contains only numbers and '.'
  *	returns 1 if not numeric, 0 if numeric
@@ -545,7 +563,7 @@ munge_msg(int fd, size_t msglen, int is_tcp)
   char * notThisA, * Hptr, hostpart[MAXDNAME], * cHptr;
   u_int32_t serial, ixfr_ser, axfrc = 0, * Aptr, * Astart, * A_resp;
   u_short len;
-  struct in_addr rev, in;
+  struct in_addr rev;
   u_int ancount = 0, arcount = 0, nscount = 0, ixfrcnt;
   u_int tmsgcnt = 0, tancnt = 0, tarcnt = 0, tnscnt = 0, tbytcnt = 0;	/* statistics	*/
   size_t origqlen = msglen;
@@ -842,13 +860,15 @@ NS_errorExit:
 		    *(u_char *)(dbtp.keydbt.data +3) == 0)
 			goto NS_AXFR_next;			/* skip serial number	*/
 
+		in.s_addr = *(u_int32_t *)dbtp.keydbt.data;
 		bswap32((u_char *)&rev.s_addr,(u_char *)dbtp.keydbt.data);
 	/*	rev.s_addr = bswap_32(*(u_int32_t *)dbtp.keydbt.data); */
 		sprintf(dnbuf,"%s.%s",inet_ntoa(rev),zone_name);
 
-		if ((dbtp_get(&dbtp,DBevidence,(void *)(dbtp.keydbt.data),sizeof(in.s_addr))) == 0) {
+		if (*(u_char *)dbtp.keydbt.data == 0x7F ||	/* it's a 127 code	*/
+		    (dbtp_get(&dbtp,DBevidence,(void *)(dbtp.keydbt.data),sizeof(in.s_addr))) == 0) {
 		    A_resp = &stdResp.s_addr;
-		    stdErr_response = errormsg;
+		    stdErr_response = errIP();
 		}
 		else if (zflag == 0)
 		    goto NS_AXFR_next;				/* do not report promiscious contributions	*/
@@ -858,12 +878,13 @@ NS_errorExit:
 			stdErr_response = dbtp.mgdbt.data + INADDRSZ + 1;
 		    else {
 			A_resp = &stdRespBeg.s_addr;
-			stdErr_response = errormsg;
+			stdErr_response = errIP();
 		    }
 		}
-		else {						/* default .3, should not reach this	*/
+		else {
+/*	should not reach this, but will if used without data in either evidence or contrib	*/
 		    A_resp = &stdRespBeg.s_addr;
-		    stdErr_response = errormsg;
+		    stdErr_response = errIP();
 		}
 		RR_A(dnbuf,A_resp,ancount);
 		RR_TXT(dnbuf,stdErr_response,ancount);
@@ -949,16 +970,16 @@ NS_errorExit:
       stdErr_response = dbtp.mgdbt.data + INADDRSZ + 1;
     else {
       A_resp = &stdRespBeg.s_addr;
-      stdErr_response = errormsg;
+      stdErr_response = errIP();
     }
   }
   else if ((dbtp_get(&dbtp,DBevidence,(void *)(dbtp.keydbt.data),sizeof(in.s_addr))) == 0) {
     A_resp = &stdResp.s_addr;
-    stdErr_response = errormsg;
+    stdErr_response = errIP();
   }
   else {				/* default answer .3, should not reach	*/
     A_resp = &stdRespBeg.s_addr;
-    stdErr_response = errormsg;
+    stdErr_response = errIP();
   }
 
 NS_checktype:

@@ -1,5 +1,30 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.18  Mon Oct 30 11:21:40 PDT 2003
+
+	changed syslog call in rc.sc_dbwatch to match prototype
+
+	update spamlst.incl, sc_session.pl, sc_remote.pl, cannibal.cgi
+	to include admin capability to add CIDR/24 -31 blocks of addresses
+
+	update public_html/index.html to behave better with robots
+
+	add sort logic to ScriptSupport::BLcheck to check DNSBL's in
+	the order of max hits to min hits and to optionally save 
+	a statistics file.
+
+	update the documentation for ScriptSupport::zone_def to 
+	describe 'timeout'
+
+	fix PidUtil to print on STDERR instead of STDOUT and add error 
+	messages if the pid write path is not found or not writable
+
+      update DNSBLserver 0.21
+	correct logic in ns.c to report 127.x.x.x codes in zone transfers.
+	add logic to main.c and ns.c to append the text of the IP address
+        to standard TXT responses if the error message is default and 
+        contains the character ? as in http://xxx.com?abc=
+
 0.17  Sat Oct 11 08:28:02 PDT 2003
 	squash a test bug in DNSBLserver
 

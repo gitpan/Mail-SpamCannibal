@@ -3,9 +3,16 @@
 # sc_BlackList.conf
 # Configuration for sc_BLcheck.pl and sc_BLpreen.pl
 #
-# version 1.04, 10-3-03
+# version 1.06, 10-16-03
 #
 my $DNSBL = {
+
+# the OPTIONAL name of a file that will contain 'hit' statistics for DNSBLS
+# this file will be used to seed the sort order of DNSBL checking if it is
+# present and will be updated with the 'added' counts of each run. If it 
+# is deleted, it will be recreated with a new time tag at the beginning.
+#
+  'STATS'	=>	'/usr/local/spamcannibal/blcheck_stats.txt',
 
 # A multi-formated array of IP address that will never be tarpitted.
 #
@@ -74,8 +81,12 @@ my $DNSBL = {
 #	expire	    => '7d',	# optional default expiration if DNSBL can not be reached
 #				# may be specified in any combination of seconds, minutes, hours, days, weeks
 #				#  i.e. 604800 or 604800s, 10080m, 168h
-				#	1w 3d
-# These are real entries
+#				#	1w 3d
+#
+#	timeout	    => 30,	# default seconds to wait for dnsbl query to timeout
+
+# These dnsbls should be configured in your mail transport agent
+# as well as in this file.
 
   'dnsbl.sorbs.net'	=> {	# see http://www.dnsbl.sorbs.net/using.html
 	accept	=> {	# list of codes for which we tarpit
@@ -182,11 +193,35 @@ my $DNSBL = {
 	expire		=> '30d',
   },
 
+  'blackholes.easynet.nl' => {	# see http://abuse.easynet.nl/dynablocker.html
+	accept => {
+		'127.0.0.2' => '',
+	},
+	error		=> 'for removal see http://blackholes.easynet.nl/error/errors.html',
+	expire		=> '30d',
+  },
+
+  'proxies.blackholes.easynet.nl' => {	# see http://abuse.easynet.nl/dynablocker.html
+	accept => {
+		'127.0.0.2' => '',
+	},
+	error		=> 'for removal see http://blackholes.easynet.nl/error/errors.html',
+	expire		=> '30d',
+  },
+
   'list.dsbl.org'       => {    # see http://dsbl.org
 	accept => {
 		'127.0.0.2' => '', 
 	},
 	error		=> 'for removal see http://dsbl.org/listing?',
+	expire		=> '30d',
+  },
+
+  'spews.dnsbl.net.au'	=> {	# see http://www.spews.org/
+	accept	=> {
+		'127.0.0.2' => '',
+	},
+	error		=> 'blocked see: http://www.spews.org/ask.cgi?x=',
 	expire		=> '30d',
   },
 

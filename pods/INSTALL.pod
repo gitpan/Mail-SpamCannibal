@@ -1332,6 +1332,98 @@ Then cd to the config directory
   cd config
   cp sc_mailfilter.conf.sample sc_mailfilter.conf
 
+=head2 Setting up rc.multi_dnsbl
+
+Download and install Net::DNSBL::MultiDaemon. This is an excerpt from the
+installation procedure.
+
+B<multi_dnsbl> can be installed as either a standalone DNSBL or as a plug-in
+to a BIND 9 installation on the same host. In either case, copy the
+rc.multi_daemon script to the appropriate startup directory on your host and
+modify the start, stop, restart scripts as required. Operation of the script
+is as follows:
+
+  Syntax: ./rc.multi_dnsbl start    /path/to/config.file
+          ./rc.multi_dnsbl start -v /path/to/config.file
+          ./rc.multi_dnsbl stop     /path/to/config.file
+          ./rc.multi_dnsbl restart  /path/to/config.file
+
+  The -v switch will print the scripts 
+  actions verbosely to the STDERR.
+
+=head3 CONFIGURATION FILE
+
+The configuration file for B<multi_dnsbl> shares a common format with the
+Mail::SpamCannibal sc_BLcheck.pl script, facilitating common maintenance of
+DNSBL's for your MTA installation. 
+
+The sample configuration file
+B<multi_dnsbl.conf.sample> is heavily commented with the details for each
+configuration element. If you plan to use a common configuration file in a
+SpamCannibal installation, simply add the following elements to the
+B<sc_BlackList.conf> file:
+
+  MDstatfile     => '/path/to/statistics/file.txt',
+  MDpidpath      => '/path/to/pidfiles', # /var/run
+  MDzone         => 'pseudo.dnsbl',
+
+  # OPTIONAL
+  MDstatrefresh => 300,       # seconds
+  MDipaddr      => '0.0.0.0', # PROBABLY NOT WHAT YOU WANT
+  MDport        => 9953,
+  
+=head3 STANDALONE OPERATION
+
+For standalone operation, simply set B<MDport = 53>, nothing more is
+required.
+
+Interrogating the installation will then return the first
+match from the configured list of DNSBL servers.
+
+  i.e.  dig 2.0.0.127.pseudo.dnsbl
+
+        .... results
+
+Note that the results will contain all of the "authority" and "additional"
+(glue) records from the responding DNSBL placed into the additional section
+of the returned record that will have an authority record from of
+"localhost".
+
+=head3 PLUGIN to BIND 9
+
+B<multi_dnsbl> may be used as a plugin helper for a standard bind 9
+installation by adding a B<forward> zone to the configuration file as
+follows:
+
+  //zone pseudo.dnsbl
+  zone "pseudo.dnsbl" in {
+        type forward;
+        forward only;
+        forwarders { 
+            127.0.0.1 port 9953;
+        };
+  };
+
+You may also wish to add one or more of the following statements with
+appropriate address_match_lists to restrict access to the facility.  
+
+        allow-notify {};
+        allow-query { address_match_list };
+        allow-recursion { address_match_list };
+        allow-transfer {};      
+
+=head3 MTA CONFIGURATION
+
+Access to DNSBL lookup is configured in the normal fashion for each MTA.
+Since MTA's generally must interrogate on port 53, B<multi_dnsbl> must be
+installed on a stand-alone server or as a plugin for BIND 9. 
+
+A typical configuration line for B<sendmail M4> configuration file is shown
+below:
+
+  FEATURE(`dnsbl',`pseudo.dnsbl',
+  `554 Rejected $&{client_addr} found in http://www.spamcannibal.org')dnl
+
 =head1 COPYRIGHT
 
 Copyright 2003, Michael Robinton <michael@bizsystems.com>

@@ -2,7 +2,7 @@
 #
 # sc_session.pl
 #
-# version 1.06, 10-11-03
+# version 1.07, 10-30-03
 #
 #################################################################
 # WARNING! if you modify this script, make a backup copy.	#
@@ -60,6 +60,7 @@ use Mail::SpamCannibal::Password qw(
 	pw_obscure
 	pw_get
 );
+use NetAddr::IP;
 
 # extract the path we're using
 $0 =~ m|/scripts/sc_session|;
@@ -90,17 +91,17 @@ $comment
 
 Syntax:	sc_session.pl command [arg1] [arg2] ...
 
-  sc_session.pl admin	on | off (command line only)
-  sc_session.pl	newsess	user password 
-  sc_session.pl updpass	session_id expire user newpass oldpass
-  sc_session.pl	chksess session_id expire (relative)
-  sc_session.pl rmvsess	session_id
-  sc_session.pl getC24	session_id expire dot.quad.ip.addr
-  sc_session.pl insBL	session_id expire dot.quad.ip.addr stuff...
-  sc_session.pl	insEVD	session_id expire dot.quad.ip.addr stuff...
-  sc_session.pl insEBLK	session_id expire dot.quad.ip.addr stuff...
-  sc_session.pl delete	session_id expire dot.quad.ip.addr
-  sc_session.pl delBLK	session_id expire dot.quad.ip.addr
+  sc_session.pl admin	  on | off (command line only)
+  sc_session.pl	newsess	  user password 
+  sc_session.pl updpass	  session_id expire user newpass oldpass
+  sc_session.pl	chksess   session_id expire (relative)
+  sc_session.pl rmvsess	  session_id
+  sc_session.pl getC24	  session_id expire dot.quad.ip.addr
+  sc_session.pl insBL	  session_id expire dot.quad.ip.addr stuff...
+  sc_session.pl	insEVD	  session_id expire dot.quad.ip.addr stuff...
+  sc_session.pl insEBLKnn session_id expire dot.quad.ip.addr stuff...
+  sc_session.pl delete	  session_id expire dot.quad.ip.addr
+  sc_session.pl delBLK	  session_id expire dot.quad.ip.addr
 
   admin		returns "OK status"
 	allow admin addition/deletion of users
@@ -129,8 +130,9 @@ Syntax:	sc_session.pl command [arg1] [arg2] ...
 	message terminated on the last line by a single
 	.
 
-  insEBLK	same as insEVD except that the insertion is done for
-		the entire CIDR/24 block specified by the IP address
+  insEBLKnn	same as insEVD except that the insertion is done for
+		the entire CIDR/nn block specified by the IP address
+		where 'nn' is 24-31
 
   delete	returns OK or (error text)
 		deletes dot.quad.ip.addr in all databases
@@ -173,8 +175,8 @@ elsif ($action =~ /^insBL/) {	# insert a Black List item
 elsif ($action =~ /^insEVD/) {	# insert an Evidence item
   $rv = InsEVD();
 }
-elsif ($action =~ /^insEBLK/) {	# insert an Evidence CIDR/24
-  $rv = InsEBLK();
+elsif ($action =~ /^insEBLK(\d+)/) {	# insert an Evidence CIDR/xx
+  $rv = InsEBLK($1);
 }
 elsif ($action =~ /^delete/) {	# delete an address from database
   $rv = Delete();
@@ -435,6 +437,7 @@ sub InsEVD {
 }
 
 sub InsEBLK {
+  my ($CIDR) = @_;
   my ($sesid,$expire,$addr) = @ARGV;
   validate($session_dir,$sesid,$secret,\$error,$expire) 
 	or return $error;
@@ -448,9 +451,11 @@ sub InsEBLK {
   (my $tool = db_open())
 	or return $error;
 
-  ($addr = clean($addr)) =~ /\d+\.\d+\.\d+\./;
-  my $cidr = $&;
-  foreach(0..255) {
+  $addr = clean($addr);
+  (new NetAddr::IP("${addr}/${CIDR}")->range()) =~ /(\d+\.\d+\.\d+\.)(\d+)\s+\-+\s+\d+\.\d+\.\d+\.(\d+)/;
+  @_ = ($2..$3);
+  my $cidr = $1;
+  foreach(@_) {
     my $target = "${cidr}$_";
     my $saddr = inet_aton($target);
     my $rv = $tool->get($DBCONFIG->{SPMCNBL_DB_TARPIT},$saddr);

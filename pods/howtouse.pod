@@ -184,6 +184,19 @@ that is borrowed from the LaBrea::Tarpit perl module. It provides a
 realtime snapshot of the current and recent spam host activity on the 
 mail host.
 
+=item 5. Optional multi_dnsbl daemon
+
+B<multi_dnsbl> is a DNS emulator daemon that increases the efficacy of DNSBL
+look-ups in a mail system. B<multi_dnsbl> may be used as a stand-alone DNSBL
+or as a plug-in for a standard BIND 9 installation. 
+B<multi_dnsbl> shares a common configuration file format with the
+Mail::SpamCannibal sc_BLcheck.pl script so that DNSBL's can be maintained in
+a common configuration file for an entire mail installation.
+
+It is recommended that SpamCannibal installations utilize B<multi_dnsbl> for
+there MTA's DNSBL lookups as this minimizes network traffic to the DNSBL's
+and optimizes the order in which they are interrogated.
+
 =back
 
 =head2 TYPICAL INSTALLATIONS

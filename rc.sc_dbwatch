@@ -2,7 +2,7 @@
 #
 # rc.sc_dbwatch
 #
-# version 1.01, 10-7-03
+# version 1.02, 11-5-03
 #
 #################################################################
 # WARNING! do not modify this script, make one with a new name. #
@@ -152,7 +152,7 @@ $run = make_pidfile($pidfile);
 
 if ($watchconfig->{SYSLOG}) {
   openlog($me, LOG_PID(), LOG_MAIL());
-  syslog($LogLevel, "Initiated...\n");
+  syslog($LogLevel,"%s\n",'Initiated...');
 }
 
 my $forcefile = $environment .'/'. get_script_name() . '.startup.pid';
@@ -180,7 +180,7 @@ while ($run) {
   sleep $recheck;
 }
 if ($watchconfig->{SYSLOG}) {
-  syslog($LogLevel, "caught SIGTERM, exiting...\n");
+  syslog($LogLevel,"%s\n",'caught SIGTERM, exiting...');
   closelog();
 }
 zap_pidfile($environment);

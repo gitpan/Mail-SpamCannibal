@@ -5,7 +5,7 @@ All - SpamCannibal Documentation
 
 =for html <font size=+2>Documentation for the SpamCannibal Package</font>
 <br>&nbsp;
-<br><!-- version 1.07, 10-10-03 -->
+<br><!-- version 1.08, 11-7-03 -->
 <font size=+1><a href="install.html#support">Support and Project Participation</a></font><br>
 <font size=+1><a href=howtouse.html>HOWTO use SpamCannibal</a></font> with your mail system<br>
 <font size=+1><a href=howitworks.html>HOW SpamCannibal Works</a></font><br>
@@ -27,11 +27,12 @@ Detailed installation instructions for all packages<br>
 <font size=+1><b>DAEMON rc.scripts</b></font>
 <blockquote>
 <table cellpadding=4 border=0>
-<tr><td>rc.dbtarpit</a></td><td>type: rc.dbtaript.pl -h and see the manpage for dbtarpit</td></tr>
+<tr><td>rc.dbtarpit</td><td>type: rc.dbtaript.pl -h and see the manpage for dbtarpit</td></tr>
 <tr><td><a href=rc.dnsbls.html>rc.dnsbls</a></td><td>dnsbls startup script</td></tr>
 <tr><td><a href=rc.bdbaccess.html>rc.bdbaccess</a></td><td>bdbaccess startup script</td></tr>
 <tr><td><a href=rc.sc_dbwatch.html>rc.sc_dbwatch</a></td><td>database watcher ALL daemon start script</td></tr>
 <tr><td><a href=rc.sc_lbdaemon.html>rc.sc_lbdaemon</a></td><td>statistics display startup script</td></tr>
+<tr><td>rc.multi_dnsbl</td><td>optional MTA helper daemon that plugs into BIND 9, See: <a href="http://search.cpan.org/search?query=Net::DNSBL::MultiDaemon">Net::DNSBL::MultiDaemon</td></tr>
 </table>
 </blockquote>
 <font size=+1><a href=scripts.html>SpamCannibal Utility Scripts</a></font> brief synopsis of each script
@@ -67,6 +68,7 @@ Detailed installation instructions for all packages<br>
 <tr><td><a href=Net-DNS-ToolKit-RR.html>Net::DNS::ToolKit::RR</a></td><td>DNS resource record generation/parsing</td></tr>
 <tr><td><a href=Net-DNS-ToolKit-RR-Template.html>Net::DNS::ToolKit::RR::Template</a></td><td>generic resource record template</td></tr>
 <tr><td><a href=Net-DNS-ToolKit-Question.html>Net::DNS::ToolKit::Question</a></td><td>routines to generate DNS questions/responses</td></tr>
+<tr><td><a href=Net-DNSBL-MultiDaemon.html>Net::DNSBL::MultiDaemon</a></td><td>multi_dnsbl daemon to optimize DNSBL lookups</td></tr>
 <tr><td><a href=Net-SMTP.html>Net::SMTP</a></td><td>perl SMTP interface</td></tr>
 <tr><td><a href=Net-Whois-IP.html>Net::Whois::IP</a></td><td>perl Whois interface</td></tr>
 <tr><td><a href=NetAddr-IP.html>NetAddr::IP</a></td><td>perl routines to manipulate IP addresses</td></tr>

@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 1.13, 1-15-04
+# version 1.15, 1-30-04
 #
 # Copyright 2003, 2004, Michael Robinton <michael@bizsystems.com>
 #   
@@ -207,7 +207,7 @@ while (1) {
       html_cat(\$html,$_,$CONFIG,\%ftxt);
     }
     if ($IP) {
-      if ($ENV{HTTP_REFERER} !~ /$ENV{SERVER_NAME}/i) {
+      if ($ENV{HTTP_REFERER} !~ /$ENV{SERVER_NAME}/i || $ENV{HTTP_REFERER} =~ m|/\?|) {
 	$html .= qq|
 Due to the excessive load placed on our system, we have disabled the ability
 for third party sites to query the Whois Proxy through the web
@@ -315,8 +315,9 @@ IP address:	$query{IP}
 	) {
       html_cat(\$html,$_,$CONFIG,\%ftxt);
     }
+print STDERR $ENV{HTTP_REFERER},"\n";
     if ($IP) {
-      if ($ENV{HTTP_REFERER} !~ /$ENV{SERVER_NAME}/i) {
+      if ($ENV{HTTP_REFERER} !~ /$ENV{SERVER_NAME}/i || $ENV{HTTP_REFERER} =~ m|/\?|) {
 	$html .= qq|
 Automated lookups not allowed.
 <script language=javascript1.1>
@@ -356,7 +357,7 @@ function wIP(ip) {
   onClick="self.location = location.pathname + '?page=delete&remove=' + '|. 
 	  $IP .q|'; return false;">X</a></td></tr></table></td><td>delete</td>
     <td><table cellspacing=0 cellpadding=2 border=1>
-      <td class=hot><a href="#top" class=hot onMouseOver="return(show('delete CIDR/24 |. $IP .q|'));" onMouseOut="return(off());"
+      <td class=hot nowrap><a href="#top" class=hot onMouseOver="return(show('delete CIDR/24 |. $IP .q|'));" onMouseOut="return(off());"
   onClick="if (confirm('do you really want to delete a 256 address block?')) { self.location = location.pathname + '?page=delBLK&remove=' + '|.
 	  $IP .q|'; } return false;">X CIDR/24</a></td></tr></table>|;
 	}
@@ -641,6 +642,7 @@ function wIP(ip) {
 	$CONFIG->{bdbDAEMON} = $sc->{SPMCNBL_ENVIRONMENT} .'/bdbread';
     }
 
+    $html =~ s/onLoad/onUnLoad=\"popadclose();\" onLoad/;
     $html .= q|<script language=javascript1.1>
 function dbvs(db,rn) {
   document.dbsel.action = location.pathname
@@ -649,7 +651,25 @@ function dbvs(db,rn) {
   document.dbsel.submit();
   return false;
 }
+var alookup = null;
+function popadclose() {
+  if (alookup == null) return;
+  if (alookup.closed == null) return;
+  alookup.close();
+}
+function popadmwin() {
+  alookup = window.open ( "","alookup",    
+"toolbar=no,menubar=no,location=no,scrollbars=yes,status=yes,resizable=yes," +
+  "width=580,height=400");
+  if (alookup.opener == null ) alookup.opener = self;    
+  alookup.document.open();  
+  alookup.document.writeln('<html><body bgcolor="#ffffcc"></body></html>');  
+  alookup.document.close();  
+  alookup.focus();  
+  return false;
+}  
 function lIP(ip) {
+  popadmwin();
   document.ViewDB.lookup.value = ip;
   document.ViewDB.action = location.pathname;
   document.ViewDB.submit();
@@ -745,7 +765,7 @@ function lIP(ip) {
 </tr></table>
 </form>
 &nbsp;<font size="-1">record number |. $recno .q|</font>
-<form name=ViewDB action="" method=POST>
+<form name=ViewDB action="" method=POST target=alookup>
 <input type=hidden name=page value=lookup>
 <input type=hidden name=lookup value="">
 <table cellspacing=0 cellpadding=3 border=1>

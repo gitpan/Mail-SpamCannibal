@@ -1,5 +1,15 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.23  Fri Jan 30 13:31:07 PST 2004
+	update sc_Blacklist.conf.sample to include 
+	completewhois.com
+
+	modify cannibal.cgi to not allow automated lookups
+	of the form http://www.myhost.com/?....
+
+	modify cannibal.cgi to pop a window
+	for IP lookups in the View DB page
+
 0.22  Thu Jan 15 11:18:33 PST 2004
 	Add domain name lookup to whois cannibal.cgi page
 	ScriptSupport.pm

@@ -1,5 +1,18 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.45  Wed Sep  1 17:49:29 PDT 2004
+	Oops! left out reference to 
+	Net::DNS::Codes qw(
+		T_PTR
+		T_ANY
+	);
+	Net::DNS::ToolKit qw(
+		get16
+	);
+	when moving subroutines out of ScriptSupport.
+	These are needed by runtime scripts that remain.
+	Update to ScriptSupport v0.27
+
 0.44  Wed Sep  1 15:35:37 PDT 2004
 	moved from ScriptSupport v0.26 to Net::DNS::ToolKit::Utilities v0.20
 		id

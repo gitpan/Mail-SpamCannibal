@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.26 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.27 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -19,9 +19,14 @@ use IPTables::IPv4::DBTarpit::Tools;
 
 use NetAddr::IP;
 use Net::DNS::ToolKit qw(
+	get16
 	ttlAlpha2Num
 );
 	
+use Net::DNS::Codes qw(
+	T_ANY
+	T_PTR
+);
 use Mail::SpamCannibal::ParseMessage qw(
 	limitread
 	dispose_of

@@ -1,5 +1,15 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.49  Sat Oct 16 16:16:55 PDT 2004
+	added missing file in contrib directory that should have
+	been in rev 0.47
+		dnsbl_stats.shtml
+		nav.incl
+		robots.txt
+
+	update sc_mailfilter.pl v1.07 to optionally count files processed
+	update sample sc_mailfilter.conf.sample to include SPAMCOUNT for above
+
 0.48  Wed Oct  6 11:08:38 PDT 2004
 	updated docs
 

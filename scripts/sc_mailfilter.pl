@@ -2,7 +2,7 @@
 #
 # sc_mailfilter.pl
 #
-# version 1.06, 10-5-03
+# version 1.07, 10-16-04
 #
 #################################################################
 # WARNING! do not modify this script, make one with a new name. #
@@ -10,7 +10,7 @@
 # SpamCannibal.                                                 #
 #################################################################
 #
-# Copyright 2003, Michael Robinton <michael@bizsystems.com>
+# Copyright 2003, 2004 Michael Robinton <michael@bizsystems.com>
    
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ use Mail::SpamCannibal::PidUtil qw(
 	get_script_name
 	make_pidfile
 );
+use Fcntl qw(:DEFAULT :flock);
 
 ################ CONFIGURABLE LIMITS ####################
 # The READ limit sets the maximum buffer size for the	#
@@ -187,6 +188,19 @@ my $fh = *STDIN;
 	  if $VERBOSE || $verb > 1;
       }
     }
+  }
+  if (exists $MAILFILTER->{SPAMCOUNT} &&					# spam counting active
+	$MAILFILTER->{SPAMCOUNT} =~ m|.+/| &&					# extract directory portion
+	-d $& &&								# directory exists
+	sysopen(FILE,$MAILFILTER->{SPAMCOUNT},O_RDWR|O_CREAT) &&		# open counter file
+	($_ = select(FILE)) && ($| = 1) && (select $_)) {			# flush file handle
+    if (flock(FILE, LOCK_EX)) {							# block until locked
+      $_ = <FILE> || 0;								# last count
+      seek(FILE,0,0);								# rewind file
+      print FILE $_+1,"\n";							# increment count
+      truncate(FILE, tell(FILE));
+    }      
+    close FILE;
   }
 } # end while
 

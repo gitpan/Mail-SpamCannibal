@@ -1581,7 +1581,7 @@ Setting up rc.multi_dnsbl
     below:
 
       FEATURE(`dnsbl',`pseudo.dnsbl',
-      `554 Rejected $&{client_addr} found in http://www.spamcannibal.org')dnl
+      `554 Rejected $&{client_addr} found in http://www.my.blacklist.org')dnl
 
 COPYRIGHT
     Copyright 2003, Michael Robinton <michael@bizsystems.com>

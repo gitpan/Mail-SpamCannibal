@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /spam_report.cgi
+Disallow: /spam_report.plx
+Disallow: /blacklist.spamcannibal.org.in

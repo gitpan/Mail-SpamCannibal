@@ -255,7 +255,7 @@ OPTIONS - long version
         database. The message may be up to 255 characters in length. Usually
         something like this:
 
-          "ERROR: connection tarpited. See: http://www.spamcannibal.org"
+          "ERROR: connection tarpited. See: http://www.my.blacklist.org"
 
     * -b
         Block AXFR transfers. Prevents "dnsbls" from answering AXFR

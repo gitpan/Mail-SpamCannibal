@@ -23,6 +23,9 @@ keyrings/pubring.pkr
 keyrings/secring.gpg
 keyrings/secring.pgp
 keyrings/secring.skr
+contrib/dnsbl_stats.shtml
+contrib/nav.incl
+contrib/robots.txt
 contrib/mimedefang-filter
 contrib/rc_debian_spamcannibal
 contrib/zone_cron.sh

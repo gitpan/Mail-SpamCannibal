@@ -54,10 +54,20 @@ my $MAILFILTER = {
 #
 # Report exceptions and failed entry attempts
 #
-# [ OPTIONAL ]
+# [ OPTIONAL ] recommended
 
 	REPORT	  => 'my.email@addy.com',
 #
+
+#
+# Count each message received for processing. This will
+# normally be approximately the number of added spams.
+#
+# specify the 	/absolute/path/to/count_file_name
+#
+# [ OPTIONAL ]
+
+	SPAMCOUNT  => '/usr/local/spamcannibal/spamcount.txt',
 
 # PGP or GPG configuration information to decrypt incomming messages.
 # Verify that a message has PGP encrypted content prior to decryption so

@@ -17,6 +17,7 @@ use ExtUtils::MakeMaker;
 use Config;
 use vars qw($CONFIG);
 use Cwd qw(abs_path);
+IPTables::IPv4::DBTarpit::SiteConfig;
 use IPTables::IPv4::DBTarpit::Inst qw(:all);
 
 my $conf = 'config.db';
@@ -92,7 +93,7 @@ WriteMakefile(
 			     'Net::DNS::Codes'	 => '0.06',
 			     'Net::DNS::ToolKit' => '0.07',
 			   },
-    'clean'		=> { FILES	=> "$daemon *.bs *.o *~ tmp*"},
+    'clean'		=> { FILES	=> "$daemon *.bs *.o *~ tmp* mysiteconf.h config.log"},
     'HTMLLIBPODS'	=> {},
 );
 
@@ -144,8 +145,39 @@ clean_CTest     :
 |;
 }
 
+
+# sub MY::top_targets {
+#    package MY;
+#    my $begin = q|
+# config  :: mysiteconf.h
+#        @$(NOOP)
+#
+# # siteconf CCname Cfile_ext OBJext EXEext "Cflags" "LDflags"
+# #
+# mysiteconf.h :
+#       ./siteconf "$(CC)" ".c" "$(OBJ_EXT)" "$(EXE_EXT)" "$(CCFLAGS)"
+# "$(LDFLAGS)"
+# |;
+#   my $inherited = shift->SUPER::top_targets(@_);
+# # whatever additional change, additions that may be needed
+#   $begin . $inherited;
+# }
+
+
+
+
 sub MY::top_targets {
   package MY;   # add dependencies for .pm and xs files
+  my $begin = q|
+# config  :: mysiteconf.h
+#	@$(NOOP)
+
+# siteconf CCname Cfile_ext OBJext EXEext "Cflags" "LDflags"
+
+mysiteconf.h :
+	./siteconf "$(CC)" ".c" "$(OBJ_EXT)" "$(EXE_EXT)" "$(CCFLAGS)" "$(LDFLAGS)"
+
+|;
   my $inherited = shift->SUPER::top_targets(@_);
   $inherited =~ s/(pure_all\s+::.+)/$1 $daemon README/;
   $inherited .= q|
@@ -158,7 +190,7 @@ $daemon|.q|		: |. $objects .q|
 host_info.o	: host_info.c
 	$(CC) -c $(INC) $(CCFLAGS) $(OPTIMIZE) host_info.c
 
-main.o		: main.c data.c godaemon.c misc.c zonedump.c defines.h host_info_func.h util_pid_func.h netio_func.h ns_func.h c_version.h
+main.o		: main.c data.c godaemon.c misc.c mysiteconf.h zonedump.c defines.h host_info_func.h util_pid_func.h netio_func.h ns_func.h c_version.h
 	$(CC) -c $(INC) $(CCFLAGS) $(OPTIMIZE) main.c
 
 netio.o		: netio.c ns.h
@@ -176,6 +208,7 @@ zonefile.o	: zonefile.c ns_func.h host_info_func.h
 |. $daemon .q|.pod : DNSBLserver.pm
 	$(CP) DNSBLserver.pm |. $daemon .q|.pod
 |;
+  $begin . $inherited;
 }
 
 sub MY::install {

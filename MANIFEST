@@ -206,6 +206,7 @@ DNSBLserver/ns.h
 DNSBLserver/ns_func.h
 DNSBLserver/rc.dnsbls
 DNSBLserver/sc_zoneload
+DNSBLserver/siteconf
 DNSBLserver/util_pid.c
 DNSBLserver/util_pid_func.h
 DNSBLserver/zonedump.c

@@ -17,6 +17,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+#include "mysiteconf.h"
+
 void
 zonedump()
 {
@@ -64,6 +66,10 @@ zonedump()
 	goto ZoneExit;
     }
   }
+
+#ifdef HAVE_SETPRIORITY
+  setpriority(0,0,20);
+#endif
 
   rtn = zonepath;
   sprintf(rtn,"%s/%s.tmp",dbhome,zone_name);	/* zone path and filename	*/

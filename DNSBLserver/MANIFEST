@@ -23,6 +23,7 @@ ns.h
 ns_func.h
 rc.dnsbls
 sc_zoneload
+siteconf
 util_pid.c
 util_pid_func.h
 zonedump.c

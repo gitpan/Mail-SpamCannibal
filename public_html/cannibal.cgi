@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 1.23, 9-18-04
+# version 1.24, 11-26-04
 #
 # Copyright 2003, 2004, Michael Robinton <michael@bizsystems.com>
 #   
@@ -37,7 +37,7 @@ use Mail::SpamCannibal::ScriptSupport qw(
 	valid127
 );
 use Net::DNS::Codes qw(
-	T_NS
+	T_A
 );
 use Net::DNS::ToolKit qw(
 	newhead
@@ -582,8 +582,7 @@ function wIP(ip) {
 	unless $query{zone};
     $pagerror .= $query{zone} .' <font size="+1" color=red>no NS records for this zone</font><br>'
 	unless !$query{zone} || do {
-		my @localns = get_ns();
-		my $querybuf = question($query{zone},T_NS());
+		my $querybuf = question($query{zone},T_A());
 		my $resp = query(\$querybuf);
 		if ($resp) {		# got answer
 		  my ($off,$id,$qr,$opcode,$aa,$tc,$rd,$ra,$mbz,$ad,$cd,$rcode,

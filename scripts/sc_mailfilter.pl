@@ -2,7 +2,7 @@
 #
 # sc_mailfilter.pl
 #
-# version 1.07, 10-16-04
+# version 1.08, 11-20-04
 #
 #################################################################
 # WARNING! do not modify this script, make one with a new name. #
@@ -189,7 +189,7 @@ my $fh = *STDIN;
       }
     }
   }
-  if (exists $MAILFILTER->{SPAMCOUNT} &&					# spam counting active
+  elsif (exists $MAILFILTER->{SPAMCOUNT} &&					# spam counting active
 	$MAILFILTER->{SPAMCOUNT} =~ m|.+/| &&					# extract directory portion
 	-d $& &&								# directory exists
 	sysopen(FILE,$MAILFILTER->{SPAMCOUNT},O_RDWR|O_CREAT) &&		# open counter file

@@ -1,5 +1,24 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.53  Sat Dec  7 16:36:58 PST 2004
+	correct typo in contrib/zone_cron.sh v1.04 (1.02,3 not released)
+	previous version would start several dnsbls to do a zone dump
+
+	updated dnsbl server so that zonedump child runs at the least
+	intrusive priority p=20. added 'siteconf' to check for the 
+	presence of 'setpriority' function.
+
+0.52  Fri Nov 26 13:52:54 PST 2004
+	updated scripts/sc_mailfilter.pl v1.08 to fix overcount of
+	error messages returned by the script to the debug facility
+
+	corrected DNSBL host lookup error in cannibal.cgi v1.24
+	check for valid DNSBL host would fail if 'dig -t ns hostname'
+	did not return NS records. What was really needed was
+	validation that an A record exists.
+
+	updated contrib/mimedefang-filter
+
 0.51  Sun Nov 14 22:12:03 PST 2004
 	update DNSBLserver v0.34
         add the number of records dumped by zonfile.c comment

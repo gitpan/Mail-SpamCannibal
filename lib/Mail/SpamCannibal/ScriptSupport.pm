@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.22 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.24 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -1621,7 +1621,7 @@ sub BLpreen {
 
 # if no A records and the zone is authoriatitive or 
 # it answers and no SOA is present i.e. the zone exists -- like spamcop
-        if (!($aptr && @$aptr) && ($auth_zone eq $zon || ! $auth_zone)) {
+        if (!($aptr && @$aptr) && (! $auth_zone || $auth_zone eq $zon)) {
 	  zap_pair($tool,$key,$tarpit,$contrib,$DEBUG,$VERBOSE,'cleared');
 	  $zapped = 7;
 	  next Record;
@@ -1844,7 +1844,6 @@ sub mailcheck {
 # decrypt if Good Privacy
   my $err;
 
-if (0){
   while ($MAILFILTER->{PGP} && ref $MAILFILTER->{PGP} eq 'HASH') {
     my ($beg,$end) = is_pgp(\@lines,\$err);
     last if $err;
@@ -1871,7 +1870,6 @@ if (0){
       return(1,$err);
     }
   }
-}
   undef @discard;
 
 # extract headers

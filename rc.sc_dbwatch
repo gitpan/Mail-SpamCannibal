@@ -28,7 +28,7 @@
 #
 
 use strict;
-use diagnostics;
+#use diagnostics;
 use vars qw($watchconfig $SiteConfig $LogLevel);
 use lib qw(blib/lib blib/arch);
 use Unix::Syslog 0.97 qw(:macros :subs);

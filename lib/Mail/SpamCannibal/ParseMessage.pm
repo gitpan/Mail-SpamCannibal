@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 package Mail::SpamCannibal::ParseMessage;
 use strict;
-use diagnostics;
+#use diagnostics;
 use Socket;
 use NetAddr::IP;
 use vars qw($VERSION @ISA @EXPORT_OK);

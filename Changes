@@ -1,5 +1,17 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.39  Thu Jun 24 11:35:08 PDT 2004
+	oops! Fixed  PGP code in ScriptSupport::mailcheck v0.24 
+	that had been commented out for debugging
+
+0.38  not released to CPAN, but was on the web site for awhile
+	minor (annoying) bug fixes... my bad :-(
+
+	commented out several "use diagnostics" inadvertently remaining
+
+	corrected test at line 1624 of ScriptSupport.pm v0.23 which failed 
+	on undefined value, reversed order of test to detect undefined first
+
 0.37  Wed Jun 23 19:42:20 PDT 2004
 	Minor updates to the INSTALL document re: dnsbl installation
 

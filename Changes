@@ -1,5 +1,15 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.37  Wed Jun 23 19:42:20 PDT 2004
+	Minor updates to the INSTALL document re: dnsbl installation
+
+	corrected major typo in sc_session.pl v1.08 that pointed to the dbhome
+	directory. The recent upgrade of IPTables... uncovered a missing
+	variable in the SiteConfig hash that was duplicated in IPTables
+	and did not (should not) exist in SpamCannibal SiteConfig.
+
+	added test in cannibal.cgi v1.20 to detect missing query and ignore.
+
 0.36  Wed Jun 23 13:10:52 PDT 2004
 	updated the documentation in ./config/sc_Blacklist.conf
 	to clarify problems with the timeouts in sendmail when using

@@ -2,7 +2,7 @@
 #
 # sc_session.pl
 #
-# version 1.07, 10-30-03
+# version 1.08, 6-23-04
 #
 #################################################################
 # WARNING! if you modify this script, make a backup copy.	#
@@ -154,7 +154,7 @@ my %db_config = (	# this is the default, modified by InsXXX and Delete below
 	txtfile	=> [	$DBCONFIG->{SPMCNBL_DB_CONTRIB},
 			$DBCONFIG->{SPMCNBL_DB_EVIDENCE},
 		],
-	dbhome	=>	$DBCONFIG->{DBTP_ENVHOME_DIR},
+	dbhome	=>	$DBCONFIG->{SPMCNBL_ENVIRONMENT},
 	umask	=>	007,
 );
 
@@ -215,8 +215,9 @@ sub getip {
 }
 
 sub db_open {
+  my $tool = new IPTables::IPv4::DBTarpit::Tools %db_config;
   $error = "Could not open $db_config{dbhome}, $DBTP_ERROR " . db_strerror($DBTP_ERROR);
-  return new IPTables::IPv4::DBTarpit::Tools %db_config;
+  return $tool;
 }
 
 sub Admin {

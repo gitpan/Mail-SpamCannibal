@@ -378,7 +378,10 @@ the zone. If multiple mail hosts depend on a single tarpit database for
 blocking then this can be a significant factor in allowing spam to slip by
 during the time from database entry until the zone file is updated. The
 zone file gets very large quickly (ours is 30 megs) and frequent updates can
-take a considerable bite out of cpu resources on an intermittent basis.
+take a considerable bite out of cpu resources on an intermittent basis. In
+addition, because of the frequent zone file updates, the BIND daemon cache
+will generally contain the entire contents of the zone file and will be very
+large.
 
 =head3 rDNS via BIND forward only
 
@@ -402,7 +405,9 @@ DNS daemon with significant security features. Response to queries is fast
 but once removed since a forward query to dnsbls must be made for requested
 record if it is not in the BIND daemon cache. In general the delay will be
 very small. In addition, no zone file is required and there is no need for
-the BIND daemon to do zone transfers as in the previous method.
+the BIND daemon to do zone transfers as in the previous method. The BIND
+daemon cache will only contain recent/active dnsbl domain contents and
+should remain quite small (for dnsbl hits).
 
 The disadvantage to this method is that no zone file is immediately
 available for export. A zone file can be created on demand by issuing a SIG_USR2 

@@ -328,6 +328,9 @@ SIGNALS
       INT   daemon exits
       USR1  toggle logging
       USR2  dump a zonfile to database home directory
+            with the name "[zonename].in". During
+            the dump, a temporary file named
+            "[zonename].in.tmp" is created
 
 DATABASE CONFIGURATION FILE [optional]
     Usually used to increase database cache size.

@@ -284,9 +284,102 @@ SpamCannibal setup
     Additional security can be provided by running dbtarpit/dnsbls daemons
     in a DMZ. Access restrictions for zone transfer can be provide by using
     BIND as the distribution DNS and updating the slave DNS servers from the
-    dnsbls server with no outside access. Users are invited to write an FAQ
-    or installation procedure and submit it for inclusion with this
-    documentation package.
+    dnsbls server with no outside access. Users are invited to write an
+    expanded FAQ or installation procedure and submit it for inclusion with
+    this documentation package.
+
+  rDNS setup
+
+    There are three methods to set up SpamCannibal rDNS. There are
+    advantages to each and disadvantages to each method. With all methods, a
+    zone file is available that can be copied for http or ftp download to
+    mirror providers.
+
+   rDNS direct
+
+    This method is the simplest and must be used to provide service for the
+    following two methods. The dnsbls daemon is run on port 53.
+
+    and the dnsbls.conf file for details.
+
+    The advantage to this method is that it is that setup is minimized and
+    no additional daemons are required.
+
+    The disadvantage is that the robustness of dnsbls has not been
+    extensively tested and dnsbls does not have all the features, security
+    and control that is available from BIND.
+
+   rDNS via BIND slave
+
+    Set up dnsbls as above. To run it on the same host as the BIND daemon,
+    have it answer on port 8653 (or other suitable port). You may wish to
+    block access to this port from all except the local network, or if on
+    the same host as BIND, all except 127.0.0.1.
+
+    In the BIND configuration file, named.conf, add these lines:
+
+      // zone my.zonename.net
+      zone "my.zonename.net" in {
+            type slave;
+            file "slave/my.zonefile.name.in";
+            masters {
+                    127.0.0.1 port 8653;
+            };
+      };
+
+    The advantage to this method is that BIND provides a very robust and
+    proven DNS daemon with significant security features. Response to
+    queries is very fast and most answers will always be found in the daemon
+    cache.
+
+    The zone file is always available for export in the BIND daemon
+    directory tree.
+
+    The disadvantage to this method is that the zone file must be updated
+    frequently to provide current information on IP addresses that are added
+    to the zone. If multiple mail hosts depend on a single tarpit database
+    for blocking then this can be a significant factor in allowing spam to
+    slip by during the time from database entry until the zone file is
+    updated. The zone file gets very large quickly (ours is 30 megs) and
+    frequent updates can take a considerable bite out of cpu resources on an
+    intermittent basis. In addition, because of the frequent zone file
+    updates, the BIND daemon cache will generally contain the entire
+    contents of the zone file and will be very large.
+
+   rDNS via BIND forward only
+
+    Set up dnsbls as above with dnsbls running on port 8653 as above. You
+    may wish to block access to this port from all except the local network,
+    or if on the same host as BIND, all except 127.0.0.1.
+
+    In the BIND configuration file, named.conf, add these lines:
+
+      // zone my.zonename.net
+      zone "my.zonename.net" in {
+            type forward;
+            forward only;
+            forwarders {
+                    127.0.0.1 port 8653;
+            };
+      };
+
+    The advantage to this method is that BIND provides a very robust and
+    proven DNS daemon with significant security features. Response to
+    queries is fast but once removed since a forward query to dnsbls must be
+    made for requested record if it is not in the BIND daemon cache. In
+    general the delay will be very small. In addition, no zone file is
+    required and there is no need for the BIND daemon to do zone transfers
+    as in the previous method. The BIND daemon cache will only contain
+    recent/active dnsbl domain contents and should remain quite small (for
+    dnsbl hits).
+
+    The disadvantage to this method is that no zone file is immediately
+    available for export. A zone file can be created on demand by issuing a
+    SIG_USR2 to the dnsbls daemon. Updating the zone file in this manner is
+    best left to a cron job.
+
+    See example CRON shell script in the ./contrib directory of this
+    distribution.
 
   Initializing the database
 

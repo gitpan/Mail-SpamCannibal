@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.16 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.17 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -26,6 +26,7 @@ use Net::DNS::Codes qw(
 	T_NS
 	T_SOA
 	T_PTR
+	T_CNAME
 	C_IN
 	NS_PACKETSZ
 	QUERY
@@ -626,11 +627,12 @@ sub dns_ptr {
   ($off,my($name,$type,$class)) = $get->Question($bp,$off);
   return undef unless $class == C_IN;
 
+  my($ttl,$rdlength,$host);
   while (1) {
-    ($off,$name,$type,$class,my($ttl,$rdlength,$host)) =
+    ($off,$name,$type,$class,$ttl,$rdlength,$host) =
 	$get->next($bp,$off);
     last if $type == T_PTR;
-    next if $type == C_NAME;
+    next if $type == T_CNAME;
     return undef;			# not a PTR or CNAME record
   }
   ($name,$type,$class,$host) = $parse->PTR($name,$type,$class,$host);

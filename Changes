@@ -1,8 +1,14 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.25  Fri Jan 30 18:04:25 PST 2004
+	uploaded defective distribution containing
+	a typo in ScriptSupport which resulted in no 
+	change from version 0.23
+
 0.24  Fri Jan 30 17:03:37 PST 2004
-	add in-addr.arpa CNAME -> PTR
-	capability to cannibal.cgi script
+	add in-addr.arpa CNAME -> PTR capability
+	in the ScriptSupport dns_ptr subroutine 
+	for cannibal.cgi
 
 0.23  Fri Jan 30 13:31:07 PST 2004
 	update sc_Blacklist.conf.sample to include 

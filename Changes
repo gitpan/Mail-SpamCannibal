@@ -1,5 +1,8 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.13  Sat Sep 27 03:57:27 PDT 2003
+	oops! left SpamCannibal.html out of the doc package
+
 FIRST BETA RELEASE
 0.12  Thu Sep 25 17:21:24 PDT 2003
 	add fixup script to do POD2HTML conversions for versions

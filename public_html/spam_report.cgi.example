@@ -2,7 +2,7 @@
 #
 # spam_report.plx
 #
-my $version = '1.01';	# 9-26-03, michael@bizsystems.com
+my $version = '1.02';	# 9-27-03, michael@bizsystems.com
 # GPL'd, see Copyright notice in the package README file
 #
 use strict;
@@ -52,8 +52,6 @@ my $config = {
 
   };
 
-$ENV{SCRIPT_NAME} =~ m|/[a-zA-Z0-9\._]+|; # script name to $&
-
 # SET THESE for your system
 
 my $look_n_feel = {	# defaults shown
@@ -63,17 +61,14 @@ my $look_n_feel = {	# defaults shown
     'images'	=> 'images/',		# REQUIRED, path to images   
   # below are for html file caching
   # the directory for the cache file MUST be writable by the web server
-    'html_cache_file'	=> './tmp/'. $& .'_page.cache',	# required
+    'html_cache_file'	=> './tmp/spam_report_page.cache',	# required
     'html_expire'	=> 300,			# cache expiration, secs
 };
-
-############### END CONFIG ##########################
-
 
 #	button text		URL
 #	comment out or modify as needed for your site
 my @buttons = (
-	'HOME'		=> 'http://spamcannibal.org onClick="var url = /(.)+[^\/].+$/; var result = location.pathname.match(usr);self.location = result[0];return false;"',
+	'HOME'		=> 'http://www.spamcannibal.org onClick="var url = /(.)+[^\/].+$/; var result = location.pathname.match(usr);self.location = result[0];return false;"',
 	'SUMMARY'	=> 'summary onClick="return(please_wait(this));"',
 	"SOURCE IP's"	=> 'attackers onClick="return(please_wait(this));"',
 	'ACTIVE'	=> 'captured onClick="return(please_wait(this));"',
@@ -88,6 +83,8 @@ my $logo_text = q|
 &nbsp;<img src="|. $look_n_feel->{images} . q|spamcan1.gif" height=42 width=234 alt="SpamCannibal">
 |;
 
+############### END CONFIG ##########################
+
 =pod
 
 # add extra buttons like this...
@@ -96,7 +93,7 @@ my $logo_text = q|
 $_ = pop @_;   
 @extras = (					# extra buttons
 	''		=> '',			# button space
-	'WEST SITE'	=> 'http://www.spamcannibal.org/west_report.'.$_,
+	'WEST SITE'	=> 'http://west.spamcannibal.org/spam_report.'.$_,
 );
 
 =cut

@@ -136,6 +136,7 @@ my %makeparms = (
 			'pods/howtouse.pod'		=> 'docs/howtouse.html',
 			'DNSBLserver/dnsbls.pod'	=> 'docs/dnsbls.html',
 			'BDBaccess/bdbaccess.pod'	=> 'docs/bdbaccess.html',
+			'SpamCannibal.pm'		=> 'docs/SpamCannibal.html',
 			'SiteConfig.pm'			=> 'docs/SiteConfig.html',
 			'BDBaccess/lib/Mail/SpamCannibal/BDBclient.pm' => 'docs/BDBclient.html',
 			'lib/Mail/SpamCannibal/GoodPrivacy.pm'	 => 'docs/GoodPrivacy.html',

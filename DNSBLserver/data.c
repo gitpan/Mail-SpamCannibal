@@ -50,7 +50,7 @@ char helpstring[] =
 "Options:\n"
 "  -z	: Zone Name: bl.domain.com	[default: this hostname]\n"
 "  -n	: Name Servers: abc.domain.com (Note 1)\n"
-"  -N   : same as -n, but sets host name (Note 1)\n"
+"  -N	: same as -n, but sets host name (Note 1)\n"
 "  -a	: NS Address xxx.xxx.xxx.xxx	[default: lookup via DNS]\n"
 " ...there can be more than one set of entrys\n"
 "  -n	: Another NS dul.domain.com (up to 5)\n"

@@ -1,5 +1,13 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.47  Sat Oct  2 13:46:36 PDT 2004
+	update $ipattern in contrib/mimedefang-filter
+
+	correct BUG in DNSBLserver/zonefile.c that did not propagate 
+	IP address to the TXT record while dumping a zone file
+
+	DNSBLserver/data.c, minor document update
+
 0.46  Sat Sep 18 12:33:59 PDT 2004
 	Corrected description of "sub rfheaders" in ParseMessage.pm v0.07
 

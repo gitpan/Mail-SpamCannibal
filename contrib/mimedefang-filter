@@ -1,5 +1,5 @@
 #
-# my version ns2-1.09, 8-11-04 michael@bizsystems.com
+# my version 1.10, 9-27-04 michael@bizsystems.com
 # -*- Perl -*-
 #***********************************************************************
 #
@@ -208,7 +208,7 @@ my $pattern =
 # pattern for ip address's of the form n+?n+?n+?n+ or 12 n's
 # as in 1.2.3.4 => 001002003004
 #
-my $ipattern = '\d+[_\-\.]\d+[_\-\.]\d+[_\-\.]\d+|\d{12}';
+my $ipattern = '\d+[a-zA-Z_\-\.]\d+[a-zA-Z_\-\.]\d+[a-zA-Z_\-\.]\d+|\d{12}';
 
 #***********************************************************************
 

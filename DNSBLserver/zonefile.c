@@ -346,6 +346,8 @@ zonefile(FILE * fd)
 	goto NEXT_RECORD;					/* skip serial number	*/
 
     A_rec = *(u_int32_t *)dbtp.keydbt.data;
+    in.s_addr = A_rec;						/* propagate IP for errIP() use	*/
+
     if ((A_resp = ns_response()) == NULL)
 	goto NEXT_RECORD;				/* do not report promiscious contributions	*/
 

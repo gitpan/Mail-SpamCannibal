@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 
-# multi_dnsbl.conf
+# sc_BlackList.conf, multi_dnsbl.conf
 # Configuration for sc_BLcheck.pl, sc_BLpreen.pl, and Net::DNSBL::MultiDaemon
 #
-# version 1.10, 1-19-04
+# version 1.11, 2-2-04
 #
 my $DNSBL = {
 
@@ -266,14 +266,14 @@ my $DNSBL = {
 	timeout		=> '15',
   },
 
-  'spews.dnsbl.net.au'	=> {	# see http://www.spews.org/
-	accept	=> {
-		'127.0.0.2' => '',
-	},
-	error		=> 'blocked see: http://www.spews.org/ask.cgi?x=',
-	expire		=> '30d',
-	timeout		=> '15',
-  },
+#  'spews.dnsbl.net.au'	=> {	# see http://www.spews.org/
+#	accept	=> {
+#		'127.0.0.2' => '',
+#	},
+#	error		=> 'blocked see: http://www.spews.org/ask.cgi?x=',
+#	expire		=> '30d',
+#	timeout		=> '15',
+#  },
 
   'bogons.dnsiplists.completewhois.com' => { # see http://completewhois.com/bogons/
 	accept	=> {

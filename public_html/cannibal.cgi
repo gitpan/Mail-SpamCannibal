@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 1.15, 1-30-04
+# version 1.16, 2-4-04
 #
 # Copyright 2003, 2004, Michael Robinton <michael@bizsystems.com>
 #   
@@ -315,7 +315,6 @@ IP address:	$query{IP}
 	) {
       html_cat(\$html,$_,$CONFIG,\%ftxt);
     }
-print STDERR $ENV{HTTP_REFERER},"\n";
     if ($IP) {
       if ($ENV{HTTP_REFERER} !~ /$ENV{SERVER_NAME}/i || $ENV{HTTP_REFERER} =~ m|/\?|) {
 	$html .= qq|

@@ -1,5 +1,13 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.26  Wed Feb  4 17:36:21 PST 2004
+	Oops! -- left debug statement
+	"print STDERR" 
+	in cannibal.cgi -- removed and bumped rev number
+
+	commented out SPEWS dnsbl from the
+	sc_blacklist.config.sample config file
+
 0.25  Fri Jan 30 18:04:25 PST 2004
 	uploaded defective distribution containing
 	a typo in ScriptSupport which resulted in no 

@@ -1,5 +1,8 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.40  Sat Jun 26 12:09:14 PDT 2004
+	Update INSTALL document about BIND zone forward method
+
 0.39  Thu Jun 24 11:35:08 PDT 2004
 	oops! Fixed  PGP code in ScriptSupport::mailcheck v0.24 
 	that had been commented out for debugging

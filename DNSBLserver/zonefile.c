@@ -266,7 +266,7 @@ zonefile(FILE * fd)
   int serial_missing = 1;
 
 /* version, ORIGIN and TTL for SOA	*/
-  fprintf(fd,";created by %s\n$ORIGIN .\n$TTL %u\n",version, soa_ttl);
+  fprintf(fd,"; Version: %s\n$ORIGIN .\n$TTL %u\n",version, soa_ttl);
   bp = mybuffer;
   tabout(bp,zone_name,"IN SOA");				/* zonename IN SOA		*/
   fprintf(fd,"%s%s. %s. (\n",bp,local_name,contact);		/* name contact (		*/

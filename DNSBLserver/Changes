@@ -1,5 +1,8 @@
 Revision history for Perl extension Mail::SpamCannibal::DNSBLserver.
 
+0.27  Fri Jun 25 11:25:29 PDT 2004
+	changed zonefile.c 'version' reporting string for zone file dump
+
 0.26  Wed Jun 23 12:55:01 PDT 2004
 	fixed bug in ns.c that prevented 127.xx.xx.xx response TXT strings
 	inserted by rc.dnsbls from being reported

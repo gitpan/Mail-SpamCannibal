@@ -23,6 +23,7 @@ keyrings/pubring.pkr
 keyrings/secring.gpg
 keyrings/secring.pgp
 keyrings/secring.skr
+contrib/mimedefang-filter
 contrib/rc_debian_spamcannibal
 contrib/zone_cron.sh
 lib/Mail/SpamCannibal/GoodPrivacy.pm
@@ -37,6 +38,7 @@ lib/Mail/SpamCannibal/WhoisIP.pm
 lib/Mail/SpamCannibal/PidUtil.pm
 lib/Mail/SpamCannibal/IP2ccFlag.pm
 pods/INSTALL.pod
+pods/quick_install.pod
 pods/index.pod
 pods/recover.pod
 pods/scripts.pod
@@ -86,6 +88,7 @@ public_html/incl/spamlst.incl
 public_html/incl/stats.incl
 public_html/index.html
 private/passwd.initial
+scripts/sc_abuse.pl
 scripts/sc_admin.pl
 scripts/sc_BLcheck.pl
 scripts/sc_BLpreen.pl

@@ -127,6 +127,51 @@ with PGP armor to prevent unauthorized access to the spam client input.
   be added to the tarpit and evidence databases.
   Nothing is added to the database files.
 
+Typically this is invoked by placing a .forward file in the spamcannibal
+user directory containing the following:
+
+  "|/usr/local/spamcannibal/scripts/sc_mailfilter.pl \
+   -v /usr/local/spamcannibal/config/sc_mailfilter.conf"
+
+=head2 sc_abuse.pl
+
+This script parses a spam message in the format delivered to the spam
+moderator by sc_mailfilter.pl to determine the target domain to which 
+to which it will then send an abuse report.
+
+  Syntax: ./sc_abuse.pl path/to/config.file
+    or
+        ./sc_abuse.pl -d path/to/config.file
+        ./sc_abuse.pl -v path/to/config.file
+
+  The -d switch causes the normal output to
+  be sent to the REPORT target email address
+  rather than to the target abuse address
+
+  The -v switch sends debug error messages to 
+  the REPORT target email address (if present)
+
+  This script sends it's "message" to abuse@domain.name of
+  the first remote MTA found in the headers of the "message".
+  The script decodes the last character in the To: field of 
+  it's own received headers to determine the length of the 
+  domain to append to "abuse@" to determine the target address.
+
+  i.e. for some.spam.domain.com
+
+  To: localabuse  2 domain fields 'abuse@domain.com'
+  To: localabuse1 2 domain fields 'abuse@domain.com'
+  To: localabuse2 2 domain fields 'abuse@domain.com'
+  To: localabuse3 3 domain fields 'abuse@spam.domain.com'
+  To: localabuse4 4 domain fields 'abuse@some.spam.domain.com'
+
+Typically this is invoked by placing a .forward file in the sc_abuse
+user directory containing the following:
+
+  "|/usr/local/spamcannibal/scripts/sc_mailfilter.pl \
+   -v /usr/local/spamcannibal/config/sc_mailfilter.conf"
+
+The sc_abuse user should be created in GROUP "spam"
 
 =head2 sc_cleanup.pl
 

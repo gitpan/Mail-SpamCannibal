@@ -1,5 +1,41 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.46  Sat Sep 18 12:33:59 PDT 2004
+	Corrected description of "sub rfheaders" in ParseMessage.pm v0.07
+
+	Change SMTPsend v0.04 to use the Net::Cmd datasend, dataend calls instead
+	of $smtp->data(). This allows the passing of an optional filehandle
+	to SMTPsend that will be spooled to completion.
+
+	Add abuse_host to ScriptSupport v0.28
+	This subroutine supports abuse_host.pl + documentation
+
+	Add Quick Start documentation to document tree.
+	Thanks to "Jonathan Baker-Bates" <jonathan@bakerbates.com>
+	for the addition.
+
+	Update the SpamCannibal "home" page and add configurable
+	site blacklist reason.
+
+	Add configurable 'reason' to sc_web.conf
+	This allows the site user to customize the text at the end of the 
+	SpamCannibal home page so that it is specific for the local site.
+
+	Change public_html/cannibal.cgi v1.23 to support 'reason' in config file
+
+	Add dnsbl_stats.shtml to contrib directory. This page is from the
+	SpamCannibal web site and demonstrates how to include dynamic 
+	statistics files from rc.sc_BLcheck, mimedefang-filter, and
+	Net::DNSBL::MultiDaemon
+
+	Add mimedefang-filter to contrib directory. This filter is
+	configured to support spamassassin and SpamCannibal
+
+	Add nav.incl file from the SpamCannibal web site demonstrating the
+	addition of extra menu items
+
+	Add robots.txt file from the SpamCannibal web site
+
 0.45  Wed Sep  1 17:49:29 PDT 2004
 	Oops! left out reference to 
 	Net::DNS::Codes qw(

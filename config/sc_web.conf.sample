@@ -88,6 +88,19 @@ my $CONFIG = {
 	down
   )],
 
+# The reasons you add spam to your tarpit database
+# html markup is OK
+#
+# The text below is the DEFAULT if 'reason' is not specified
+#
+  reason	=> q
+|SpamCannibal does not block email access except for IP addresses that have
+sent or relayed what we believe to be spam or other unsolicited email
+directly to our email servers.  Spam originating IP addresses are blocked 
+ONLY for access to our mail servers, however, the database we use for that 
+purpose is freely available for anyone to look at and use as they see fit.
+|,
+
 # A list of static admin pages, as above
 #
   admin		=> [qw(

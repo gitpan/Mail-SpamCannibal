@@ -22,12 +22,13 @@ use Mail::SpamCannibal::ScriptSupport qw(
 );
 use Sys::Hostname::FQDN qw(fqdn);
 use Net::SMTP;
+use Net::Cmd;
 use vars qw($VERSION @ISA @EXPORT_OK);
 require Exporter;
 
 @ISA = qw(Exporter);
 
-$VERSION = do { my @r = (q$Revision: 0.03 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.04 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 @EXPORT_OK = qw(
 	getMXhosts
@@ -129,9 +130,14 @@ Send an email message.
   input:	$message,	# text
 		$to,		# name@host.com
 		$from,		# optional@otherhost.com
+		[optional] $fh	# message spool "from" file handle
 
 If from is omitted, the ENV{USER} is used. If the domain is omitted, the
 fully qualified domain name of the host is used.
+
+If the optional $fh is present, then B<sendmessage> will use the
+Net::Cmd datasend and dataend methods to send and will spool
+all available data from $fh to the target.
 
   returns:	true on success
 		else false
@@ -141,7 +147,7 @@ fully qualified domain name of the host is used.
 =cut
 
 sub sendmessage {
-  my ($message,$to,$from) = @_;
+  my ($message,$to,$from,$fh) = @_;
   $to .= '@' . fqdn()
 	unless $to =~ /\@/;
   unless ($from) {
@@ -161,8 +167,17 @@ sub sendmessage {
   return 0 unless $smtp;
   $smtp->mail($from);
   my $rv = ($smtp->to($to) &&
-	    $smtp->data($head.$message))
+	    $smtp->data() &&
+	    $smtp->datasend($head) &&
+	    $smtp->datasend($message))
 	? 1 : 0;
+  if ($fh) {
+    my $buf;
+    while (read($fh,$buf,10000)) {
+      last unless $smtp->datasend($buf);
+    }
+  }
+  $smtp->dataend();
   $smtp->quit();
   return $rv;
 }

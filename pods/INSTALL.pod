@@ -1531,13 +1531,13 @@ system. Login as the spamcannibal user and create a B<.forward> file
 containing a line like this:
 
   "|/usr/local/spamcannibal/scripts/sc_mailfilter.pl \
-    /usr/local/spamcannibal/config/sc_mailfilter.conf"
+    -v /usr/local/spamcannibal/config/sc_mailfilter.conf"
 
 To keep the load factor down when multiple mail items are submitted
 similtaneously, renice the task:
 
   "|/usr/bin/nice -n 20 /usr/local/spamcannibal/scripts/sc_mailfilter.pl \
-    /usr/local/spamcannibal/config/sc_mailfilter.conf"
+    -v /usr/local/spamcannibal/config/sc_mailfilter.conf"
 
   Syntax: ./scripts/sc_mailfilter.pl path/to/config.file
     or
@@ -1556,7 +1556,82 @@ Then cd to the config directory
   cd config
   cp sc_mailfilter.conf.sample sc_mailfilter.conf
 
-=head2 Setting up rc.multi_dnsbl
+=head1 Setting up sc_abuse.pl
+
+SpamCannibal provides a mail header parsing script, B<sc_abuse.pl>,
+that examines a mail header and after eliminating known local MTA's, 
+identifies the originator of the mail traffic. This script then sends an
+abuse report to abuse@domain of the identified smtp server address.
+
+Preparation of the mail message to send to this robot script by the spam
+moderator is the same as L<"SpamCannibal mail robot script sc_mailfilter.pl">, above.
+
+=head2 Create the sc_abuse user and aliases
+
+Follow the same procedure used to create the B<spam> user shown in 
+L<"Creating the SpamCannibal user">.
+
+=over 4
+
+=item 1. add the user sc_abuse
+
+=item 2. make sure the group is B<spam> (95 in the example above)
+
+=item 3. add aliases for domains longer than 2 names.
+
+sc_abuse.pl determines the number of domain name segements to use in forming
+the target (abuse@spam.domain.com) by examining its B<To:> address trailing
+digit. The default domain parsing method is to always parse the last two
+domains segments from the remote smtp host address.
+
+  i.e. for some.spam.domain.com
+
+  To: scab  2 domain fields 'abuse@domain.com'
+  To: scab1 2 domain fields 'abuse@domain.com'
+  To: scab2 2 domain fields 'abuse@domain.com'
+  To: scab3 3 domain fields 'abuse@spam.domain.com'
+  To: scab4 4 domain fields 'abuse@some.spam.domain.com'
+
+Use a short easy address prefix for your mail target such as:
+
+  sca	SpamCannibalAbuse
+    or
+  scab	SpamCannibalABuse
+
+For sendmail, the alias entries would be as follows:
+
+  sca:		sc_abuse
+  sca3:		sc_abuse
+  sca4:		sc_abuse
+
+These aliases are used infrequently but are handy when spam domains such as
+
+  smtp.spammer.co.uk
+
+are the source of spam messages to which an abuse report should be sent.
+
+The resulting abuse report will arrive at the destination with the headers:
+
+  To: abuse@spammer.co.uk
+  Subject: spam from smtp.spammer.co.uk
+
+  message body... this should include the headers and
+		  some minimimum spam body content
+
+=back
+
+=head2 Activate the sc_abuse.pl script
+
+Mail is delivered to sc_abuse.pl by the hosts local mail transport
+system. Login as the sc_abuse user and create a B<.forward> file.
+
+This example assumes that the default SpamCannibal
+installation directories were used.
+
+ "|/usr/bin/nice -n 20 /usr/local/spamcannibal/scripts/sc_abuse.pl \
+  -v /usr/local/spamcannibal/config/sc_mailfilter.conf"
+
+=head1 Setting up rc.multi_dnsbl
 
 Download and install Net::DNSBL::MultiDaemon. This is an excerpt from the
 installation procedure.
@@ -1575,7 +1650,7 @@ is as follows:
   The -v switch will print the scripts 
   actions verbosely to the STDERR.
 
-=head3 CONFIGURATION FILE
+=head2 CONFIGURATION FILE
 
 The configuration file for B<multi_dnsbl> shares a common format with the
 Mail::SpamCannibal sc_BLcheck.pl script, facilitating common maintenance of
@@ -1596,7 +1671,7 @@ B<sc_BlackList.conf> file:
   MDipaddr      => '0.0.0.0', # PROBABLY NOT WHAT YOU WANT
   MDport        => 9953,
   
-=head3 STANDALONE OPERATION
+=head2 STANDALONE OPERATION
 
 For standalone operation, simply set B<MDport = 53>, nothing more is
 required.
@@ -1613,7 +1688,7 @@ Note that the results will contain all of the "authority" and "additional"
 of the returned record that will have an authority record from of
 "localhost".
 
-=head3 PLUGIN to BIND 9
+=head2 PLUGIN to BIND 9
 
 B<multi_dnsbl> may be used as a plugin helper for a standard bind 9
 installation by adding a B<forward> zone to the configuration file as
@@ -1636,7 +1711,7 @@ appropriate address_match_lists to restrict access to the facility.
         allow-recursion { address_match_list };
         allow-transfer {};      
 
-=head3 MTA CONFIGURATION
+=head2 MTA CONFIGURATION
 
 Access to DNSBL lookup is configured in the normal fashion for each MTA.
 Since MTA's generally must interrogate on port 53, B<multi_dnsbl> must be

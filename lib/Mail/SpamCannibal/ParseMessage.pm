@@ -6,7 +6,7 @@ use Socket;
 use NetAddr::IP;
 use vars qw($VERSION @ISA @EXPORT_OK);
 
-$VERSION = do { my @r = (q$Revision: 0.06 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.07 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 require Exporter;
@@ -206,8 +206,7 @@ sub headers {
 
 =item * $hdrs = rfheaders(\@lines,\@headers);
 
-Similar in function to "headers" above, but 
-only returns "Received: from" headers. 
+Similar in function to "headers" above.
 Parsing is "dirty" in the sense that extraneous
 leading characters such as:
 

@@ -144,6 +144,7 @@ my %makeparms = (
 		(	'pods/scripts.pod'		=> 'docs/scripts.html',
 			'pods/index.pod'		=> 'docs/index.html',
 			'pods/INSTALL.pod'		=> 'docs/install.html',
+			'pods/quick_install.pod'	=> 'docs/quick_install.html',
 			'pods/recover.pod'		=> 'docs/recover.html',
 			'pods/howitworks.pod'		=> 'docs/howitworks.html',
 			'pods/howtouse.pod'		=> 'docs/howtouse.html',

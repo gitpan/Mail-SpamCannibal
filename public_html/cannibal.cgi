@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 1.22, 9-1-04
+# version 1.23, 9-18-04
 #
 # Copyright 2003, 2004, Michael Robinton <michael@bizsystems.com>
 #   
@@ -192,6 +192,16 @@ while (1) {
         ) {
       html_cat(\$html,$_,$CONFIG,\%ftxt);
     }
+    $html .= (exists $CONFIG->{reason} && $CONFIG->{reason})
+	? $CONFIG->{reason}
+	: q
+|SpamCannibal does not block email access except for IP addresses that have
+sent or relayed what we believe to be spam or other unsolicited email
+directly to our email servers.  Spam originating IP addresses are blocked 
+ONLY for access to our mail servers, however, the database we use for that
+purpose is freely available for anyone to look at and use as they see fit.
+|;
+    $html .= "<hr>\n";
     last PageGen;
   }
 

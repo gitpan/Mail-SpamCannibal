@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.27 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.28 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -22,7 +22,12 @@ use Net::DNS::ToolKit qw(
 	get16
 	ttlAlpha2Num
 );
-	
+
+use Net::DNS::ToolKit::Utilities qw(
+	rlook_send
+	rlook_rcv
+);
+
 use Net::DNS::Codes qw(
 	T_ANY
 	T_PTR
@@ -121,6 +126,7 @@ require Exporter;
 	BLcheck
 	BLpreen
 	mailcheck
+	abuse_host
 );
 
 # autoload declarations
@@ -165,6 +171,7 @@ Mail::SpamCannibal::ScriptSupport - A collection of script helpers
 	BLcheck
 	BLpreen
 	mailcheck
+	abuse_host
   );
 
   $rv = DO($file);
@@ -1372,8 +1379,6 @@ configuration and details on optional settings.
 	PGPLIM	=> $CHAR_READ_LIMIT,
   );
 
-=back
-
 =cut
 
 sub mailcheck {
@@ -1489,6 +1494,133 @@ sub mailcheck {
   return ();
 }
 
+=item * @err=abuse_host($fh,\%MAILFILTER,,\%localvars,\@NAignor)
+
+This function extracts  the abuse host name and IP address from
+the headers passed in as "message text"
+
+  input:	file handle,
+		config hash ptr,
+		dnsbl config hash ptr,
+		$localvars->{dbhome => path to environment},
+		net object ptr,
+
+  output:	empty array on success,
+		(verbosity, err msg) on failure
+	where verbosity is false on success,
+	1,2,3, etc.... on failure
+
+		fills %$localvars{
+			SPAM	=> read buffer so far,
+			shost	=> spam host,
+			to	=> abuse host
+			hostIP	=> ip address
+			ab2	=> [for debug]
+		};
+
+=back
+
+=cut
+
+sub abuse_host {
+  my($fh,$MAILFILTER,$DNSBL,$lv,$NAignor) = @_;
+
+# read up to 10000 characters
+  my $readlim	= 10000;
+  my @lines;
+  my $buf;
+  return (1,'invalid filehandle)
+	unless defined fileno($fh);
+  return (1,no lines read')
+	unless limitread($fh,\@lines,$readlim);
+
+# close incomming connection
+  dispose_of($fh);
+
+  return(3,"startup blocked by DB watcher process")
+	if -e $localvars->{dbhome} .'/'. 'blockedBYwatcher';
+
+# skip the headers from local client
+  my @discard;
+  return (1,'no message found')
+	unless skiphead(\@lines,\@discard);
+
+# extract incoming message headers
+  my @headers;
+  if ($MAILFILTER->{DIRTY}) {
+    return (1,'no dirty input headers')
+	unless rfheaders(\@discard,\@headers);
+  } else {
+    return (1,'no headers')
+	unless headers(\@discard,\@headers);
+  }
+
+
+# find to so that we can determine the length of the domain to capture
+  my $to;
+  foreach(@headers) {
+    if ($_ =~ /to:\s*[<]?(.+)@.+[>]?\s*/i) {
+      $to = $1;
+      last;
+    }
+  }
+
+  return (1,'no To: found')
+	unless $to;
+
+# extract the spam headers
+  if ($MAILFILTER->{DIRTY}) {
+    return (1,'no dirty headers')
+	unless rfheaders(\@lines,\@headers);
+  } else {
+    return (1,'no headers')
+	unless headers(\@lines,\@headers);
+  }
+
+# extract MTA's
+  my @mtas;
+  return (1,'no MTAs found')
+	unless get_MTAs(\@headers,\@mtas);
+
+# extract bad guy address
+  my $noprivate = ($MAILFILTER->{NOPRIVATE})
+	? 1 : 0;
+  my $spamsource = firstremote(\@mtas,$MAILFILTER->{MXhosts},$noprivate);
+  return (1,'no spam source found')
+	unless $spamsource;
+
+  $lv->{hostIP} = $spamsource;
+
+# punt if this address should be ignored
+  return (1,'spam source ignored')
+	if matchNetAddr($spamsource,$NAignor);
+
+# get host name
+  my $name = rlook_rcv(rlook_send($spamsource));
+
+  return (1,'hostname not found')
+	unless $name;
+
+  $lv->{shost} = $name;		# spam host name
+
+  my $min = 2;			# minimum domain depth
+  my $num = ($to =~ /\d$/ && $& > $min)
+        ? $& : $min;
+  @_ = split(/\./,$name);
+  my $target = pop @_;
+  while (--$num > 0) {
+    last unless $_ = pop @_;
+    $target = $_ .'.'. $target;
+  }
+  $lv->{to} = $target;		# abuse host target
+  $lv->{ab2} = $to;		# my rcpt address
+
+# stringify headers and message
+  return (1,'no evidence found')
+	unless ($lv->{SPAM} = array2string(\@lines));	# punt if no message
+
+  return ();
+}
 =head1 DEPENDENCIES
 
 	NetAddr::IP
@@ -1529,10 +1661,11 @@ sub mailcheck {
 	BLcheck
 	BLpreen
 	mailcheck
+	abuse_host
 
 =head1 COPYRIGHT
 
-Copyright 2003, Michael Robinton <michael@bizsystems.com>
+Copyright 2003 - 2004, Michael Robinton <michael@bizsystems.com>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

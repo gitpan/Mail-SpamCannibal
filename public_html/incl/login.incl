@@ -12,3 +12,6 @@
 <input type=submit value=LOGIN onClick="document.login.action = location.pathname;">
 </form>
 </center>
+<script language=javascript1.1>
+document.login.user.focus();
+</script>

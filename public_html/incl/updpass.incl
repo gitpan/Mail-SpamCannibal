@@ -31,3 +31,6 @@ the user name with blank passwords.
 <input type=hidden name=page value=usrupd>
 </form>
 </center>
+<script language=javascript1.1>
+document.UpdPass.oldpasswd.focus();
+</script>

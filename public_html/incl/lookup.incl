@@ -1,13 +1,14 @@
 <script language=javascript1.1>
 document.writeln('<center>',
-'Check to see if an IP address is in this database:<br>',
+'Look up an IP address is in this database:<br>',
 '<font size="-1">enter IP address</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...<br>',
 '<form name="lookup" action="' + location.pathname + '" method=POST>',
 '<input type=text name=lookup value="">',
 '<input type=hidden name=page value=lookup>',
 '<input type=submit value="Lookup IP">',
 '</form>',
-'</center>')
+'</center>');
+document.lookup.lookup.focus();
 </script>
 <noscript>
 <p>

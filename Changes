@@ -1,5 +1,19 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.21  Wed Jan  7 11:52:56 PST 2004
+	Fixed typo in howitworks.pod 'in-definite-ly', thanks to Graham Barr
+	gbarr@pobox.com for spotting it.
+
+	Added "focus" to web pages for LOOKUP, WHOIS, UPDPASSWD, SPAMADD, BLKADD
+
+	Removed easynet.nl from the sample sc_Blacklist.conf file,
+	they went out of service 12-1-03
+
+	Removed dsbl.org from sample sc_Blacklist.conf file, this 
+	was an erroneous entry.
+
+	Update sc_Blacklist.conf to track Net::DNSBL::MultiDaemon
+
 0.20  Fri Dec  5 17:12:31 PST 2003
 	Require version 0.23 if IPTables::IPv4::DBtarpit which has
 	the workaround in tarpit.c for the memory leak in libnet.

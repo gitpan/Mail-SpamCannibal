@@ -28,3 +28,6 @@ Evidence of spam sent to this site.
   onClick="if (confirm('do you really want to add this 256 address block?')) { document.SpamAdd.action=location.pathname; } else { return false;}">
 </form>
 </blockquote>
+<script language=javascript1.1>
+document.SpamAdd.host.focus();
+</script>

@@ -1,14 +1,14 @@
 #!/usr/bin/perl
 
-# sc_BlackList.conf
-# Configuration for sc_BLcheck.pl and sc_BLpreen.pl
+# multi_dnsbl.conf
+# Configuration for sc_BLcheck.pl, sc_BLpreen.pl, and Net::DNSBL::MultiDaemon
 #
-# version 1.09, 12-6-03
+# version 1.09, 12-24-03
 #
 my $DNSBL = {
 
 ## Net::DNSBL::MultiDaemon parameters
-#
+
 # the OPTIONAL name of a file that will contain 'hit' statistics for DNSBLS
 # this file will be used to seed the sort order of DNSBL checking if it is
 # present and will be updated with the 'added' counts of each run. If it
@@ -93,6 +93,7 @@ my $DNSBL = {
 #	'10.0.0.0/8',
 #	'172.16.0.0/12',
 #	'192.168.0.0/16',
+
             # this should ALWAYS be here
         '127.0.0.0/8',  # ignore all test entries and localhost
   ],
@@ -121,8 +122,12 @@ my $DNSBL = {
 # Text to append to BLOCK and BBC T_TXT record
 # see "errors" below for syntax
 #
-  'REJECT'	=> 'See: http://www.somehost.com?ip=',
+  'REJECT'	=> 'see: http://www.myhostname.com/',
 
+# FOR A COMPREHENSIVE LIST OF ALL DNSBL ZONES, SEE:
+#	http://www.openrbl.org
+# click "zones"
+#
 # all dnsbl servers must have a record a config entry as follows:
 #
 # 'zone.name'	=> {
@@ -166,7 +171,7 @@ my $DNSBL = {
 
   'in-addr.arpa'        => {    # check for lack of reverse DNS
   # accept is not needed for reverse DNS checking
-	error	    => 'no reverse DNS, see http://myhost.com/',
+	error	    => 'no reverse DNS, see http://www.myhostname.com/?page=lookup&lookup=',
         timeout     => 15,
   },
 
@@ -216,15 +221,6 @@ my $DNSBL = {
 	timeout		=> '15',
   },
 
-  'dsbl.org'	=>	{	# see http://dsbl.org/usage
-	accept	=> {
-		'127.0.0.2' => '',
-	},
-	error		=> 'for removal see: http://dnsbl.org/listing?',
-	expire		=> '30d',
-	timeout		=> '15',
-  },
-
   'bl.spamcop.net'	=> {	# see http://spamcop.net/fom-serve/cache/291.html
 	accept	=> {
 		'127.0.0.2' => '',
@@ -252,29 +248,11 @@ my $DNSBL = {
 	timeout		=> '15',
   },
 
-  'dynablock.easynet.nl' => {	# see http://abuse.easynet.nl/dynablocker.html
+  'dynablock.njabl.org' => {	# see http://dnsbl.njabl.org/use.html
 	accept => {
-		'127.0.0.2' => '',
+		'127.0.0.3' => 'dynamic IP address not allowed',
 	},
-	error		=> 'for removal see http://informatie.easynet.nl/error/errors.html',
-	expire		=> '30d',
-	timeout		=> '15',
-  },
-
-  'blackholes.easynet.nl' => {	# see http://abuse.easynet.nl/dynablocker.html
-	accept => {
-		'127.0.0.2' => '',
-	},
-	error		=> 'for removal see http://blackholes.easynet.nl/error/errors.html',
-	expire		=> '30d',
-	timeout		=> '15',
-  },
-
-  'proxies.blackholes.easynet.nl' => {	# see http://abuse.easynet.nl/dynablocker.html
-	accept => {
-		'127.0.0.2' => '',
-	},
-	error		=> 'for removal see http://blackholes.easynet.nl/error/errors.html',
+	error		=> 'see http://www.dnsbl.njabl.org/cgi-bin/lookup.cgi?query=',
 	expire		=> '30d',
 	timeout		=> '15',
   },

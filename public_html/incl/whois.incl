@@ -1,6 +1,6 @@
 <script language=javascript1.1>
 document.writeln('<center>',
-'Look up an IP address  owner.<br>',
+'Who is the IP address  owner.<br>',
 '<font size="-1">enter IP address</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...<br>',
 '<form name="whois" action="' + location.pathname + '" method=POST>',
 '<input type=text name=whois value="">',
@@ -8,6 +8,7 @@ document.writeln('<center>',
 '<input type=submit value="Whois IP">',
 '</form>',
 '</center>')
+document.whois.whois.focus();
 </script>
 <noscript>
 <p>

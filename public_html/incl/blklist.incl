@@ -20,4 +20,6 @@ Do not use for spam received at this site, use
 </blockquote>
 </form>
 </blockquote>
-
+<script language=javascript1.1>
+document.BlkAdd.host.focus();
+</script>

@@ -120,7 +120,7 @@ window size parameters to very low values which slows the transmission rate
 to a trickle. Then it never acknowledges packets, so transmission will be 
 retried over and over, ideally bringing the transmitting program 
 (the spam server, scanning tool or worm) to a virtual
-halt for several hours or perhaps indefinetly. Tarpits maintained on our
+halt for several hours or perhaps indefinitely. Tarpits maintained on our
 firewall servers hold some threads for months.
 <p>
 More information on tarpits is available on the LaBrea and LaBrea::Tarpit

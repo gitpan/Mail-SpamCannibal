@@ -9,7 +9,6 @@ BEGIN { $| = 1; print "1..5\n"; }
 END {print "not ok 1\n" unless $loaded;}
 
 #use diagnostics;
-use Socket;
 use Mail::SpamCannibal::ScriptSupport qw(
 	id
 );

@@ -6,7 +6,7 @@ eval 'exec $perl -w -S $0 ${1+"$@"}'
 my $perl = '/usr/bin/perl';
 
 #
-# rc.dnsbls version 0.08, 2-9-04
+# rc.dnsbls version 0.09, 5-10-04
 #
 # Copyright 2003, 2004, Michael Robinton <michael@bizsystems.com>
 # rc.dnsbls is free software; you can redistribute it and/or 
@@ -194,7 +194,9 @@ if (&$thereis('response')) {	# if test response codes are needed
     my $now = time;
     my $zon = (&$thereis('zonename')) ? $DNSBLS->{zonename} : 'localhost';
     my $record = pack("a4 x A* x a4 x N x A* x A*",$ip,$err,$rsp,$now,$zon);
-    $tool->touch($CONFIG->{SPMCNBL_DB_TARPIT},$ip);
+# Add tarpit record unless it exists. Preserve time tags for other uses
+    $tool->touch($CONFIG->{SPMCNBL_DB_TARPIT},$ip)
+	unless $tool->get($CONFIG->{SPMCNBL_DB_TARPIT},$ip);
     $tool->put($CONFIG->{SPMCNBL_DB_CONTRIB},$ip,$record);
   }
   $tool->closedb;

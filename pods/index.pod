@@ -49,7 +49,7 @@ Detailed installation instructions for all packages<br>
 <tr><td><a href=LaBreaDaemon.html>LaBreaDaemon</a></td><td>interface to LaBrea::Tarpit data collection daemon
 <tr><td><a href=ParseMessage.html>ParseMessage</a></td><td>module to parse mail headers for originating MTA</td></tr>
 <tr><td><a href=Password.html>Password</a></td><td>generate and check 'crypt' style passwords</td></tr>
-<tr><td><a href=PidUtil.html>PidUtil</a></td><td>checks for running daemon, creates manges PID files</td></tr>
+<tr><td><a href=PidUtil.html>PidUtil</a></td><td>checks for running daemon, creates-manages PID files</td></tr>
 <tr><td><a href=SMTPsend.html>SMTPsend</a></td><td>send mail messages without invoking local MTA</td></tr>
 <tr><td><a href=ScriptSupport.html>ScriptSupport</a></td><td>miscellaneous subroutines for SpamCannibal scripts</td></tr>
 <tr><td><a href=Session.html>Session</a></td><td>web session management and token generation</td></tr>
@@ -75,6 +75,7 @@ Detailed installation instructions for all packages<br>
 <tr><td><a href=Net-SMTP.html>Net::SMTP</a></td><td>perl SMTP interface</td></tr>
 <tr><td><a href=Net-Whois-IP.html>Net::Whois::IP</a></td><td>perl Whois interface</td></tr>
 <tr><td><a href=NetAddr-IP.html>NetAddr::IP</a></td><td>perl routines to manipulate IP addresses</td></tr>
+<tr><td><a href=Proc-PidUtil.html>Proc::PidUtil</td><td>perl routines to manage PID files</td></tr>
 <tr><td><a href=Sys-Hostname-FQDN.html>Sys::Hostname::FQDN</a></td><td>routine to return local host name</td></tr>
 </table>
 </blockquote>

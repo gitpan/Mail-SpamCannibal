@@ -58,6 +58,15 @@ my $DNSBL = {
 #
   'STATS'	=>	'/usr/local/spamcannibal/blcheck_stats.txt',
 
+# force the sc_BLpreen script to check every entry in the blcontrib
+# database every time it runs. This uses a lot of cpu time and 
+# bandwidth. See the description of operation in SpamCannibal.pm
+# documentation
+#
+# normally false
+#
+#  'FORCE_PREEN'	=>	1,
+
 # A multi-formated array of IP address that will never be tarpitted.
 #
 # WARNING: if you are using a private network, then you should include the 

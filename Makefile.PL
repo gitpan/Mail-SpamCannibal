@@ -55,6 +55,7 @@ my %xmodules = (
   'Net::SMTP'				=> 'Net-SMTP',
   'Net::Whois::IP'			=> 'Net-Whois-IP',
   'NetAddr::IP'				=> 'NetAddr-IP',
+  'Proc::PidUtil'			=> 'Proc-PidUtil',
   'Sys::Hostname::FQDN'			=> 'Sys-Hostname-FQDN',
 );
 
@@ -84,6 +85,7 @@ my %makeparms = (
 			'Test::Harness'		=> '2.01',
 			'Test::Simple'		=> '0.42',
 			'Unix::Syslog'		=> '0.97',
+			'Proc::PidUtil'		=> '0.06',
 		  },
    'PM'		  => {  'SpamCannibal.pm' => '$(INST_LIBDIR)/SpamCannibal.pm',
 			'SiteConfig.pm' => '$(INST_LIB)/Mail/SpamCannibal/SiteConfig.pm',

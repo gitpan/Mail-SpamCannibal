@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 package Mail::SpamCannibal::WhoisIP;
 
-# fix upt the whois routine to get the stuff we want
+# fix up the whois routine to get the stuff we want
 BEGIN {
   use vars qw($old_d_q $lastresp);
   use Net::Whois::IP;
@@ -24,7 +24,7 @@ use vars qw($VERSION @ISA @EXPORT_OK);
 require Exporter;
 @ISA = qw(Exporter);
 
-$VERSION = do { my @r = (q$Revision: 0.01 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.02 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 @EXPORT_OK = qw(
 	whoisip_query

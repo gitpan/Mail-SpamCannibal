@@ -1,7 +1,6 @@
-# /*	all lines except VERSION are C comments
 package Mail::SpamCannibal::BDBaccess;
 use vars qw($VERSION);
-$VERSION = do { q| */ char version[] = "bdbaccess 0.14, 2-9-04"; /* | =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
+$VERSION = do { q|char version[] = "bdbaccess 0.16, 5-21-04";| =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
 # returns $VERSION which is non-zero
 __END__
 
@@ -269,4 +268,5 @@ L<IPTables::IPv4::DBTarpit::Tools> L<Mail::SpamCannibal::BDBclient>
 
 =cut
 
-# end C comments */
+1;
+

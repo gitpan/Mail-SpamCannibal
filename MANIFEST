@@ -5,6 +5,7 @@ GPL
 Makefile.PL
 README.pgp_gpg
 SpamCannibal.pm
+public_html/favicon.ico
 config/sc_BlackList.conf.sample
 config/sc_dbwatch.conf.sample
 config/sc_mailfilter.conf.sample

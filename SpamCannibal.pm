@@ -5,7 +5,7 @@ use strict;
 #use diagnostics;
 use vars qw($VERSION);
 
-$VERSION = do { my @r = (q$Revision: 0.28 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.31 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 sub DESTROY {};
 
@@ -78,7 +78,14 @@ This script is run periodically by CRON and checks the IP addresses found
 in the spamcannibal 'blcontrib' database. Each address is verified against
 the origination DNSBL and purged from the database after a configurable
 timeout if the DNSBL goes down or if the DNSBL no longer blacklists the
-address.
+address. Because this is a HIGH load task, checks are only performed on IP
+addresses that are found in the 'tarpit' database that have recently
+attempted contact. Recent is defined as sometime within the last 5 intervals
+(or one day, whichever is greater) for the sc_BLpreen.pl CRON task. 'tarpit' 
+entries that are older than this are not checked for removal. NOTE that 
+this is harmless. Any contact by a sending mail server will update the tarpit 
+time tag resulting in a check being performed at the next CRON interval and 
+the entry being removed if the IP address is no longer in the external DNSBL.
 
 Also see sc_BlackList.conf.sample in the spamcannibal config directory.
 

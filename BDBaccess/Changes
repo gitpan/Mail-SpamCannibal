@@ -1,5 +1,12 @@
 Revision history for Perl extension Mail::SpamCannibal::BDBreader
 
+0.16  Sat May 22 10:45:37 PDT 2004
+	removed compiler dependent bug for C version extraction 
+	from BDBaccess.pm
+
+0.15  Sat May  1 16:02:23 PDT 2004
+	altered the comments at the beginning of BDBaccess.pm
+
 0.14  Mon Feb  9 15:56:51 PST 2004
         rewrite 'restart' logic in rc.bdbaccess v0.5
 

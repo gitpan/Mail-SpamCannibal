@@ -1,5 +1,43 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.31  Sat May 22 10:45:37 PDT 2004
+	updated DNSBLserver and BDBaccess packages to remove
+	compiler dependent bug when extracting the C version 
+	from the primary *.PM file
+
+0.30  Mon May 10 19:34:54 PDT 2004
+	update ScriptSupport v0.20 'BLpreen' to check the
+	age of each tarpit entry and not bother to check
+	blcontrib entries that are older than 5x the CRON interval
+	for the BLpreen job. Last preen time is stored in the
+	mandatory 127.0.0.2 entry in the 'tarpit' database
+
+	Add the entry 'FORCE_PREEN' to the sc_BLacklist.conf file
+	to force the old behavior.
+
+	DNSBLserver v0.24, modified rc.dnsbls so that tarpit records
+	forceably added from the config file (such at 127.0.0.2, 
+	127.0.0.3, etc...) are tested first for existence and NOT 
+	added if they already exist. This preserves the data (time tag) 
+	on these records so that they can be used by other routines -- 
+	noteably, 127.0.0.2 which should always be present is used by 
+	sc_BLpreen.pl to determine it's own cron interval
+
+0.29  Sat May  1 15:37:43 PDT 2004
+	Moved Mail::SpamCannibal::PidUtil to Proc::PidUtil
+	PidUtil remains but imports all its functions from
+	the new module
+
+	correct documentation error in ScripSupport.pm
+	correct documentation error in WhoisIP.pm
+
+	add favicon.ico update top.incl
+	add warning popup to cannibal.cgi for 
+	admin login session expiration
+
+	altered the comments at the beginning of BDBaccess.pm
+	v0.15 and DNSBLserver.pm v0.23
+
 0.28  Sat Feb 21 11:42:10 PST 2004
 	add db write cacheing to BLpreen in ScriptSupport v0.18 
 	to reduce disk thrashing and speed preening process

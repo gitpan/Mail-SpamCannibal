@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 1.18, 2-10-04
+# version 1.19, 5-1-04
 #
 # Copyright 2003, 2004, Michael Robinton <michael@bizsystems.com>
 #   
@@ -81,7 +81,7 @@ die "could not load config file"
 	unless $CONFIG;
 
 my ($admin,$sess,%extraheaders);
-my $expire = $CONFIG->{expire} || '';
+my $expire = $CONFIG->{expire} || 300;		# default expiration 5 minutes
 my %query = get_query();
 
 # check for query from LaBrea client & convert if necessary
@@ -90,6 +90,7 @@ if ($query{query} =~ /(\d+\.\d+\.\d+\.\d+)/) {
   $query{lookup} = $1;
 }
 
+my $admses = 0;
 my $user;
 if ($ENV{SCRIPT_FILENAME} && $ENV{SCRIPT_FILENAME} =~ m|/admin\..+$|) {
   $extraheaders{'Set-Cookie'} = 'SpamCannibal=on; path=/; expires='. cookie_date(1);
@@ -115,11 +116,14 @@ if ($ENV{SCRIPT_FILENAME} && $ENV{SCRIPT_FILENAME} =~ m|/admin\..+$|) {
       }
     ) {
     $extraheaders{'Set-Cookie'} = 'SpamCannibal='. $sess . 
-	'; path=/; expires='. cookie_date(time + $CONFIG->{expire});
+	'; path=/; expires='. cookie_date(time + $expire);
     $extraheaders{'Set-Cookie'} .= '; secure'
 	if $CONFIG->{secure};
     $query{page} = 'ahome'
 	unless $query{page};
+    $admses = $expire - 60;					# this is an admin session
+    $admses =0 if $admses < 0;
+    $admses *= 1000;						# session web page timeout
   }
   else {
     $query{page} = 'login';
@@ -822,6 +826,20 @@ document.SpamAdd.spam.value = "|. $query{spam} .q|";
 </script>
 | if $query{page} =~ spamlst &&
 	validIP($query{host});
+
+# if this is an admin session, insert page timer
+
+$html .= q|<script language=javascript1.1>
+function warnAdmin() {
+  if (confirm("Your session will expire in 60 seconds.\n\nClick OK to continue or Cancel to logout\n")) {
+    location.reload(1);
+  } else {
+    location = location.pathname + '?page=logout';
+  }
+}
+setTimeout("warnAdmin()",| . $admses .q|);
+</script>
+| if $admses && $query{page} ne 'login';
 
 $html .= q|</body>
 </html>

@@ -157,6 +157,7 @@ appropriate directory on your system.
   NetAddr::IP
   Net::SMTP -- part of standard perl
   Net::Whois::IP
+  Proc::PidUtil
   Sys::Hostname::FQDN
 
 In a build directory of your choice such as:

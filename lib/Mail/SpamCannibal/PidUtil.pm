@@ -5,22 +5,17 @@ use strict;
 #use diagnostics;
 use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
 
+use Proc::PidUtil qw(:all);
+
 require Exporter;
 @ISA = qw(Exporter);
 
-$VERSION = do { my @r = (q$Revision: 0.05 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.06 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
-%EXPORT_TAGS = (
-  all	=> [qw(
-	is_running
-	make_pidfile
-	zap_pidfile
-	get_script_name
-	if_run_exit
-  )],
-);
+%EXPORT_TAGS	= %Proc::PidUtil::EXPORT_TAGS;
+@EXPORT_OK	= @Proc::PidUtil::EXPORT_OK;
 
-Exporter::export_ok_tags('all');
+# As of version 0.06, this code has all been moved to Proc::PidUtil
 
 =head1 NAME
 
@@ -36,8 +31,6 @@ Mail::SpamCannibal::PidUtil - PID file management utilities
 	get_script_name
 	:all
   );
-
-=cut
 
 =head1 DESCRIPTION
 
@@ -64,52 +57,12 @@ returns true.
 
 Note: also exits if $path is false
 
-=cut
-
-sub if_run_exit {
-  my($path,$message) = @_;
-  my $me = get_script_name();
-  unless ($path) {
-    print STDERR "$me: $path not found\n";
-    exit;
-  }
-  unless (-w $path) {
-    print STDERR "$me: $path not writable, check permissions\n";
-    exit;
-  }
-  my $pidfile = $path .'/'. $me . '.pid';
-
-  my $job = is_running($pidfile);
-  if ($job) {
-    print STDERR "$me: $job, $message\n"
-	if $message;
-    exit;   
-  }
-  make_pidfile($pidfile);
-}
-
 =item * $rv = is_running('path2pidfile');
 
 Check that the job described by the pid file is running.
 
   input:	path 2 pid file
   returns:	pid or false (0) if not running
-
-=cut
-
-sub is_running {
-  my($pidfile) = @_;
-  local *PID;
-  return 0 unless 
-	-e $pidfile && 
-	-r $pidfile &&
-	open(PID,$pidfile);
-  local $_ = <PID> || 0;		# get pid
-  close PID;
-  chomp;
-  return 0 unless $_ && $_ !~ /\D/;	# skip bogus pid files
-  return (kill 0, $_) ? $_ : 0;
-}
 
 =item * $rv = make_pidfile('path2pidfile',$pid);
 
@@ -119,31 +72,10 @@ Open a pid file and insert the pid value.
 		pid value || $$
   returns:	pid or false (0) on error
 
-=cut
-
-sub make_pidfile {
-  my($pidfile,$pid) = @_;
-  $pid = $$ unless $pid;
-  local *PID;
-  return 0 unless open(PID,'>'.$pidfile);
-  print PID $pid,"\n";
-  close PID;
-  return $pid;
-}
-
 =item * $rv = zap_pidfile($path);
 
   input:	path for pidfiles
   returns:	return value of 'unlink'
-
-=cut
-
-sub zap_pidfile {
-  my ($path) = @_;
-  my $me = get_script_name();
-  my $pidfile = $path .'/'. $me . '.pid';
-  unlink $pidfile;
-}
 
 =item * $me = get_script_name();
 
@@ -161,16 +93,9 @@ This function returns the script name portion of the path found in $0;
 
 =back
 
-=cut
-
-sub get_script_name {
-  $0 =~ m|[^/]+$|;
-  return $&;
-}
-
 =head1 DEPENDENCIES
 
-	none
+	Proc::PidUtil
   
 =head1 EXPORT_OK
 
@@ -186,7 +111,7 @@ sub get_script_name {
 
 =head1 COPYRIGHT
 
-Copyright 2003, Michael Robinton <michael@bizsystems.com>
+Copyright 2003 - 2004, Michael Robinton <michael@bizsystems.com>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

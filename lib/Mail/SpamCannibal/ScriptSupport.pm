@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.18 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.20 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -1445,6 +1445,20 @@ sub BLpreen {
   (my $tool = new IPTables::IPv4::DBTarpit::Tools(%$default))
 	or return('could not open database environment, check your installation');
 
+  my $now = time;					# time of this preen
+  my $last_preen = $tool->get($tarpit,A1272());		# last preen time
+  my $no_preen = 0;
+  if ($last_preen) {
+    $no_preen = ($now - $last_preen) * 5;		# the number of preen intervals to check before ignoring item
+    $no_preen = 86400					# minimum one day
+	unless $no_preen > 86400;
+    $no_preen = 0					# force preen
+	if exists $DNSBL->{FORCE_PREEN} &&		# if configured that way
+		  $DNSBL->{FORCE_PREEN};
+  }
+
+
+
   $tool->{SS_BLpreen_cache} = {		# cache for write back operations
 	limit	=>	100,		# size of cache
 	cache	=>	{},		# value cache
@@ -1479,10 +1493,15 @@ sub BLpreen {
       print 'skipping...' if $VERBOSE;
       next Record;
     }
-    unless ($tool->get($tarpit,$key)) {		# remove if not in tarpit
+    my $last_access;					# last tarpit access time
+    unless ($last_access = $tool->get($tarpit,$key)) {	# remove if not in tarpit
       zap_pair($tool,$key,$tarpit,$contrib,$DEBUG,$VERBOSE,"not in $tarpit");
       $zapped = 1;
       next Record;
+    }
+    if ($no_preen && ($last_access + $no_preen < $now)) {	# if this is an old tarpit record
+      print 'skip old record' if $VERBOSE;
+      next Record;				# skip it until it checks in
     }
     if (matchNetAddr($IP,\@NAignor)) {		# remove if in ignore database
       zap_pair($tool,$key,$tarpit,$contrib,$DEBUG,$VERBOSE,'ignore');
@@ -1657,6 +1676,7 @@ sub BLpreen {
     }
   }
   _flush_BLp_cache($tool,$tarpit,$contrib);	# flush any remaining cached values
+  $tool->touch($tarpit,A1272(),$now);		# update last preen time
   $tool->closedb;
   return '';
 }
@@ -1904,7 +1924,7 @@ sub mailcheck {
 	NetAddr::IP
 	Net::DNS::Codes
 	Net::DNS::ToolKit
-	Net::DNS::ToolKit
+	Net::DNS::ToolKit::RR
 	Mail::SpamCannibal::GoodPrivacy
 	Mail::SpamCannibal::BDBclient
 

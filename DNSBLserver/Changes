@@ -1,5 +1,16 @@
 Revision history for Perl extension Mail::SpamCannibal::DNSBLserver.
 
+0.24  Mon May 10 18:39:31 PDT 2004
+	modified rc.dnsbls so that tarpit records forceably added from the
+	config file (such at 127.0.0.2, 127.0.0.3, etc...) are tested first
+	for existence and NOT added if they already exist. This preserves
+	the data (time tag) on these records so that they can be used by
+	other routines -- noteably, 127.0.0.2 which should always be present
+	is used by sc_BLpreen.pl to determine it's own cron interval
+
+0.23  Sat May  1 16:02:23 PDT 2004
+	altered the comments at the beginning of DNSBLserver.pm
+
 0.22  Mon Feb  9 15:56:51 PST 2004
 	rewrite 'restart' logic in rc.dnsbls v0.8
 

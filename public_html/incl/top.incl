@@ -1,5 +1,6 @@
 <html>
 <head><title>SpamCannibal</title>
+<link rel="shortcut icon" type="image/ico" href="/favicon.ico" />
 <style type="text/css">
   .min { font-size: 4px; }
   td { font-family: ARIAL,HELVETICA,SAN-SERIF; font-size: normal; }

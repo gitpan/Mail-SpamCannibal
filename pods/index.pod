@@ -5,7 +5,7 @@ All - SpamCannibal Documentation
 
 =for html <font size=+2>Documentation for the SpamCannibal Package</font>
 <br>&nbsp;
-<br><!-- version 1.09, 11-8-03 -->
+<br><!-- version 1.10, 9-1-04 -->
 <font size=+1><a href="install.html#support">Support and Project Participation</a></font><br>
 <font size=+1><a href=howtouse.html>HOWTO use SpamCannibal</a></font> with your mail system<br>
 <font size=+1><a href=howitworks.html>HOW SpamCannibal Works</a></font><br>
@@ -71,6 +71,7 @@ Detailed installation instructions for all packages<br>
 <tr><td><a href=Net-DNS-ToolKit-RR.html>Net::DNS::ToolKit::RR</a></td><td>DNS resource record generation/parsing</td></tr>
 <tr><td><a href=Net-DNS-ToolKit-RR-Template.html>Net::DNS::ToolKit::RR::Template</a></td><td>generic resource record template</td></tr>
 <tr><td><a href=Net-DNS-ToolKit-Question.html>Net::DNS::ToolKit::Question</a></td><td>routines to generate DNS questions/responses</td></tr>
+<tr><td><a href=Net-DNS-ToolKit-Utilities.html>Net::DNS::ToolKit::Utilities</a></td><td>higher level routines from ToolKit components</td></tr>
 <tr><td><a href=Net-DNSBL-MultiDaemon.html>Net::DNSBL::MultiDaemon</a></td><td>multi_dnsbl daemon to optimize DNSBL lookups</td></tr>
 <tr><td><a href=Net-SMTP.html>Net::SMTP</a></td><td>perl SMTP interface</td></tr>
 <tr><td><a href=Net-Whois-IP.html>Net::Whois::IP</a></td><td>perl Whois interface</td></tr>

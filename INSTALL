@@ -210,14 +210,14 @@ Building Perl modules
       i.e.
 
       IPTABLES = "/usr/local/spamcannibal/bin/iptables"
-      ANYWHERE = "0/0"
+      INET_IFACE="eth0"     # or your internet device
       ...
 
-      $IPTABLES -A INPUT -p tcp -s $ANYWHERE --dport 25 -j QUEUE
+      $IPTABLES -A INPUT -p tcp -i $INET_IFACE --dport 25 -j QUEUE
 
-    This rule will send tcp packets destined for port 25 from anywhere to
-    the dbtarpit daemon. If the IP address of the packet is not found in the
-    database, the packet is returned to the chain untouched. If the IP
+    This rule will send tcp packets destined for port 25 from the internet
+    to the dbtarpit daemon. If the IP address of the packet is not found in
+    the database, the packet is returned to the chain untouched. If the IP
     address is found in the database, the packet is dropped and the
     connection tarpitted.
 
@@ -229,18 +229,16 @@ Building Perl modules
       TARGET = "1.2.3.4"
       LAN_IFACE = "eth1"
 
-      $IPTABLES -t nat -p tcp --dport 10025 -j DNAT --to $TARGET
+      $IPTABLES -t nat -p tcp --dport 25 -j DNAT --to $TARGET
+
+    If the incoming IP address is virtual (i.e. eth0:n) then simply add the
+    virtual IP address -d $VIRTUAL_DEST_IP to the above rules.
 
             and in the FORWARD chain
       $IPTABLES $IPTABLES -A FORWARD -p tcp -o $LAN_IFACE \
             --dport 10025 -d $TARGET -j QUEUE
       $IPTABLES $IPTABLES -A FORWARD -p tcp -o $LAN_IFACE \
             --dport 10025 -d $TARGET -j ACCEPT
-
-    If the incoming IP address is virtual (i.e. eth0:n) then simply add the
-    virtual IP address to all of the above rules
-
-      -d $VIRTUAL_DEST_IP
 
     WARNING: if the dbtarpit daemon is not running, packets destined for
     port 25 are silently dropped by IPTABLES.

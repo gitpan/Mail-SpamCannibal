@@ -1,5 +1,40 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.44  Wed Sep  1 15:35:37 PDT 2004
+	moved from ScriptSupport v0.26 to Net::DNS::ToolKit::Utilities v0.20
+		id
+		question  
+		revIP   
+		query  
+		dns_udpsend
+		dns_udpresp
+		dns_ans
+		dns_ns
+		dns_ptr
+		rlook_send
+		rlook_rcv
+
+	modified cannible.cgi v1.22 to use Net::DNS::ToolKit::Utilities
+
+0.43  not released
+	in BDBaccess(v0.18)/CTest.xs and DNSBLserver(v0.30)/CTest.xs,
+	update CTest.xs to eliminate use of "putchar" which conflicts
+	with buffered/unbuffered use of IO in testing
+
+	Tune DNAT documentation.
+	Tune IPTABLES QUEUE documentation.
+	Tune spam_report.cgi.example summary screen comments.
+
+	Add additional test in cannibal.cgi v1.21 to detect 
+	undefined $query{query}.
+	Add missing 'document.name' qualifier to submit() function
+	(failed in Firefox 0.92 without the qualifier).
+
+	Add init file 'rc_debian_spamcannibal' to contrib
+
+	Update ScriptSupport::BLcheck v0.25 to count STATs for
+	WhiteList, BlackList and Passed
+
 0.42  Sun Jun 27 14:01:44 PDT 2004
 	updated the documentation to include bastion host DNAT
 	instructions for setting up a tarpit connection where 

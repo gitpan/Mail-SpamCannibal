@@ -2,7 +2,7 @@
 #
 # spam_report.plx
 #
-my $version = '1.04';	# 1-16-04, michael@bizsystems.com
+my $version = '1.05';	# 6-28-04, michael@bizsystems.com
 # GPL'd, see Copyright notice in the package README file
 #
 use strict;
@@ -218,12 +218,12 @@ For complete information, read the Document link on the home page of this web si
 $look_n_feel->{face} . q|" color="| . $look_n_feel->{color} . q|" size=3>
 Briefly:
 <br>
-SpamCannibal's TCP/IP tarpit stops spam by telling the spam server to
-send very small packets by reducing the transmission window. This results in
-the spam server attempting to send over and over - ideally bringing the spam server to a
-virtual halt for a long time or perhaps indefinitely. SpamCannibal
-blocks spam at the source by effectively eliminates the network
-traffic to your site because the spam never leaves the origination server. 
+SpamCannibal's TCP/IP tarpit stops spam by telling the spamming server to
+send very small packets. This is accomplished by reducing the transmission window
+to minimum size. The result is that the spam server attempts to send over and 
+over - ideally bringing the spam server to a virtual halt for a long time or perhaps 
+indefinitely. SpamCannibal blocks spam at the source and eliminates that network
+traffic to your site since the spam never leaves the originating server. 
 <p></font>
   <table cellspacing=5 cellpadding=0 border=0 width=100%>
   <tr><td><font face="| .

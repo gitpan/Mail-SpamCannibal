@@ -23,6 +23,7 @@ keyrings/pubring.pkr
 keyrings/secring.gpg
 keyrings/secring.pgp
 keyrings/secring.skr
+contrib/rc_debian_spamcannibal
 contrib/zone_cron.sh
 lib/Mail/SpamCannibal/GoodPrivacy.pm
 lib/Mail/SpamCannibal/LaBreaDaemon.pm
@@ -120,7 +121,6 @@ t/ses_mac.t
 t/ses_val.t
 t/ss_codes.t
 t/ss_dbjobs.t
-t/ss_id.t
 t/ss_netaddr.t
 t/ss_valid127.t
 t/ws_date.t

@@ -1,5 +1,9 @@
 Revision history for Perl extension Mail::SpamCannibal::DNSBLserver.
 
+0.30  Fri Aug 27 10:08:51 PDT 2004
+	update CTest.xs to eliminate use of "putchar" which conflicts
+	with buffered/unbuffered use of IO in testing
+
 0.29  Sun Jun 27 09:04:56 PDT 2004
 	Added 'stop' variable for testing in main.c to intercept
 	processing of the -T flag and stop STDOUT

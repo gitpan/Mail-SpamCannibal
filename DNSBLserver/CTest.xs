@@ -103,6 +103,7 @@ mydb_dump(int secondary)
   DBC * dbcp;
   int i, c; 
   char * cp;
+  char dumpbuf[1000];		/* arbitrary buffer */
 
   if (secondary)
     dbp = dbtp.dbaddr[DBcontrib];
@@ -116,12 +117,9 @@ mydb_dump(int secondary)
   while((status = dbp->get(dbp, NULL, &key, &data, DB_SET_RECNO)) == 0) {
     in.s_addr = *(in_addr_t *)(key.data);
     if (secondary) {
-      printf("%16s => ", inet_ntoa(in));
-      cp = (char *)data.data;
-      for(i=0;i<data.size;i++) {
-	putchar((int)(*cp++));
-      }
-      printf("\n");
+      strncpy(dumpbuf,(char *)data.data,data.size);
+      dumpbuf[data.size] = 0;
+      printf("%16s => %s\n", inet_ntoa(in),dumpbuf);
     }
     else
       printf("%16s => %10ld\n", inet_ntoa(in), *(u_int32_t *)data.data);

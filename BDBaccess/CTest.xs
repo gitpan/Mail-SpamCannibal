@@ -87,17 +87,15 @@ mydb_dump(int secondary,char * filename)
   struct in_addr inadr;
   int i, c; 
   char * cp;
+  char dumpbuf[1000];		/* arbitrary buffer */
 
   netcursor = htonl(cursor);
   while ((status = dbtp_readDB(&dbtp,1,filename,&netcursor,1)) == 0) {
     inadr.s_addr = *(in_addr_t *)(dbtp.keydbt.data);
     if (secondary) {
-      printf("%16s => ", inet_ntoa(inadr));
-      cp = (char *)dbtp.mgdbt.data;
-      for(i=0;i<dbtp.mgdbt.size;i++) {
-	putchar((int)(*cp++));
-      }
-      printf("\n");
+      strncpy(dumpbuf,(char *)dbtp.mgdbt.data,dbtp.mgdbt.size);
+      dumpbuf[dbtp.mgdbt.size] = 0;
+      printf("%16s => %s\n", inet_ntoa(inadr),dumpbuf);
     }
     else
       printf("%16s => %10ld\n", inet_ntoa(inadr), htonl(*(u_int32_t *)(dbtp.mgdbt.data)));

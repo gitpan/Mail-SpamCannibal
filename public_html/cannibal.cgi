@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 1.20, 6-21-04
+# version 1.22, 9-1-04
 #
 # Copyright 2003, 2004, Michael Robinton <michael@bizsystems.com>
 #   
@@ -32,13 +32,9 @@ $timeout = 15;	# 15 second timeout for internal UDP PTR lookup
 use Mail::SpamCannibal::IP2ccFlag;
 use Mail::SpamCannibal::ScriptSupport qw(
 	DO
-	query
-	question
 	lookupIP
 	validIP
 	valid127
-	rlook_send
-	rlook_rcv
 );
 use Net::DNS::Codes qw(
 	T_NS
@@ -51,10 +47,16 @@ use Net::DNS::ToolKit qw(
 	inet_ntoa
 	ttlAlpha2Num
 );
+use Net::DNS::ToolKit::Utilities qw(
+	query
+	question
+	rlook_send
+	rlook_rcv 
+);
 use Mail::SpamCannibal::BDBclient qw(
-        dataquery
-        retrieve
-        INADDR_NONE
+	dataquery
+	retrieve
+	INADDR_NONE
 );
 
 #########################################################################
@@ -83,7 +85,7 @@ my $expire = $CONFIG->{expire} || 300;		# default expiration 5 minutes
 my %query = get_query();
 
 # check for query from LaBrea client & convert if necessary
-if ($query{query} =~ /(\d+\.\d+\.\d+\.\d+)/) {
+if ($query{query} && $query{query} =~ /(\d+\.\d+\.\d+\.\d+)/) {
   $query{page} = 'lookup';
   $query{lookup} = $1;
 }
@@ -620,7 +622,7 @@ function wIP(ip) {
 <input type=hidden name=page value=lookup>
 <input type=hidden name=lookup value="|. $query{remove} .q|">
 <center><font size=5><a href="#top" onMouseOver="return(show('lookup |. $query{remove} .q|'));" onMouseOut="return(off());"
-  onClick="document.RemoveLook.action=location.pathname;submit();return false;">|. $query{remove} .q|</a></font> |. $action .q|</center>
+  onClick="document.RemoveLook.action=location.pathname;document.RemoveLook.submit();return false;">|. $query{remove} .q|</a></font> |. $action .q|</center>
 </form>|;
     } else {
       $html .= qq|$query{remove} $_\n|;

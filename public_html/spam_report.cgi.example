@@ -2,7 +2,7 @@
 #
 # spam_report.plx
 #
-my $version = '1.02';	# 9-27-03, michael@bizsystems.com
+my $version = '1.02';	# 9-29-03, michael@bizsystems.com
 # GPL'd, see Copyright notice in the package README file
 #
 use strict;
@@ -52,6 +52,8 @@ my $config = {
 
   };
 
+$ENV{SCRIPT_NAME} =~ m|/[a-zA-Z0-9\._]+|; # script name to $&
+
 # SET THESE for your system
 
 my $look_n_feel = {	# defaults shown
@@ -61,14 +63,18 @@ my $look_n_feel = {	# defaults shown
     'images'	=> 'images/',		# REQUIRED, path to images   
   # below are for html file caching
   # the directory for the cache file MUST be writable by the web server
-    'html_cache_file'	=> './tmp/spam_report_page.cache',	# required
+    'html_cache_file'	=> './tmp/'. $& .'_page.cache',	# required
     'html_expire'	=> 300,			# cache expiration, secs
+    'whois'	=> 'cannibal',
 };
+
+############### END CONFIG ##########################
+
 
 #	button text		URL
 #	comment out or modify as needed for your site
 my @buttons = (
-	'HOME'		=> 'http://www.spamcannibal.org onClick="var url = /(.)+[^\/].+$/; var result = location.pathname.match(usr);self.location = result[0];return false;"',
+	'HOME'		=> 'http://spamcannibal.org onClick="var url = /(.*\/)/; var result = location.pathname.match(url);self.location = result[0];return false;"',
 	'SUMMARY'	=> 'summary onClick="return(please_wait(this));"',
 	"SOURCE IP's"	=> 'attackers onClick="return(please_wait(this));"',
 	'ACTIVE'	=> 'captured onClick="return(please_wait(this));"',
@@ -83,13 +89,11 @@ my $logo_text = q|
 &nbsp;<img src="|. $look_n_feel->{images} . q|spamcan1.gif" height=42 width=234 alt="SpamCannibal">
 |;
 
-############### END CONFIG ##########################
-
 =pod
 
 # add extra buttons like this...
 
-@_ = split('\.', $0);
+@_ = split('\.', $0);				# get file extension
 $_ = pop @_;   
 @extras = (					# extra buttons
 	''		=> '',			# button space
@@ -102,11 +106,11 @@ $_ = pop @_;
 ############ no more user setable parameters ############
 #########################################################
 
-use LaBrea::Tarpit qw(
+use LaBrea::Tarpit 1.17 qw(
 	prep_report
 	restore_tarpit
 );
-use LaBrea::Tarpit::Report qw(
+use LaBrea::Tarpit::Report 1.08 qw(
 	gen_short
 	short_report
 	time2local
@@ -193,7 +197,7 @@ elsif ( $page eq 'summary' ) {
   };
 
   prep_report(\%tarpit,$out);
-  get_versions($out,$look_n_feel,$out,'dnsbls');
+  get_versions($out,$look_n_feel,$out,'dbtarpit');
   capture_summary($out,$look_n_feel,$out);
 
   $report = q|<table cellspacing=2 cellpadding=5 border=2>
@@ -227,7 +231,7 @@ $look_n_feel->{face} . q|" color="| . $look_n_feel->{color} . q|" size=3>
 This same strategy works equally well when SpamCannibal's tarpit daemon is configured to defend
 against DoS attacks. SpamCannibal uses a continually updated database containing the IP
 addresses of spam or DoS servers and blocks their ability to connect
-using its TCP/IP tarpit.
+using its TCP/IP tarpit or IP drop capability.
 </font></td>
   <td>| . $out->{versions} . q|</td></tr>
   </table>
@@ -401,7 +405,7 @@ function please_wait(button) {
   ref_url = button.href;
 // kludgy work around to get MSIE to display "please wait"
   setTimeout("next_page()", 250);
-  return false;   
+  return false;
 }
 function next_page() {
   document.location.href = ref_url;

@@ -219,7 +219,9 @@ install_sc_permissions	:
 	chmod 04755 $(SPMCNBL_SCRIPT_DIR)/sc_sesswrap
 	chmod 01700 $(SPMCNBL_SCRIPT_DIR)/sc_session.pl
 	chmod 0700 $(SPMCNBL_SCRIPT_DIR)/sc_remote.pl
-	if [ ! -d $(SPAMCANNIBAL_HOME)/public_html/tmp ]; then \
+	if [ -d $(SPAMCANNIBAL_HOME)/public_html/tmp ]; then \
+	    rm -f $(SPAMCANNIBAL_HOME)/public_html/tmp/* \
+	else \
 	    $(MKPATH) $(SPAMCANNIBAL_HOME)/public_html/tmp; \
 	    chown -R $(SPAMUID) $(SPAMCANNIBAL_HOME)/public_html/tmp; \
 	    chgrp -R $(SPAMGID) $(SPAMCANNIBAL_HOME)/public_html/tmp; \

@@ -38,7 +38,6 @@ pods/howitworks.pod
 pods/howtouse.pod
 public_html/cannibal.cgi
 public_html/spam_report.cgi.example
-public_html/whois.cgi
 public_html/images/spam01.gif
 public_html/images/spamcan1.gif
 public_html/images/cleardot.gif

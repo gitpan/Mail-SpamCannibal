@@ -1,5 +1,30 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.14  Mon Sep 29 17:18:57 PDT 2003
+	Changes are to these files ONLY
+
+	deleted public/html/whois.cgi
+	Makefile.PL
+	public_html/spam_report.cgi.example
+		(needs LaBrea::Tarpit::Report v 1.08)
+		(found in LaBrea::Tarpit 1.18)
+
+    Makefile.PL
+	fixed install for $(SPAMCANNIBAL_HOME)/public_html/tmp
+	to remove directory contents after chowning so that
+	web daemon does not hang after a re-installation
+
+    spam_report.cgi.example
+	corrected variable name 'usr' should be 'url' in 
+	public_html/spam_report.cgi
+
+	correct the name of the 'dbtarpit' daemon displayed
+	by 'spam_report.cgi'
+
+	eliminate 'whois.cgi' as it does not work with MSIE in
+	the pop-up window. Add workaround in LaBrea::Tarpit::Report
+	which must be used with this version for all to work well.
+ 
 0.13  Sat Sep 27 03:57:27 PDT 2003
 	oops! left SpamCannibal.html out of the doc package
 

@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 1.05, 9-10-03
+# version 1.06, 9-29-03
 #
 # Copyright 2003, Michael Robinton <michael@bizsystems.com>
 #   
@@ -60,6 +60,13 @@ die "could not load config file"
 my ($admin,$sess,%extraheaders);
 my $expire = $CONFIG->{expire} || '';
 my %query = get_query();
+
+# check for query from LaBrea client & convert if necessary
+if ($query{query} =~ /(\d+\.\d+\.\d+\.\d+)/) {
+  $query{page} = 'lookup';
+  $query{lookup} = $1;
+}
+
 my $user;
 if ($ENV{SCRIPT_FILENAME} && $ENV{SCRIPT_FILENAME} =~ m|/admin\..+$|) {
   $extraheaders{'Set-Cookie'} = 'SpamCannibal=on; path=/; expires='. cookie_date(1);
@@ -276,7 +283,7 @@ IP address:	$query{IP}
     }
     if ($IP) {
       if ($ENV{HTTP_REFERER} !~ /$ENV{SERVER_NAME}/i) {
-	$html .= q|
+	$html .= qq|
 Automated lookups not allowed.
 |;
       } else {

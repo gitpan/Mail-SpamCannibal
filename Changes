@@ -1,5 +1,14 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.15  Tue Sep 30 10:01:08 PDT 2003
+
+	modify spam_report.cgi to do a better job of extracting
+	URL information from the DNSBL TXT records
+
+	add onUnLoad function to spam_report.cgi to
+	close popup window in multi-site environment.
+	Requires LaBrea::Tarpit::Report v 1.09
+
 0.14  Mon Sep 29 17:18:57 PDT 2003
 	Changes are to these files ONLY
 

@@ -2,7 +2,7 @@
 #
 # spam_report.plx
 #
-my $version = '1.02';	# 9-29-03, michael@bizsystems.com
+my $version = '1.03';	# 9-30-03, michael@bizsystems.com
 # GPL'd, see Copyright notice in the package README file
 #
 use strict;
@@ -110,7 +110,7 @@ use LaBrea::Tarpit 1.17 qw(
 	prep_report
 	restore_tarpit
 );
-use LaBrea::Tarpit::Report 1.08 qw(
+use LaBrea::Tarpit::Report 1.09 qw(
 	gen_short
 	short_report
 	time2local
@@ -397,6 +397,12 @@ A.NU {
 }
 </style>
 <script language=javascript>  
+var pop_whois = null;
+function popclose() {
+  if (pop_whois == null) return;
+  if (pop_whois.closed) return;
+  pop_whois.close();
+}
 var pwait = new Image();
 pwait.src = "|. $look_n_feel->{images} . q|pwait01.gif";
 var ref_url;
@@ -412,7 +418,7 @@ function next_page() {
 }
 </script>
 </head>
-<body bgcolor="#ffffff" text="#ffcc33" vlink="#ffff00" link="#ffff00"><center> 
+<body bgcolor="#ffffff" text="#ffcc33" vlink="#ffff00" link="#ffff00" onUnLoad="popclose();"><center> 
 <table border=0><tr><td valign=middle>| . $logo_text . qq|</td>
 <td align=center valign=middle width=100%><font face="$look_n_feel->{face}" color="#000000" size=6>SpamCannibal $buttext{$page}</font></td></tr>
 </table>

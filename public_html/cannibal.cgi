@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 1.06, 9-29-03
+# version 1.07, 9-29-03
 #
 # Copyright 2003, Michael Robinton <michael@bizsystems.com>
 #   
@@ -323,7 +323,8 @@ function wIP(ip) {
 	  ($second,$text) = lookupIP($sc,$IP,$CONFIG->{bdbDAEMON},0);
 	}
 	if($second) {		# if secondary db 'blcontrib'
-	  $text =~ s|(http://([^\s]+))|\<a href="$1"\>$2\</a\>|;
+	  $text =~ s|(http://([\w\.\-\?#&=/]+))|\<a href="$1"\>$2\</a\>|;
+#	  $text =~ s|(http://([^\s]+))|\<a href="$1"\>$2\</a\>|;
 	  $_ = "\n<p>\n". $text;
 	}else {
 	  $text =~ s/</&lt;/g;		# unmask html <

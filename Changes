@@ -1,5 +1,8 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.48  Wed Oct  6 11:08:38 PDT 2004
+	updated docs
+
 0.47  Sat Oct  2 13:46:36 PDT 2004
 	update $ipattern in contrib/mimedefang-filter
 

@@ -1721,7 +1721,7 @@ A typical configuration line for B<sendmail M4> configuration file is shown
 below:
 
   FEATURE(`dnsbl',`pseudo.dnsbl',
-  `554 Rejected $&{client_addr} found in http://www.spamcannibal.org')dnl
+  `554 Rejected $&{client_addr} found in http://www.my.blacklist.org')dnl
 
 =head1 COPYRIGHT
 

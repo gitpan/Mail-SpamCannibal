@@ -1,5 +1,8 @@
 Revision history for Perl extension Mail::SpamCannibal::DNSBLserver.
 
+0.32  Wed Oct  6 11:08:38 PDT 2004
+	update docs
+
 0.31  Sat Oct  2 13:46:36 PDT 2004
 	correct BUG in zonefile.c that did not propagate IP address to
 	the TXT record while dumping a zone file

@@ -1,6 +1,6 @@
 package Mail::SpamCannibal::DNSBLserver;
 use vars qw($VERSION);
-$VERSION = do { q|char version[] = "dnsbls 0.31, 10-2-04";| =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
+$VERSION = do { q|char version[] = "dnsbls 0.32, 10-7-04";| =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
 # returns $VERSION which is non-zero
 __END__
 
@@ -285,7 +285,7 @@ found in the B<tarpit> database but not found in the B<blcontrib> database.
 The message may be up to 255 characters in length.
 Usually something like this:
 
-  "ERROR: connection tarpited. See: http://www.spamcannibal.org"
+  "ERROR: connection tarpited. See: http://www.my.blacklist.org"
 
 =item * -b
 

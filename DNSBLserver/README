@@ -348,7 +348,7 @@ DATABASE CONFIGURATION FILE [optional]
     VALUE of the pair. The specific NAME VALUE pairs are documented in the
     Berkeley DB manual for the corresponding methods.
 
-    See: http://www.sleepycat.com/docs/reftoc.html
+    See: http://www.sleepycat.com/docs/ref/env/db_config.html
 
 DATABASE FORMAT
     dnsbls and IPTables::IPv4::DBTarpit::Tools use the Berkeley DB database.
@@ -503,7 +503,7 @@ DATABASE FORMAT
 APPLICATIONS
     ... aahhh! now you come to the fun part.
 
-    See the MAIL::SpamCannibal manpage
+    See the Mail::SpamCannibal manpage
 
     Used with "dbtarpit", it "eats" the spammer for lunch. In less graphic
     terms, SpamCannibal is a set of tools that helps you identify the

@@ -6,7 +6,7 @@ use strict;
 use vars qw($VERSION @ISA @EXPORT_OK @to64);
 require Exporter;
 @ISA = qw(Exporter);
-$VERSION = do { my @r = (q$Revision: 0.01 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.02 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 @EXPORT_OK = qw(
 	pw_gen
@@ -49,7 +49,7 @@ Generate a 13 character DES password string from clear text
 
   input:	string <= 128 characters
   output:	password
-  
+
 =cut
 
 ###############################################
@@ -66,7 +66,7 @@ sub pw_gen {
   $clrtxt = substr($clrtxt,0,128) if length $clrtxt > 128;
   return crypt($clrtxt,$salt);		# password
 }   
-  
+
 =item * $ok = pw_valid($cleartxt,$password);
 
 Return true if clear text is password match
@@ -99,7 +99,7 @@ sub pw_valid {
   i.e. http applications
 
   Returns a string of 128 characters or less
- 
+
 =cut
 
 ###############################################
@@ -397,9 +397,10 @@ are met:
 =over 2
 
 =item * 1
+
 Redistributions of source code must retain the above copyright
 notice, this list of conditions and the following disclaimer.
-  
+
 =item * 2.
 
 Redistributions in binary form must reproduce the above copyright
@@ -434,7 +435,7 @@ library source code for this function to operate.
 
 =head1 COPYRIGHT
 
-Copyright 2003, Michael Robinton <michael@bizsystems.com>
+Copyright 2003 - 2004, Michael Robinton <michael@bizsystems.com>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

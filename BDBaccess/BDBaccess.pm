@@ -1,6 +1,6 @@
 package Mail::SpamCannibal::BDBaccess;
 use vars qw($VERSION);
-$VERSION = do { q|char version[] = "bdbaccess 0.18, 8-27-04";| =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
+$VERSION = do { q|char version[] = "bdbaccess 0.19, 11-12-04";| =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
 # returns $VERSION which is non-zero
 __END__
 
@@ -238,7 +238,7 @@ character will be ignored. Each line must specify both the NAME and the
 VALUE of the pair. The specific NAME VALUE pairs are documented in the 
 Berkeley DB manual for the corresponding methods.
 
-See: http://www.sleepycat.com/docs/reftoc.html
+See: http://www.sleepycat.com/docs/ref/env/db_config.html
 
 =head1 AUTHOR
 

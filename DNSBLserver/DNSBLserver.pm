@@ -1,6 +1,6 @@
 package Mail::SpamCannibal::DNSBLserver;
 use vars qw($VERSION);
-$VERSION = do { q|char version[] = "dnsbls 0.32, 10-7-04";| =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
+$VERSION = do { q|char version[] = "dnsbls 0.33, 11-12-04";| =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
 # returns $VERSION which is non-zero
 __END__
 
@@ -396,7 +396,7 @@ character will be ignored. Each line must specify both the NAME and the
 VALUE of the pair. The specific NAME VALUE pairs are documented in the 
 Berkeley DB manual for the corresponding methods.
 
-See: http://www.sleepycat.com/docs/reftoc.html
+See: http://www.sleepycat.com/docs/ref/env/db_config.html
 
 =head1 DATABASE FORMAT
 
@@ -553,7 +553,7 @@ See the man (1) pages for libdbtarpit.
 
 ... aahhh! now you come to the fun part.
 
-See L<MAIL::SpamCannibal>
+See L<Mail::SpamCannibal>
 
 Used with C<dbtarpit>, it "eats" the spammer for lunch. In less graphic
 terms, SpamCannibal is a set of tools that helps you identify the

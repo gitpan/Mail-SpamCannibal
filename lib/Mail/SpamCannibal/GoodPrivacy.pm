@@ -4,7 +4,7 @@ use strict;
 #use diagnostics;
 use vars qw($VERSION @ISA @EXPORT_OK);
 
-$VERSION = do { my @r = (q$Revision: 0.02 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.03 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use Mail::SpamCannibal::ParseMessage qw(
 	array2string
@@ -381,7 +381,7 @@ If you plan to user PGP 2.6x or 6.x compatibility modes and you are in a
 country where there are not patent restrictions, then you will also need to
 download:
 
-  ftp://ftp.gnupg.dk/pub/contrib-dk/iodea.c.gz
+  ftp://ftp.gnupg.dk/pub/contrib-dk/idea.c.gz
 
 and place it in the SRC/gnupg-1.x.x/cipher directory.
 
@@ -405,7 +405,7 @@ Michael Robinton <michael@bizsystems.com>
 
 =head1 COPYRIGHT
 
-Copyright 2003, Michael Robinton <michael@bizsystems.com>
+Copyright 2003 - 2004, Michael Robinton <michael@bizsystems.com>
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or 

@@ -3,7 +3,7 @@
 # sc_BlackList.conf, multi_dnsbl.conf
 # Configuration for sc_BLcheck.pl, sc_BLpreen.pl, and Net::DNSBL::MultiDaemon
 #
-# version 1.12, 6-18-04
+# version 1.14, 11-11-04
 #
 my $DNSBL = {
 
@@ -206,7 +206,7 @@ my $DNSBL = {
 
   'in-addr.arpa'        => {    # check for lack of reverse DNS
   # accept is not needed for reverse DNS checking
-	error	    => 'no reverse DNS, see http://www.myhostname.com/?page=lookup&lookup=',
+	error	    => 'MX host should have rDNS - RFC1912 2.1',
         timeout     => 5,
   },
 

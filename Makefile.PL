@@ -41,9 +41,10 @@ before running this installation procedure.
 my %xmodules = (
   'Geo::IP::PurePerl'			=> 'Geo-IP-PurePerl',
   'Geo::CountryFlags'			=> 'Geo-CountryFlags',
-  'IPTables::IPv4::DBTarpit'		=> 'dbtarpit',
+  'IPTables::IPv4::DBTarpit'		=> 'IPTables-IPv4-DBTarpit',
   'IPTables::IPv4::DBTarpit::Tools'	=> 'IPTables-IPv4-DBTarpit-Tools',
-  'IPTables::IPv4::DBTarpit::Inst'	=> 'IPTables-IPv4-DBTarpit-Tools-Inst',
+  'IPTables::IPv4::DBTarpit::Inst'	=> 'IPTables-IPv4-DBTarpit-Inst',
+  'IPTables::IPv4::DBTarpit::SiteConfig'=> 'IPTables-IPv4-DBTarpit-SiteConfig',
   'LaBrea::Tarpit'			=> 'LaBrea-Tarpit',
   'LaBrea::Tarpit::Report'		=> 'LaBrea-Tarpit-Report',
   'Net::DNS::Codes'			=> 'Net-DNS-Codes',
@@ -53,6 +54,7 @@ my %xmodules = (
   'Net::DNS::ToolKit::Question'		=> 'Net-DNS-ToolKit-Question',
   'Net::DNS::ToolKit::Utilities'	=> 'Net-DNS-ToolKit-Utilities',
   'Net::DNSBL::MultiDaemon'		=> 'Net-DNSBL-MultiDaemon',
+  'Net::DNSBL::Utilities'		=> 'Net-DNSBL-Utilities',
   'Net::SMTP'				=> 'Net-SMTP',
   'Net::Whois::IP'			=> 'Net-Whois-IP',
   'NetAddr::IP'				=> 'NetAddr-IP',
@@ -148,22 +150,22 @@ my %makeparms = (
 			'pods/recover.pod'		=> 'docs/recover.html',
 			'pods/howitworks.pod'		=> 'docs/howitworks.html',
 			'pods/howtouse.pod'		=> 'docs/howtouse.html',
-			'DNSBLserver/dnsbls.pod'	=> 'docs/dnsbls.html',
-			'BDBaccess/bdbaccess.pod'	=> 'docs/bdbaccess.html',
-			'SpamCannibal.pm'		=> 'docs/SpamCannibal.html',
-			'SiteConfig.pm'			=> 'docs/SiteConfig.html',
-			'BDBaccess/lib/Mail/SpamCannibal/BDBclient.pm' => 'docs/BDBclient.html',
-			'lib/Mail/SpamCannibal/GoodPrivacy.pm'	 => 'docs/GoodPrivacy.html',
-			'lib/Mail/SpamCannibal/ScriptSupport.pm' => 'docs/ScriptSupport.html',
-			'lib/Mail/SpamCannibal/ParseMessage.pm'	 => 'docs/ParseMessage.html',
-			'lib/Mail/SpamCannibal/SMTPsend.pm'	 => 'docs/SMTPsend.html',
-			'lib/Mail/SpamCannibal/WebService.pm'	 => 'docs/WebService.html',
-			'lib/Mail/SpamCannibal/Password.pm'	 => 'docs/Password.html',
-			'lib/Mail/SpamCannibal/WhoisIP.pm'	 => 'docs/WhoisIP.html',
-			'lib/Mail/SpamCannibal/Session.pm'	 => 'docs/Session.html',
-			'lib/Mail/SpamCannibal/PidUtil.pm'	 => 'docs/PidUtil.html',
-			'lib/Mail/SpamCannibal/LaBreaDaemon.pm'	 => 'docs/LaBreaDaemon.html',
-			'lib/Mail/SpamCannibal/IP2ccFlag.pm'	 => 'docs/IP2ccFlag.html',
+			'DNSBLserver/dnsbls.pod'	=> 'docs/Mail-SpamCannibal-DNSBLserver.html',
+			'BDBaccess/bdbaccess.pod'	=> 'docs/Mail-SpamCannibal-BDBaccess.html',
+			'SpamCannibal.pm'		=> 'docs/Mail-SpamCannibal.html',
+			'SiteConfig.pm'			=> 'docs/Mail-SpamCannibal-SiteConfig.html',
+			'BDBaccess/lib/Mail/SpamCannibal/BDBclient.pm' => 'docs/Mail-SpamCannibal-BDBclient.html',
+			'lib/Mail/SpamCannibal/GoodPrivacy.pm'	 => 'docs/Mail-SpamCannibal-GoodPrivacy.html',
+			'lib/Mail/SpamCannibal/ScriptSupport.pm' => 'docs/Mail-SpamCannibal-ScriptSupport.html',
+			'lib/Mail/SpamCannibal/ParseMessage.pm'	 => 'docs/Mail-SpamCannibal-ParseMessage.html',
+			'lib/Mail/SpamCannibal/SMTPsend.pm'	 => 'docs/Mail-SpamCannibal-SMTPsend.html',
+			'lib/Mail/SpamCannibal/WebService.pm'	 => 'docs/Mail-SpamCannibal-WebService.html',
+			'lib/Mail/SpamCannibal/Password.pm'	 => 'docs/Mail-SpamCannibal-Password.html',
+			'lib/Mail/SpamCannibal/WhoisIP.pm'	 => 'docs/Mail-SpamCannibal-WhoisIP.html',
+			'lib/Mail/SpamCannibal/Session.pm'	 => 'docs/Mail-SpamCannibal-Session.html',
+			'lib/Mail/SpamCannibal/PidUtil.pm'	 => 'docs/Mail-SpamCannibal-PidUtil.html',
+			'lib/Mail/SpamCannibal/LaBreaDaemon.pm'	 => 'docs/Mail-SpamCannibal-LaBreaDaemon.html',
+			'lib/Mail/SpamCannibal/IP2ccFlag.pm'	 => 'docs/Mail-SpamCannibal-IP2ccFlag.html',
 		),},
    'HTMLSCRIPTPODS'	=> {	'rc.sc_dbwatch'		=> 'docs/rc.sc_dbwatch.html',
 				'rc.sc_lbdaemon.sample'	=> 'docs/rc.sc_lbdaemon.html',
@@ -323,6 +325,13 @@ sub MY::realclean {
 	$(RM_F) SiteConfig.pm
 	$(RM_F) scripts/sc_sesswrap
 	$(RM_F) INSTALL
+|;
+}
+
+sub MY::htmlifypods {
+  package MY;
+  my $inherited = shift->SUPER::htmlifypods(@_) .q|
+	./fixuplinks.pl $(INST_HTMLLIBDIR)
 |;
 }
 

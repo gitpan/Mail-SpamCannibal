@@ -5,7 +5,7 @@ All - SpamCannibal Documentation
 
 =for html <font size=+2>Documentation for the SpamCannibal Package</font>
 <br>&nbsp;
-<br><!-- version 1.10, 9-1-04 -->
+<br><!-- version 1.11, 11-12-04 -->
 <font size=+1><a href="install.html#support">Support and Project Participation</a></font><br>
 <font size=+1><a href=howtouse.html>HOWTO use SpamCannibal</a></font> with your mail system<br>
 <font size=+1><a href=howitworks.html>HOW SpamCannibal Works</a></font><br>
@@ -20,9 +20,9 @@ Detailed installation instructions for all packages<br>
 <font size=+1><b>DAEMONS</b></font>
 <blockquote>
 <table cellpadding=4 border=0>
-<tr valign=top><td><a href=dbtarpit.html>dbtarpit</a></td><td>tarpit and data collection daemon</td></tr>
-<tr valign=top><td><a href=dnsbls.html>dnsbls</a></td><td>dns blacklist daemon</td></tr>
-<tr valign=top><td><a href=bdbaccess.html>bdbaccess</a></td><td>local and remote database access daemon</td></tr>
+<tr valign=top><td><a href=IPTables-IPv4-DBTarpit.html>dbtarpit</a></td><td>tarpit and data collection daemon</td></tr>
+<tr valign=top><td><a href=Mail-SpamCannibal-DNSBLserver.html>dnsbls</a></td><td>dns blacklist daemon</td></tr>
+<tr valign=top><td><a href=Mail-SpamCannibal-BDBaccess.html>bdbaccess</a></td><td>local and remote database access daemon</td></tr>
 </table>
 </blockquote>
 <font size=+1><b>DAEMON rc.scripts</b></font>
@@ -55,20 +55,20 @@ The included dynamic files for this page are transferred periodically from their
 <font size=+1><b>SpamCannibal modules</b></font> <i>developers</i>
 <blockquote>
 <table cellpadding=4 border=0>
-<tr valign=top><td><a href=SpamCannibal.html>SpamCannibal</a></td><td>synopsis for SpamCannibal operation</td></tr>
-<tr valign=top><td><a href=SiteConfig.html>SiteConfig</a></td><td>configuration of this site</td></tr>
-<tr valign=top><td><a href=BDBclient.html>BDBclient</a></td><td>module to provide access to 'bdbaccess' daemon</td></tr>
-<tr valign=top><td><a href=GoodPrivacy.html>GoodPrivacy</a></td><td>PGP encode/decode wrapper for system pgp executable</td></tr>
-<tr valign=top><td><a href=IP2ccFlag.html>IP2ccFlag</a></td><td>country code and flag display for WhoisIP and LookupIP</td></tr>
-<tr valign=top><td><a href=LaBreaDaemon.html>LaBreaDaemon</a></td><td>interface to LaBrea::Tarpit data collection daemon
-<tr valign=top><td><a href=ParseMessage.html>ParseMessage</a></td><td>module to parse mail headers for originating MTA</td></tr>
-<tr valign=top><td><a href=Password.html>Password</a></td><td>generate and check 'crypt' style passwords</td></tr>
-<tr valign=top><td><a href=PidUtil.html>PidUtil</a></td><td>checks for running daemon, creates-manages PID files</td></tr>
-<tr valign=top><td><a href=SMTPsend.html>SMTPsend</a></td><td>send mail messages without invoking local MTA</td></tr>
-<tr valign=top><td><a href=ScriptSupport.html>ScriptSupport</a></td><td>miscellaneous subroutines for SpamCannibal scripts</td></tr>
-<tr valign=top><td><a href=Session.html>Session</a></td><td>web session management and token generation</td></tr>
-<tr valign=top><td><a href=WebService.html>WebService</a></td><td>web service routines</td></tr>
-<tr valign=top><td><a href=WhoisIP.html>WhoisIP</a></td><td>world-wide IP address whois</td></tr>
+<tr valign=top><td><a href=Mail-SpamCannibal.html>SpamCannibal</a></td><td>synopsis for SpamCannibal operation</td></tr>
+<tr valign=top><td><a href=Mail-SpamCannibal-SiteConfig.html>SiteConfig</a></td><td>configuration of this site</td></tr>
+<tr valign=top><td><a href=Mail-SpamCannibal-BDBclient.html>BDBclient</a></td><td>module to provide access to 'bdbaccess' daemon</td></tr>
+<tr valign=top><td><a href=Mail-SpamCannibal-GoodPrivacy.html>GoodPrivacy</a></td><td>PGP encode/decode wrapper for system pgp executable</td></tr>
+<tr valign=top><td><a href=Mail-SpamCannibal-IP2ccFlag.html>IP2ccFlag</a></td><td>country code and flag display for WhoisIP and LookupIP</td></tr>
+<tr valign=top><td><a href=Mail-SpamCannibal-LaBreaDaemon.html>LaBreaDaemon</a></td><td>interface to LaBrea::Tarpit data collection daemon
+<tr valign=top><td><a href=Mail-SpamCannibal-ParseMessage.html>ParseMessage</a></td><td>module to parse mail headers for originating MTA</td></tr>
+<tr valign=top><td><a href=Mail-SpamCannibal-Password.html>Password</a></td><td>generate and check 'crypt' style passwords</td></tr>
+<tr valign=top><td><a href=Mail-SpamCannibal-PidUtil.html>PidUtil</a></td><td>checks for running daemon, creates-manages PID files</td></tr>
+<tr valign=top><td><a href=Mail-SpamCannibal-SMTPsend.html>SMTPsend</a></td><td>send mail messages without invoking local MTA</td></tr>
+<tr valign=top><td><a href=Mail-SpamCannibal-ScriptSupport.html>ScriptSupport</a></td><td>miscellaneous subroutines for SpamCannibal scripts</td></tr>
+<tr valign=top><td><a href=Mail-SpamCannibal-Session.html>Session</a></td><td>web session management and token generation</td></tr>
+<tr valign=top><td><a href=Mail-SpamCannibal-WebService.html>WebService</a></td><td>web service routines</td></tr>
+<tr valign=top><td><a href=Mail-SpamCannibal-WhoisIP.html>WhoisIP</a></td><td>world-wide IP address whois</td></tr>
 </table>
 </blockquote>
 <font size=+1><b>Supporting Modules</b></font> <i>developers</i>

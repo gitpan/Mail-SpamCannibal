@@ -13,6 +13,7 @@ config/sc_web.conf.sample
 executableTestPath.conf
 rc.sc_dbwatch
 rc.sc_lbdaemon.sample
+fixuplinks.pl
 cdata/sc_sesswrap.c
 fixup/perl2html.pl
 inst/dialog.pl

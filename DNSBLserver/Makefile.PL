@@ -93,6 +93,7 @@ WriteMakefile(
 			     'Net::DNS::ToolKit' => '0.07',
 			   },
     'clean'		=> { FILES	=> "$daemon *.bs *.o *~ tmp*"},
+    'HTMLLIBPODS'	=> {},
 );
 
 sub MY::post_constants {

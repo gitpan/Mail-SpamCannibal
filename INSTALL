@@ -47,7 +47,7 @@ Creating the SpamCannibal user
       you fill in the rest......
 
 Recompiling Linux 2.4x kernel with IPTABLES
-    http://www.kernel.org
+    http://www.kernel.org/
 
     Recompile your kernel to include iptables.
 
@@ -1584,7 +1584,7 @@ Setting up rc.multi_dnsbl
       `554 Rejected $&{client_addr} found in http://www.my.blacklist.org')dnl
 
 COPYRIGHT
-    Copyright 2003, Michael Robinton <michael@bizsystems.com>
+    Copyright 2003 - 2004, Michael Robinton <michael@bizsystems.com>
 
     This program is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the

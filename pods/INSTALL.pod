@@ -69,7 +69,7 @@ adduser.
 
 =head1 Recompiling Linux 2.4x kernel with IPTABLES
 
-L<http://www.kernel.org>
+L<http://www.kernel.org/>
 
 Recompile your kernel to include B<iptables>.
 
@@ -230,7 +230,7 @@ B<shell> script and not use the designated perl shell. It will fail badly
 =for html <blockquote>
 Type: ./rc.dbtarpit --help<br>&nbsp;
 <br>
-or see: man <a href=dbtarpit.html>dbtarpit</a>
+or see: man <a href=IPTables-IPv4-DBTarpit.html>dbtarpit</a>
 </blockquote>
 
 for command line details.
@@ -354,7 +354,7 @@ This method is the simplest and must be used to provide service for the
 following two methods. The dnsbls daemon is run on port 53.
 
 =for html <blockquote>
-See: man <a href=DNSBLserver.html>Mail::SpamCannibal::DNSBLserver</a>
+See: man <a href=Mail-SpamCannibal-DNSBLserver.html>Mail::SpamCannibal::DNSBLserver</a>
 </blockquote>
 
 and the dnsbls.conf file for details.
@@ -666,7 +666,7 @@ startup directory and edit the host startup scripts so that it is included. See:
 <blockquote>
 <a href=rc.dnsbls.html>rc.dnsbls</a>
 <br>
-<a href=dnsbls.html>man dnsbls</a>
+<a href=Mail-SpamCannibal-DNSBLserver.html>man dnsbls</a>
 </blockquote>
 for command line details.
 
@@ -1257,7 +1257,7 @@ The directory path is determined for a 'C' process by using the C<dbhome>
 directory pointer and for a perl process by using the 
 
 =for html <a
-href="SiteConfig.html">Mail::SpamCannibal::SiteConfig</a> module pointer for 
+href="Mail-SpamCannibal-SiteConfig.html">Mail::SpamCannibal::SiteConfig</a> module pointer for 
 SPMCNBL_ENVIRONMENT.
 
 =item * respond to SIGTERM
@@ -1276,7 +1276,7 @@ Every process that registers its pid file should remove it when it finishes usin
 Download and install the two Geo::xxx modules from CPAN
 
 =for html <blockquote>
-<a href="Geo-Country-Flags.html">Geo::CountryFlags</a><br>
+<a href="Geo-CountryFlags.html">Geo::CountryFlags</a><br>
 <a href="Geo-IP-PurePerl.html">Geo::IP::PurePerl</a>
 </blockquote>
 <br>
@@ -1725,7 +1725,7 @@ below:
 
 =head1 COPYRIGHT
 
-Copyright 2003, Michael Robinton <michael@bizsystems.com>
+Copyright 2003 - 2004, Michael Robinton <michael@bizsystems.com>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -3,7 +3,7 @@
 
 SpamCannibal - How It Works
 
-=for html <!-- last updated 8-30-03 -->
+=for html <!-- last updated 11-13-04 -->
 <font size="+1">What is SpamCannibal?</font>
 <p>
 SpamCannibal is a free software toolkit to help stop UBE (Unsolicited Bulk
@@ -17,7 +17,7 @@ onClick="self.location = location.pathname + '/../?page=download';return false;"
 <p>
 SpamCannibal's primary functional modules are:
 <ul>
-<li><a href=dbtarpit.html>IPTables::IPv4::DBTarpit</a>, a database backed TCP/IP connection tarpit and IP
+<li><a href=IPTables-IPv4-DBTarpit.html>IPTables::IPv4::DBTarpit</a>, a database backed TCP/IP connection tarpit and IP
 address collection daemon written in 'C' that uses Linux iptables QUEUE service.
 <p>
 <li><a href=IPTables-IPv4-DBTarpit-Tools.html>IPTables::IPv4::DBTarpit::Tools</a>, database management tools for DBTarpit,
@@ -33,7 +33,7 @@ interrogation of remote DNSBL servers.
 IP address and add it to the tarpit database, adding the headers and message
 to the "evidence" database.
 <p>
-<li><a href=dnsbls.html>Mail::SpamCannibal::DNSBLserver</a>, a lightweight DNSBL server written
+<li><a href=Mail-SpamCannibal-DNSBLserver.html>Mail::SpamCannibal::DNSBLserver</a>, a lightweight DNSBL server written
 entirely in 'C' that reports status for the 'tarpit' database IP addresses when 
 interrogated. This is a full function DNSBL run entirely out of a database 
 that can be managed with the Perl toolset,
@@ -82,7 +82,7 @@ reason for addition to the tarpit banned list.
 <img src=../images/spamcbl1.gif>
 </center>
 <ul>
-<li>The <a href=dbtarpit.html>dbtarpit</a> daemon interfaces directly with  Linux iptables. All
+<li>The <a href=IPTables-IPv4-DBTarpit.html>dbtarpit</a> daemon interfaces directly with  Linux iptables. All
 connection attempts to port 25 (or any port defended against DoS attacks) 
 are examined by dbtarpit prior to network connection.
 Incoming IP addresses are checked against the 'tarpit' database
@@ -123,10 +123,11 @@ retried over and over, ideally bringing the transmitting program
 halt for several hours or perhaps indefinitely. Tarpits maintained on our
 firewall servers hold some threads for months.
 <p>
-More information on tarpits is available on the LaBrea and LaBrea::Tarpit
+More information on tarpits is available on the labrea, Sourceforge labrea, and LaBrea::Tarpit
 websites at:<br>
 <blockquote>
 <a href="http://www.hackbusters.net/LaBrea/">http://www.hackbusters.net/LaBrea</a><br>
+<a href="http://sourceforge.net/projects/labrea/">http://sourceforge.net/projects/labrea/</a><br>
 <a href="http://scans.bizsystems.net/">http://scans.bizsystems.net</a><br>
 </blockquote>
  ...these sites are required reading. 

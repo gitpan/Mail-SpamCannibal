@@ -212,7 +212,7 @@ DATABASE CONFIGURATION FILE [optional]
     VALUE of the pair. The specific NAME VALUE pairs are documented in the
     Berkeley DB manual for the corresponding methods.
 
-    See: http://www.sleepycat.com/docs/reftoc.html
+    See: http://www.sleepycat.com/docs/ref/env/db_config.html
 
 AUTHOR
     Michael Robinton <michael@bizsystems.com>

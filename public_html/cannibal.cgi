@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 1.26, 3-1-05
+# version 1.27, 3-24-05
 #
 # Copyright 2003 - 2005, Michael Robinton <michael@bizsystems.com>
 #   
@@ -29,6 +29,8 @@ use vars qw(%ftxt $timeout);
 
 $timeout = 15;	# 15 second timeout for internal UDP PTR lookup
 
+use Mail::SpamCannibal;				# just for version number
+use IPTables::IPv4::DBTarpit;			# just for version number
 use Mail::SpamCannibal::IP2ccFlag;
 use Mail::SpamCannibal::ScriptSupport qw(
 	DO
@@ -147,6 +149,13 @@ my $bgcolor = ($CONFIG->{bgcolor} && $CONFIG->{bgcolor} =~ /^#[0-9a-fA-F]{6}$/)
 	? $CONFIG->{bgcolor}
 	:'#ffffff';
 $ftxt{bgcolor} = qq| bgcolor="$bgcolor" |;
+$ftxt{versions} = q|<!--|.
+	q| MSC:|. $Mail::SpamCannibal::VERSION .
+	q| NDC:|. $Net::DNS::Codes::VERSION .
+	q| NDT:|. $Net::DNS::ToolKit::VERSION .
+	q| IID:|. $IPTables::IPv4::DBTarpit::VERSION .
+	q| -->
+|;
 
 my $html = '';
 my $pagerror = '';
@@ -172,6 +181,7 @@ while (1) {
 		top
 		bgcolor
 		top2
+		versions
 		logo2
 		stats
 		),
@@ -192,6 +202,7 @@ while (1) {
 	top
 	bgcolor
 	top2
+	versions
 	logo1
 	stats
 	),
@@ -222,6 +233,7 @@ purpose is freely available for anyone to look at and use as they see fit.
 	top
 	bgcolor
 	top2
+	versions
 	logo2
 	stats
 	),
@@ -272,6 +284,7 @@ onMouseOver="return(show('lookup |. $IP .qq|'));" onMouseOut="return(off());">$I
         top
 	bgcolor
 	top2
+	versions
         logo2
 	stats
         ),
@@ -298,6 +311,7 @@ onMouseOver="return(show('lookup |. $IP .qq|'));" onMouseOut="return(off());">$I
         top
 	bgcolor
 	top2
+	versions
         logo2 
 	stats
         ),
@@ -342,6 +356,7 @@ IP address:	$query{IP}
 	top
 	bgcolor
 	top2
+	versions
 	logo2
 	stats
 	),
@@ -507,6 +522,7 @@ function wIP(ip) {
 	top
 	bgcolor
 	top2
+	versions
 	logo2
 	stats
 	),
@@ -650,6 +666,7 @@ function wIP(ip) {
 	top
 	bgcolor
 	top2
+	versions
 	logo2
 	stats
 	),

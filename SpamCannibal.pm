@@ -5,9 +5,12 @@ use strict;
 #use diagnostics;
 use vars qw($VERSION);
 
-$VERSION = do { my @r = (q$Revision: 0.55 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.56 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 sub DESTROY {};
+
+1;
+__END__
 
 =head1 NAME
 
@@ -253,7 +256,7 @@ Utility module to lookup an IP address owner anywhere in the world
 
 =head1 COPYRIGHT
 
-Copyright 2003, 2004, Michael Robinton <michael@bizsystems.com>
+Copyright 2003 - 2005, Michael Robinton <michael@bizsystems.com>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

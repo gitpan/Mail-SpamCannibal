@@ -1,5 +1,12 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.56	Thu Mar 24 14:18:14 PST 2005
+	update public_html/cannibal.cgi to include version numbers for
+		Mail::SpamCannibal
+		Net::DNS::Codes
+		Net::DNS::ToolKit
+		IPTables::IPv4::DBTarpit
+
 0.55	Tue Mar  1 10:40:10 PST 2005
         modify DNSBLserver/ns.c to always hide 127.0.0.0 AND 127.0.0.1 responses
 

@@ -1,5 +1,5 @@
 #
-# my version 1.13, 11-23-04 michael@bizsystems.com
+# my version 1.16, 1-12-05 michael@bizsystems.com
 # -*- Perl -*-
 #***********************************************************************
 #
@@ -199,7 +199,7 @@ my @dyn_ok_domains = qw(
 # dynamic or non MX static accounts
 #
 my $pattern =
-'ipad|unknown|customer|unused|no-dns|'.
+'not-active|ipad|unknown|customer|unused|no-dns|'.
 'reverse|wlan|user|usr|nat|catv|modem|cable|modemcable|'.
 'cdm|cm\d|client|cust|dhcp|dial|dialuol|dialup|dialip|dip|'.
 'docsis|(a|c|s|x|v|)dsl|dyn(amic|dsl|)|host|pool|ppp|in\-addr\.arpa';
@@ -242,7 +242,7 @@ sub filter_sender {
   return(sc_profile('bad_hostname','REJECT',"bogus host $hostname")) if $hostname =~ /unassigned/i;
 
 # return if not possible dynamic host
-  return (sc_profile('reverse_IP','REJECT',"reverse IP |$&| $hostname"))
+  return (sc_profile('reverse_IP','REJECT',"bad reverse IP |$&| $hostname"))
 	if $hostname =~ /$ipattern/o;
   return ('CONTINUE','ok') unless $hostname =~ /([(.\-]|\b)($pattern).?[.\-\d]/io;
   my $match = $&;

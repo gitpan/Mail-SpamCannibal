@@ -978,6 +978,7 @@ NS_errorExit:
       goto NS_AuthOnly;
     } else {
   NS_AuthOnly:
+      rcode = NXDOMAIN;
       RR_SOA(nscount);
       goto NS_send;
     }

@@ -1,5 +1,14 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.54  Tue Jan 11 15:45:02 PST 2005
+	in DNSBLserver,
+	change query response for record not found 
+		from:   NOERROR + SOA
+		to:     NXDOMAIN + SOA
+	to conform to standard response of most other dnsbl's
+
+	update contrib/mimedefang-filter
+
 0.53  Sat Dec  7 16:36:58 PST 2004
 	correct typo in contrib/zone_cron.sh v1.04 (1.02,3 not released)
 	previous version would start several dnsbls to do a zone dump
@@ -21,12 +30,12 @@ Revision history for Perl extension Mail::SpamCannibal
 
 0.51  Sun Nov 14 22:12:03 PST 2004
 	update DNSBLserver v0.34
-        add the number of records dumped by zonfile.c comment
-        text in the zonefile. the form of the zonfile header is:
+	add the number of records dumped by zonfile.c comment
+	text in the zonefile. the form of the zonfile header is:
 
-        ; Version: dnsbls 0.34, 11-14-04
-        ; 375624 A records
-        ; zone dump on Sun Nov 14 22:05:52 2004
+	; Version: dnsbls 0.34, 11-14-04
+	; 375624 A records
+	; zone dump on Sun Nov 14 22:05:52 2004
 
 	add contrib/zone_cron.pl to compliment
 	contrib/zone_cron.sh and extract record count

@@ -1,5 +1,12 @@
 Revision history for Perl extension Mail::SpamCannibal::DNSBLserver.
 
+0.36  Tue Jan 11 15:45:02 PST 2005
+	change query response for record not found 
+		from:	NOERROR + SOA
+		to:	NXDOMAIN + SOA
+	to conform to standard response of most other d
+  Thanks to csg@habeas.com for spotting the error.
+
 0.35  Sat Dec  4 14:06:58 PST 2004
 	adjust priority of zonefile child to use minimum cpu cycles,
 	this needs site dependent "setpriority", tested with siteconf

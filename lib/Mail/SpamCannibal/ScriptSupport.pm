@@ -4,15 +4,13 @@ package Mail::SpamCannibal::ScriptSupport;
 use strict;
 #use diagnostics;
 BEGIN {
-  use vars qw($VERSION @ISA @EXPORT_OK $ID $_scode $_tcode $_ccode $rblkbegin $rblkend);
+  use vars qw($VERSION @ISA @EXPORT_OK $ID $_scode $rblkbegin $rblkend);
   use IO::Socket::INET;
 
   $_scode = inet_aton('127.0.0.0');
-  $_tcode = inet_aton('127.0.0.2');
-  $_ccode = inet_aton('127.0.0.3');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.14 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.15 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -68,13 +66,6 @@ use Mail::SpamCannibal::PidUtil qw(
 	is_running
 );
 
-use constant SerialEntry => $_scode;
-use constant TarpitEntry => $_tcode;
-use constant DNSBL_Entry => $_ccode;
-
-require Exporter;
-@ISA = qw(Exporter);
-
 use Net::DNSBL::Utilities qw(
 	list2NetAddr
 	matchNetAddr
@@ -83,6 +74,9 @@ use Net::DNSBL::Utilities qw(
 	write_stats
 	statinit
 	cntinit
+	A1271
+	A1272
+	A1273
 	A1274
 	A1275
 	A1276
@@ -91,6 +85,14 @@ use Net::DNSBL::Utilities qw(
 *list2NetAddr = \&Net::DNSBL::Utilities::list2NetAddr;
 *matchNetAddr = \&Net::DNSBL::Utilities::matchNetAddr;
 *DO = \&Net::DNSBL::Utilities::DO;
+
+use constant SerialEntry => $_scode;
+
+*TarpitEntry = \&A1272;
+*DNSBL_Entry = \&A1273;
+
+require Exporter;
+@ISA = qw(Exporter);
 
 @EXPORT_OK = qw(
 	DO
@@ -101,8 +103,13 @@ use Net::DNSBL::Utilities qw(
 	question
 	revIP   
 	query   
+	dns_udpsend
+	dns_udpresp
 	dns_ans 
 	dns_ns
+	dns_ptr
+	rlook_send
+	rlook_rcv
 	zone_def
 	valid127
 	validIP
@@ -142,8 +149,13 @@ Mail::SpamCannibal::ScriptSupport - A collection of script helpers
 	question
 	revIP
 	query
+	dns_udpsend
+	dns_udpresp
 	dns_ans
 	dns_ns
+	dns_ptr
+	rlook_send
+	rlook_rcv
 	zone_def
 	valid127
 	validIP
@@ -170,8 +182,13 @@ Mail::SpamCannibal::ScriptSupport - A collection of script helpers
   $querybuf = question($name,$type);
   $rev = revIP($ip);
   $response = query(\$buffer,$timeout);
+  $socket = dns_udpsend(\$buffer,$timeout);
+  $response = dns_udpresp($socket,$timeout);
   ($aptr,$tptr,$auth_zone) = dns_ans(\$buffer);
   $nsptr = dns_ns(\$buffer);
+  $hostname = dns_ptr(\$buffer);
+  $socket = rlook_send($IP,$timeout);
+  $hostname = rlook_rcv($socket,$timeout);
   ($expire,$error,$dnresp,$timeout)=zone_def($zone,\%dnsbl);
   $dotquad = valid127($dotquad);
   $dotquad = validIP($dotquad);
@@ -322,7 +339,7 @@ timeout), $@ will be set.
 
 sub query {
   my($bp,$timeout) = @_;
-  $timeout = 30 unless $timeout && $timeout > 0;;
+  $timeout = 30 unless $timeout && $timeout > 0;
   my @servers = get_ns();
   my $port = 53;
   my ($msglen,$response);
@@ -346,7 +363,7 @@ sub query {
       unless ($msglen = sysread($socket,$response,NS_PACKETSZ)) {	# get response, size limited
 	close $socket;
 
-	my $socket = IO::Socket::INET->new(
+	$socket = IO::Socket::INET->new(
 	  PeerAddr	=> $server,
 	  PeerPort	=> $port,
 	  Proto		=> 'tcp',
@@ -363,8 +380,8 @@ sub query {
 
 	$msglen = get16(\$response,0);
 	$msglen = sysread $socket, $response, $msglen;
-	close $socket;
       } # using TCP
+      close $socket;
       alarm 0;
     }; # end eval
     next if $@;
@@ -372,6 +389,71 @@ sub query {
     return $response;
   } # end if foreach, no server found
   return undef;
+}
+
+=item * $socket = dns_udpsend(\$buffer,$timeout);
+
+Sends a DNS query contained in $buffer. Returns a UDP socket or undef;
+If the error is catastophic (like a timeout), $@ will be set.
+
+  input:	pointer to query buffer,
+		optional timeout (secs, def 30)
+  returns:	socket or undef
+
+=cut
+
+sub dns_udpsend {
+  my($bp,$timeout) = @_;
+  $timeout = 30 unless $timeout && $timeout > 0;
+  my @servers = get_ns();
+  my $port = 53;
+  my $len = length($$bp);
+  my $server = inet_ntoa($servers[0]);
+  my $socket;
+  eval {
+      local $SIG{ALRM} = sub {die "connection timed out, no servers could be reached"};
+      alarm $timeout;
+##### open socket
+      $socket = IO::Socket::INET->new(
+	PeerAddr	=> $server,
+	PeerPort	=> $port,
+	Proto		=> 'udp',
+	Type		=> SOCK_DGRAM,
+      ) or die "connection timed out, no servers could be reached";
+
+##### send UDP query, should not block
+      syswrite $socket, $$bp, length($$bp);
+      alarm 0;
+  };
+  return $socket;
+}
+
+=item * $buffer = dns_udpresp($socket,$timeout);
+
+Returns a DNS answer from $socket and closes socket. Returns undef on
+failure. If the error is catastophic (like a timeout), $@ will be set.
+
+  input:	socket,
+		optional timeout (secs, def 30)
+  returns:	response buffer
+
+  closes:	socket
+
+=cut
+
+sub dns_udpresp {
+  my($socket,$timeout) = @_;
+  return undef unless $socket;
+  $timeout = 30 unless $timeout && $timeout > 0;
+  my $response = undef;
+  eval {
+      local $SIG{ALRM} = sub {die "connection timed out, no servers could be reached"};
+      alarm $timeout;
+      sysread($socket,$response,NS_PACKETSZ) or die "no message received";
+  };
+  alarm 0;
+  close $socket;
+  return $response;
 }
 
 =item * ($aptr,$tptr,$auth_zone)=dns_ans(\$buffer);
@@ -513,6 +595,82 @@ sub dns_ns {
   return undef unless keys %$nsptr;
   bless $nsptr, $caller;
   return $nsptr;
+}
+
+=item * $host = dns_ptr(\$buffer);
+
+Parse a DNS PTR request answer and return the hostname
+
+If no records are found, undef is returned
+
+  input:	pointer to response buffer
+  returns:	host name
+
+=cut
+
+sub dns_ptr {
+  my $bp = shift;
+  return undef unless $$bp;
+  my ($off,$id,$qr,$opcode,$aa,$tc,$rd,$ra,$mbz,$ad,$cd,$rcode,
+	$qdcount,$ancount,$nscount,$arcount)
+	= gethead($bp);
+
+  return undef if
+	$tc ||
+	$opcode != QUERY ||
+	$rcode != NOERROR ||
+	$qdcount != 1 ||
+	$ancount < 1;
+
+  my ($get,$put,$parse) = new Net::DNS::ToolKit::RR;
+  ($off,my($name,$type,$class)) = $get->Question($bp,$off);
+  return undef unless $class == C_IN;
+
+  ($off,$name,$type,$class,my($ttl,$rdlength,$host)) =
+	$get->next($bp,$off);
+  return undef unless $type == T_PTR;
+  ($name,$type,$class,$host) = $parse->PTR($name,$type,$class,$host);
+  return $host;
+}
+
+=item * $socket = rlook_send($IP,$timeout);
+
+Send a query for reverse lookup of $IP 
+and return the receive socket handle.
+
+  input:	dotquad IP address,
+		optional timeout (sec, def 30)
+  return:	socket or undef
+
+=cut
+
+sub rlook_send {
+  my($IP,$timeout) = @_;
+  my $buffer = undef;
+  my $offset = newhead(\$buffer,
+	&id(),
+	BITS_QUERY | RD,	# query, recursion desired
+	1,0,0,0,		# one question
+  );
+  my $dnsblIP = revIP($IP);
+  my ($get,$put,$parse) = new Net::DNS::ToolKit::RR;
+  $offset = $put->Question(\$buffer,$offset,$dnsblIP.'.in-addr.arpa',T_PTR,C_IN);
+ return dns_udpsend(\$buffer,$timeout);
+}
+
+=item * $hostname = rlook_rcv($socket,$timeout);
+
+Receive DNS response, parse for hostname, close socket;
+
+  input:	receive socket,
+		optional timeout (sec, def 30)
+  return:	hostname text or undef
+
+=cut
+
+sub rlook_rcv {
+  my $buffer = dns_udpresp(@_);
+  return dns_ptr(\$buffer);
 }
 
 =item * ($expire,$error,$dnresp,$timeout)=zone_def($zone,\%dnsbl);

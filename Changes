@@ -1,5 +1,11 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.22  Thu Jan 15 11:18:33 PST 2004
+	Add domain name lookup to whois cannibal.cgi page
+	ScriptSupport.pm
+	  add dns_udpsend
+	  add dns_udpresp
+
 0.21  Wed Jan  7 11:52:56 PST 2004
 	Fixed typo in howitworks.pod 'in-definite-ly', thanks to Graham Barr
 	gbarr@pobox.com for spotting it.

@@ -5,9 +5,9 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 1.11, 11-8-03
+# version 1.13, 1-15-04
 #
-# Copyright 2003, Michael Robinton <michael@bizsystems.com>
+# Copyright 2003, 2004, Michael Robinton <michael@bizsystems.com>
 #   
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@ package Mail::SpamCannibal::PageIndex;
 #
 use strict;
 #use diagnostics;
-use vars qw(%ftxt);
+use vars qw(%ftxt $timeout);
+
+$timeout = 15;	# 15 second timeout for internal UDP PTR lookup
 
 use Mail::SpamCannibal::IP2ccFlag;
 use Mail::SpamCannibal::ScriptSupport qw(
@@ -35,6 +37,19 @@ use Mail::SpamCannibal::ScriptSupport qw(
 	lookupIP
 	validIP
 	valid127
+	rlook_send
+	rlook_rcv
+);
+use Net::DNS::Codes qw(
+	T_NS
+);
+use Net::DNS::ToolKit qw(
+	newhead
+	gethead
+	get_ns
+	inet_aton
+	inet_ntoa
+	ttlAlpha2Num
 );
 use Mail::SpamCannibal::BDBclient qw(
         dataquery
@@ -202,12 +217,19 @@ document.whois.whois.value = '$IP';
 </script>
 |;
       } else {
+
 	my $cc = (@_ = Mail::SpamCannibal::IP2ccFlag::get($IP))
 		? qq|&nbsp;&nbsp;$_[0]</td><td><img src="$_[1]" alt="$_[0]" height=22 border=1>| : '';
 	require Mail::SpamCannibal::WhoisIP;
-	$html .= "<table cellspacing=5 cellpadding=0 border=0><tr valign=middle><td>Whois response for: <b>$IP</b>$cc</td></tr></table>\n<pre>";
-	$html .= &Mail::SpamCannibal::WhoisIP::whoisIP($IP);
-	$html .= "</pre>\n";
+	$html .= "<table cellspacing=5 cellpadding=0 border=0><tr valign=middle><td>Whois response for: <b>$IP</b>$cc</td></tr></table>";
+
+	my $socket = rlook_send($IP,$timeout);
+	my $wtxt = &Mail::SpamCannibal::WhoisIP::whoisIP($IP);
+	my $hostname = rlook_rcv($socket,$timeout);
+	if ($hostname) {
+	  $html .= "\n&nbsp;&nbsp;$hostname";
+	}
+	$html .= "<pre>". $wtxt ."</pre>\n";
       }
     }
     last PageGen;
@@ -338,7 +360,8 @@ function wIP(ip) {
   onClick="if (confirm('do you really want to delete a 256 address block?')) { self.location = location.pathname + '?page=delBLK&remove=' + '|.
 	  $IP .q|'; } return false;">X CIDR/24</a></td></tr></table>|;
 	}
-	my ($second,$text);
+	my $socket = rlook_send($IP,$timeout);
+	my ($second,$text,$results);
 	if(ref $CONFIG->{bdbDAEMON}) {	# remote?
 	  ($second,$text) = lookupIP($sc,$IP,@{$CONFIG->{bdbDAEMON}});
 	} else {
@@ -346,12 +369,12 @@ function wIP(ip) {
 	}
 	if($second) {		# if secondary db 'blcontrib'
 	  $text =~ s|(http://([\w\.\-\?#&=/]+))|\<a href="$1"\>$2\</a\>|;
-	  $_ = "\n<p>\n". $text;
+	  $results = "\n<p>\n". $text;
 	}else {
 	  $text =~ s/</&lt;/g;		# unmask html <
 	  $text =~ s/>/&gt;/g;		# unmask html >
 	  $text =~ s/$IP[^\d]/$substr/g;
-	  $_ = "\n<pre>\n". $text ."\n</pre>";
+	  $results = "\n<pre>\n". $text ."\n</pre>";
 	}
 	if ($admin && $text =~ /^not\s+in\s+\w+\s+database/) {
 	  $html .= q|
@@ -359,7 +382,12 @@ function wIP(ip) {
     <td class=cold><a href="#top" class=cold onMouseOver="return(show('tarpit |. $IP .q|'));" onMouseOut="return(off());"
   onClick="self.location = location.pathname + '?page=spamlst&host=' + '|. $IP .q|'; return false;">&#164;</a></td></tr></table><td>add to tarpit</td>|;
 	}
-	$html .= '</td></tr></table>'. $_ .q|
+	my $hostname = rlook_rcv($socket,$timeout);
+	$html .= '</td></tr></table>';
+	if ($hostname) {
+	  $html .= "\n&nbsp;&nbsp;". $hostname;
+	}
+	$html .= $results .q|
 </form>
 |;
 	if ($admin) {
@@ -518,15 +546,6 @@ function wIP(ip) {
 ######  BLKADD
 
   if ($admin && $query{page} =~ /^blkadd/) {
-    require Net::DNS::ToolKit;
-    import Net::DNS::ToolKit qw(
-	gethead
-	get_ns
-	inet_aton
-	inet_ntoa
-	ttlAlpha2Num
-    );
-    require Net::DNS::Codes;
     my $host = validIP($query{host});
     my $response = valid127($query{response});
     my $remote = validIP($query{remote});
@@ -545,7 +564,7 @@ function wIP(ip) {
     $pagerror .= $query{zone} .' <font size="+1" color=red>no NS records for this zone</font><br>'
 	unless !$query{zone} || do {
 		my @localns = get_ns();
-		my $querybuf = question($query{zone},&Net::DNS::Codes::T_NS);
+		my $querybuf = question($query{zone},T_NS());
 		my $resp = query(\$querybuf);
 		if ($resp) {		# got answer
 		  my ($off,$id,$qr,$opcode,$aa,$tc,$rd,$ra,$mbz,$ad,$cd,$rcode,

@@ -2,7 +2,7 @@
 #
 # spam_report.plx
 #
-my $version = '1.03';	# 9-30-03, michael@bizsystems.com
+my $version = '1.04';	# 1-16-04, michael@bizsystems.com
 # GPL'd, see Copyright notice in the package README file
 #
 use strict;
@@ -386,6 +386,7 @@ if ( $rpt ) {		# if cache update needed
 ## MAKE STANDARD TOP AND BUTTON BAR
 
   $html = qq|<html><head>
+<META NAME="ROBOTS" CONTENT=NOINDEX, NOFOLLOW">
 <title>SpamCannibal $page</title>| .
   ($image_cache || '') . q|<style>   
 A.NU {

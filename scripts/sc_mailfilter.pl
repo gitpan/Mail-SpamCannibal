@@ -2,7 +2,7 @@
 #
 # sc_mailfilter.pl
 #
-# version 1.04, 9-3-03
+# version 1.06, 10-5-03
 #
 #################################################################
 # WARNING! do not modify this script, make one with a new name. #
@@ -31,13 +31,17 @@ use strict;
 #use diagnostics;
 use lib qw(blib/lib blib/arch);
 use Mail::SpamCannibal::SiteConfig;
-use Mail::SpamCannibal::ScriptSupport qw(
+use Mail::SpamCannibal::ScriptSupport 0.09 qw(
 	mailcheck
 	list2NetAddr
 	DO
 );
 use Mail::SpamCannibal::SMTPsend qw(
 	sendmessage
+);
+use Mail::SpamCannibal::PidUtil qw(
+	get_script_name
+	make_pidfile
 );
 
 ################ CONFIGURABLE LIMITS ####################
@@ -138,14 +142,18 @@ my ($environment,$tarpit,$archive,$evidence) = (
 	$CONFIG->{SPMCNBL_DB_ARCHIVE},
 	$CONFIG->{SPMCNBL_DB_EVIDENCE},
 );
-  my %default = (
+
+my %default = (
 	dbhome  => $environment,
 	dbfile  => [$tarpit],
 	txtfile => [$evidence],
 	DEBUG   => $DEBUG,
 	LIMIT   => $CHAR_SAVE_LIMIT, # characters
 	PGPLIM  => $CHAR_READ_LIMIT,
-  );
+);
+
+my $pidfile = $environment .'/'. get_script_name() .'.'. $$ .'.pid';
+make_pidfile($pidfile);
 
 # if validation is specified
 push @{$default{dbhome}}, $archive
@@ -157,13 +165,16 @@ list2NetAddr($DNSBL->{IGNORE},\@NAignor)
 
 my $emailfmt = '^.+\@.+\..+';
 
+my $run = 1;
+local $SIG{TERM} = sub { $run = 0 };
+
 # this is set up so that it can be enhanced to pass a file handle in a
 # loop for batch message processing
 #
 my $fh = *STDIN;
 {	# while loop
-  if ( (@_ = mailcheck($fh,$MAILFILTER,$DNSBL,\%default,\@NAignor)) &&
-     ($X ||	($MAILFILTER->{REPORT} &&
+  if ( $run &&  (@_ = mailcheck($fh,$MAILFILTER,$DNSBL,\%default,\@NAignor)) &&
+     ( $X ||	($MAILFILTER->{REPORT} &&
 	$MAILFILTER->{REPORT} =~ /$emailfmt/))) {
     my($verb,$err) = @_;
     if ($VERBOSE || $verb > 1) {
@@ -171,10 +182,12 @@ my $fh = *STDIN;
 	unless $err =~ /Subject:/;
       if ($X) {
         print $err,"\n";
-      } else {
+      } elsif ($run) {
         sendmessage($err,$MAILFILTER->{REPORT})
 	  if $VERBOSE || $verb > 1;
       }
     }
   }
 } # end while
+
+unlink $pidfile;

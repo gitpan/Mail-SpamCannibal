@@ -8,12 +8,13 @@ use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
 require Exporter;
 @ISA = qw(Exporter);
 
-$VERSION = do { my @r = (q$Revision: 0.01 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.04 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 %EXPORT_TAGS = (
   all	=> [qw(
 	is_running
 	make_pidfile
+	zap_pidfile
 	get_script_name
 	if_run_exit
   )],
@@ -31,6 +32,7 @@ Mail::SpamCannibal::PidUtil - PID file management utilities
 	if_run_exit
 	is_running
 	make_pidfile
+	zap_pidfile
 	get_script_name
 	:all
   );
@@ -95,9 +97,10 @@ sub is_running {
 	-e $pidfile && 
 	-r $pidfile &&
 	open(PID,$pidfile);
-  $_ = <PID>;	# get pid
+  local $_ = <PID> || 0;		# get pid
   close PID;
   chomp;
+  return 0 unless $_ && $_ !~ /\D/;	# skip bogus pid files
   return (kill 0, $_) ? $_ : 0;
 }
 
@@ -119,6 +122,20 @@ sub make_pidfile {
   print PID $pid,"\n";
   close PID;
   return $pid;
+}
+
+=item * $rv = zap_pidfile($path);
+
+  input:	path for pidfiles
+  returns:	return value of 'unlink'
+
+=cut
+
+sub zap_pidfile {
+  my ($path) = @_;
+  my $me = get_script_name();
+  my $pidfile = $path .'/'. $me . '.pid';
+  unlink $pidfile;
 }
 
 =item * $me = get_script_name();
@@ -153,6 +170,7 @@ sub get_script_name {
 	if_run_exit
         is_running
         make_pidfile
+	zap_pidfile
         get_script_name
 
 =head1 EXPORT_TAGS

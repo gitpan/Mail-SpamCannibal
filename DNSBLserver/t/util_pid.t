@@ -5,7 +5,7 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..16\n"; }
+BEGIN { $| = 1; print "1..18\n"; }
 END {print "not ok 1\n" unless $loaded;}
 
 use Cwd;
@@ -46,6 +46,10 @@ mkdir 'tmp';
 my $localdir = cwd();
 
 my $expect = '/var/run/dbtarpit/dnsbls.pid';
+my $expchild = '/var/run/dbtarpit/dnsbls.'. $$ .'.pid';
+ 
+# initialize since 'main' is not called
+&{"${TCTEST}::t_set_parent"}(1);
 
 ## test 2 - retrieve default path
 my $path =  &{"${TCTEST}::t_pidpath"}();
@@ -158,4 +162,14 @@ $pidexp = $$;
 $pid = &{"${TCTEST}::t_pidrun"}();  
 print "found pid $pid, expected $pidexp\nnot "
         unless $pidexp = $pid;
+&ok;
+
+## test 17	check child functions
+print "got: $_, exp: 1\nnot "
+	unless ($_ = &{"${TCTEST}::t_set_parent"}(0)) == 1;
+&ok;
+
+## test 18	check that pid filename is correct
+print "got: $_, exp: $expchild\nnot "
+	unless $expchild eq ($_ = &{"${TCTEST}::t_pidpath"}());
 &ok;

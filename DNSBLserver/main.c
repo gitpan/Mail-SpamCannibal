@@ -31,6 +31,14 @@
 #include <sys/file.h>
 #include <bdbtarpit.h>
 
+#if DBTP_MAJOR == 0
+# if DBTP_MINOR == 0
+#  if DBTP_PATCH < 1
+#   error requires IPTables::IPv4::DBTarpit version 0.21 or higher
+#  endif
+# endif
+#endif
+
 #include "defines.h"
 #include "data.c"
 #include "misc.c"
@@ -106,7 +114,7 @@ int realMain(int argc, char **argv)
   extern struct in_addr stdResp, stdRespBeg, stdRespEnd, serial_rec;
   
   char getoptstr[] = "z:a:n:N:u:y:x:m:t:c:e:g:br:i:j:k:p:dlvPVT?ho";
-  char c, * nsname = NULL, * addip = NULL, * pidpath;
+  char c, * nsname = NULL, * addip = NULL, * pidpathname;
   int nstore = 0, Mptr = 0, mxsave = 0, aflag = 0, status, testflag = 0, gflag = 1;
   int flags, maxfd, ready;
   struct stat sbuf;
@@ -358,7 +366,7 @@ Error_nsname:
     goto ErrorExit;
   }
   
-  if((pidpath = chk4pid(NULL)) == NULL) {	/* bail if another dnsbls is running	*/
+  if((pidpathname = chk4pid(NULL)) == NULL) {	/* bail if another dnsbls is running	*/
     rtn = mybuffer;
     sprintf(rtn, "%d already running", pidrun);
     goto ErrorExit;
@@ -367,7 +375,7 @@ Error_nsname:
   if(dflag == 0 && testflag == 0)
     godaemon();
 
-  savpid(pidpath);
+  savpid(pidpathname);
   
   /* tell 'em we're here... */
   openlog(argv[0],0,LOGFAC);
@@ -417,14 +425,6 @@ Error_nsname:
    
   /* loop! */
   while (run) {
-    if (dbtp.dbenv == NULL) {	  /* initialize the database interface	*/
-      if ((status = dbtp_init(&dbtp,dbhome,-1))) {
-  BDBerror:
-        rtn = mybuffer;
-        sprintf(rtn,str30,status,db_strerror(status));
-        goto ErrorExit;
-      }
-    }
     FD_SET(fdUDP, &rset);
     FD_SET(fdTCPlisten, &rset);
     if ((ready = select(maxfd,&rset,NULL,NULL,NULL)) < 0) {
@@ -437,13 +437,23 @@ Error_nsname:
 	
     } else if (ready > 0) {
       if (FD_ISSET(fdUDP, &rset)) {	/* UDP first while db is open	*/
+        if (dbtp.dbenv == NULL) {	/* initialize the database interface	*/
+          if ((status = dbtp_init(&dbtp,dbhome,-1))) {
+    BDBerror:
+            rtn = mybuffer;
+            sprintf(rtn,str30,status,db_strerror(status));
+            goto ErrorExit;
+          }
+        }
 	if((msglen = read_msg(fdUDP,0)) > 0)
 	    munge_msg(fdUDP,msglen,0);
       }
       if (FD_ISSET(fdTCPlisten, &rset)) {
 	if((fdTCP = accept_tcp(fdTCPlisten)) == 0)
 	    continue;		/* sigh.... failed to connect	*/
-	dbtp_close(&dbtp);	/* close databases across fork	*/
+	if (dbtp.dbenv != NULL)
+	    dbtp_close(&dbtp);	/* close databases across fork	*/
+
 	if((parent = forkchild()) == 0) {	/* child	*/
 	  close(fdTCPlisten);
 	  close(fdUDP);
@@ -455,6 +465,8 @@ Error_nsname:
 	  if (status != -1)
 	  	(void) fcntl(fdTCP, F_SETFL, status & ~FNDELAY);
 	  
+	  savpid(pidpath());	/* register child pid file	*/
+
       CHILD_lingers:
 	  if((msglen = read_msg(fdTCP,gflag)) <= 0) {
 	    if (datalog > 1) {

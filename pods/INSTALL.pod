@@ -3,12 +3,26 @@
 
 Mail::SpamCannibal - HOWTO Install SpamCannibal
 
-=head1 WHERE TO GET SPAMCANNIBAL
+=head1 Where to get SpamCannibal
 
 =for html <p>The most up-to-date version of SpamCannibal is always available from
 <a href="http://www.cpan.org">CPAN</a>. Visit the <a
 href="../?page=download">DOWNLOAD</a> page of our web site for links
 to the latest version and prerequisites.
+
+=for html <a name=support></a>
+
+=head1 Support and Project Participation
+
+=for html <p>Visit the <a
+href="http://sourceforge.net/projects/spamcannibal/">sourceforge - SpamCannibal</a>
+web site. For support, register for the <a href="http://lists.sourceforge.net/lists/listinfo/spamcannibal-users/">spamcannibal-users</a>
+mail list.
+<p>
+If you are interested in participating in the SpamCannibal project, subscribe to the <a
+href="http://lists.sourceforge.net/lists/listinfo/spamcannibal-devel/">spamcannibal-devel</a>
+mail list and send me a brief summary of your coding background and your area 
+of interest in this project. <a href="mailto:michael@bizsystems.com">michael@bizsystems.com</a>
 
 =head1 Creating the SpamCannibal user
 
@@ -137,6 +151,7 @@ appropriate directory on your system.
   Test::More
   MIME::Base64
   Digest::MD5
+  Unix::Syslog
   Net::DNS::Codes
   Net::DNS::ToolKit
   NetAddr::IP
@@ -201,7 +216,9 @@ package.
 
 =head3 setting up 'dbtarpit'
 
-Copy the rc.dbtarpit script to the appropriate startup directory and
+If you will be using the SpamCannibal L<sc_dbwatch|"Setting up the DB watch daemon"> script (recommended) then
+copy the rc.dbtarpit script to the SpamCannibal (home)/scripts directory,
+otherwise opy the rc.dbtarpit script to the appropriate startup directory and
 edit the host startup scripts so that it is included.
 
 Note: this is a Perl program. DO NOT place in in a start up script prefixed
@@ -391,6 +408,58 @@ Since this is a background job, a better entry might be:
   -v -v does it more verbosely.
   The -d switch implies a single -v.
 
+=head3 activating sc_cleanup.pl
+
+B<sc_cleanup.pl> periodically runs through the databases and I<optionally>
+expires very old records and checks that there are not multiple entries in
+the database for the same IP address or an entry that is present in one
+database that is missing a corresponding entry in a companion database. 
+
+For example:
+
+=over 2
+
+A spam messages arrives and makes it through the system to your in box.
+Subsequently, sc_BLcheck.pl finds the IP address of the spam host in a
+remote DNSBL and adds records to the B<tarpit> and B<blcontrib> databases.
+You find the spam on your desktop and add it to the B<tarpit> and
+B<evidence> databases via the sc_mailfilter.pl robot script. Now there is an
+extra record in B<blcontrib> that is unused. 
+
+=back
+
+There are many more possible
+ways for such inconsistencies to occur and B<sc_cleanup.pl> removes these
+records automatically.
+
+Login as the spamcannibal user and put an entry in your crontab something
+like this:
+
+  # check valid blcontrib every few days
+  21 0 */4 * * ./scripts/sc_cleanup.pl
+
+Since this is a background job, a better entry might be:
+
+  21 0 */4 * * /usr/bin/nice -n 20 ./sc_cleanup.pl
+
+  Syntax: scripts/sc_cleanup.pl -q
+    or
+        scripts/sc_cleanup.pl -d
+        scripts/sc_cleanup.pl -v
+    or
+        scripts/sc_cleanup.pl [options] -x nnn
+
+
+The -q switch is for normal, quiet operation.
+The -d switch allows you to see what the 
+script will do without any db updates 
+taking place. The -v switch will print
+the scripts actions to the screen. 
+The -d switch implies a -v.
+
+The -x switch expires records more than 'nnn'
+days old and removes them from the database.
+
 =head2 Setting up the DNS blacklist daemon
 
 The first part of the installation guide assumes that the host has no other
@@ -398,8 +467,10 @@ DNS daemon running. Section 2 covers running a DNSBL along with a
 conventional DNS. In either case, an NS record must be added to the zone
 file for the blacklist domain.
 
-=for html Copy the DNSBLserver/rc.dnsbls script to the appropriate startup directory and
-edit the host startup scripts so that it is included. See:
+=for html If you will be running the SpamCannibal L<sc_dbwatch|"Setting up the DB watch daemon"> daemon
+(recommended) then do not add the DNSBLserver/rc.dnsbls script to your hosts
+startup directory or procedure. Otherwise, copy DNSBLserver/rc.dnsbls the appropriate 
+startup directory and edit the host startup scripts so that it is included. See:
 <blockquote>
 <a href=rc.dnsbls.html>rc.dnsbls</a>
 <br>
@@ -413,7 +484,7 @@ Login as the spamcannibal user.
   cp dnsbls.conf.sample dnsbls.conf
 
 Edit dnsbls.conf for your site. The file is heavily commented and should be
-self explainatory. Your comments and additions to this documment are welcomed.
+self explanatory. Your comments and additions to this documment are welcomed.
 
 Most of the configuration items do not need changing. What MUST be specified
 for which the defaults usually must be changed are the following:
@@ -429,6 +500,9 @@ For stand alone service, nothing more is necessary except execution of the
 start script.
 
 	./rc.dnsbls start
+
+The ./rc.dnsbls start and ./rc.dnsbls stop commands should be included in
+the L<sc_dbwatch.conf|"Setting up the DB watch daemon"> file described later in this document.
 
 =head3 running DNSBL concurrently with BIND
 
@@ -509,6 +583,8 @@ shared data.
 
 =head2 Setting up the web database access daemon
 
+
+
 =for html Copy the BDBaccess/rc.bdbaccess script to the appropriate startup directory and
 edit the host startup scripts so that it is included. See:
 <a href=rc.bdbaccess.html>rc.bdbaccess</a> for command line details.
@@ -520,7 +596,7 @@ to provide both local and remote access.
 =head3 bdbaccess local access
 
 The default configuration of the rc.bdbaccess file provides local access. In
-the host startup scripts put a lines like this:
+the L<sc_dbwatch.conf|"Setting up the DB watch daemon"> file or your host startup scripts put a lines like this:
 
   rc.bdbaccess start
 	and
@@ -863,12 +939,22 @@ security standpoint (though it's no worse than /tmp). If your script won't
 run and the permissions are different than above, this may be the reason for
 the difficulty.
 
-=head3 configuring sc_lbdaemon.pl
+=head3 configuring rc.sc_lbdaemon.pl
 
 This is the data collection daemon. It attaches to a unix domain socket that
 provides the log output of the tarpit daemon.
 
-Copy the daemon to the startup directory of your system and edit the startup
+If your SpamCannibal installation will be running the L<sc_dbwatch|"Setting up the DB watch daemon"> daemon
+(recommended) then the daemon script is already correctly installed in the
+SpamCannibal (home)/scripts directory. Just copy rc.sc_lbdaemon.pl.sample to rc.sc_lbdaemon.pl
+and include the appropriate 
+
+	rc.sc_lbdaemon	start
+	rc.sc_lbdaemon	stop
+
+entries in the L<sc_dbwatch.conf|"Setting up the DB watch daemon"> file.
+
+Otherwise, copy the daemon to the startup directory of your system and edit the startup
 script to include it at run time.
 
 	/path/rc.sc_lbdaemon.pl
@@ -899,6 +985,97 @@ of the interface. Use 'localhost' if the web server is on the same host.
 This is the wrapper function. Only hosts listed here will be allowed to
 connect to the service port. Defaults to ALL. Use the name or IP address of
 the allowed host(s) or 'localhost' if the web server is on the same host.
+
+=back
+
+=head2 Setting up the DB watch daemon
+
+The B<sc_dbwatch> daemon and startup script provides a single interface
+point for the host system. The daemon periodically checks that all DB tasks
+that have registered and exited have done so in a normal manner. If a task
+exits abnormally, then sc_dbwatch will kill all remaining registered tasks,
+block the starting of any new tasks and cron jobs then recover the database
+environment and restart the DB daemon tasks.
+
+=for html The BerkeleyDB documentation says: <a
+href="http://www.sleepycat.com/docs/ref/transapp/app.html">www.sleepycat.com/docs/ref/transapp/app.html</a>
+<blockquote><font color="#990000">
+&nbsp;&nbsp;...if any thread of control
+exits for any reason while holding Berkeley DB resources, recovery must
+be performed to do the following:
+<ul>
+<li>Recover the Berkeley DB resources.
+<li>Release any locks or mutexes that may have been held to avoid
+starvation as the remaining threads of control convoy behind the failed
+thread's locks.
+<li>Clean up any partially completed operations that may have left a
+database in an inconsistent or corrupted state.
+</ul>
+Complicating this problem is the fact that the Berkeley DB library
+itself cannot determine whether recovery is required; the application
+itself must make that decision. A further complication is that recovery
+must be single-threaded; that is, one thread of control or process must
+perform recovery before any other thread of control or
+processes attempts to create or join the Berkeley DB environment.
+</font>
+</blockquote>
+
+
+Follow these steps for configuration:
+
+Login as the SpamCannibal user and...
+
+	cd config
+	cp sc_dbwatch.conf.sample sc_dbwatch.conf
+
+Edit the configuration file for your site.
+The configuration file is well commented and each of the entries has an explanation.
+
+The individual tasks that will be started and stopped by sc_dbwatch should be configured
+and tested prior to inclusion in the configuration file. It should be noted that in a running system
+there is not particular reason to start and stop all tasks to maintain or reconfigure just one. It is quite 
+proper to start and stop the daemons individually using their respective rc.xxxxx scripts.
+
+When this is completed, copy the rc.sc_dbwatch file from the SpamCannibal
+source installation directory to the appropriate startup directory on your
+host and edit the startup scripts as required to instantiate it at system
+start and stop.
+
+=head3 developing new scripts and daemons that use sc_dbwatch
+
+B<sc_dbwatch> determines if a job has exited badly by checking that each pid file in the database directory
+has a corresponding B<running> job. Jobs that are found not to be running are marked as crashed and will force an
+automatic task shutdown and database recovery.
+
+Cron jobs, scripts, daemons and their children that use the databases have a minimum set of requirements as follows:
+
+=over 4
+
+=item * create a pid file
+
+To register with the sc_dbwatch program, tasks using the database add their pid files to the watched directory.
+The pid file should be of the form C<name.pid> for scripts and daemon parents and of the form C<name.nnn.pid>
+(where nnn is the PID number) for any child process. This exact format is
+not a requirement. The only requirement is that the pid files end in the
+suffix B<.pid> and that the file names be unique for all tasks that are
+registered.
+
+The pid file should be placed in the same directory as the databases. 
+The directory path is determined for a 'C' process by using the C<dbhome>
+directory pointer and for a perl process by using the 
+
+=for html <a
+href="SiteConfig.html">Mail::SpamCannibal::SiteConfig</a> module pointer for 
+SPMCNBL_ENVIRONMENT.
+
+=item * respond to SIGTERM
+
+Every process that registers its pid file should respond to a SIGTERM by gracefully terminating its activity as
+quickly as possible, removing its pid file and exiting.
+
+=item * remove pid file on exit
+
+Every process that registers its pid file should remove it when it finishes using the databases.
 
 =back
 

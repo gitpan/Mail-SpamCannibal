@@ -2,7 +2,7 @@
 #
 # sc_BLcheck.pl
 #
-# version 1.02, 9-6-03
+# version 1.04, 10-5-03
 #
 #################################################################
 # WARNING! do not modify this script, make one with a new name. #
@@ -31,12 +31,15 @@ use strict;
 #use diagnostics;
 use lib qw(blib/lib blib/arch);
 use Mail::SpamCannibal::SiteConfig;
-use Mail::SpamCannibal::ScriptSupport qw(
+use Mail::SpamCannibal::ScriptSupport 0.08 qw(
 	BLcheck
 	DO
 );
 
-use Mail::SpamCannibal::PidUtil qw(if_run_exit);
+use Mail::SpamCannibal::PidUtil 0.02 qw(
+	if_run_exit
+	zap_pidfile
+);
 
 sub usage {
   print STDERR $_[0],"\n\n" if $_[0];
@@ -102,8 +105,17 @@ my %default = (
 	VERBOSE	=> $VERBOSE,
 );
 
+die <<EOF if -e $CONFIG->{DBTP_ENVHOME_DIR} .'/'. 'blockedBYwatcher';
+##############################################
+
+  startup blocked by DB watcher process
+
+##############################################
+EOF
+
 if_run_exit($environment,'already running');
 
 my $err = BLcheck($DNSBL,\%default);
+zap_pidfile($environment);
 usage($err) if $err;
 

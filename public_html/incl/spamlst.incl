@@ -8,7 +8,10 @@ Evidence of spam sent to this site.
 <input type=text name=host> host dot quad IP address<br>
 <textarea name=spam cols=60 rows=15 wrap=off></textarea><br>
 <blockquote>
-<input type=submit value="ADD SPAM" onClick="document.SpamAdd.action=location.pathname;">
+<input type=submit name=submit value="ADD SPAM" onClick="document.SpamAdd.action=location.pathname;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type=submit name=submit value="ADD CIDR/24 BLOCK" 
+  onClick="if (confirm('do you really want to add this 256 address block?')) { document.SpamAdd.action=location.pathname; } else { return false;}">
 </blockquote>
 </form>
 </blockquote>

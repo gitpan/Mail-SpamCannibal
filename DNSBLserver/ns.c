@@ -834,6 +834,7 @@ NS_errorExit:
 	NS_AXFR_next:
 		if (dbtp_getrecno(&dbtp,DBtarpit, axfrc++))
 			goto NS_AXFR_last_SOA;
+
 /*	suppress numeric record for 127.0.0.0, it is used internally	*/
 		if (*(u_char *)dbtp.keydbt.data == 0x7F &&
 		    *(u_char *)(dbtp.keydbt.data +1) == 0 &&

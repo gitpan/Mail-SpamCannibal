@@ -28,13 +28,21 @@
 #include <arpa/inet.h>
 #include <resolv.h>
 #include <fcntl.h>
+#include <bdbtarpit.h>
+
+#if DBTP_MAJOR == 0
+# if DBTP_MINOR == 0
+#  if DBTP_PATCH < 1
+#   error requires IPTables::IPv4::DBTarpit version 0.21 or higher
+#  endif
+# endif
+#endif
 
 #ifndef INADDR_NONE
 #define INADDR_NONE INADDR_BROADCAST 
 #endif
 
 #include "defines.h"
-#include "bdbtarpit.h"
 #include "data.c"
 #include "misc.c"
 #include "godaemon.c"
@@ -64,7 +72,7 @@ int realMain(int argc, char **argv)
   extern DBTPD dbtp;
       
   char getoptstr[] = "r:f:s:ip:dlVvT?ho";
-  char c, * pidpath, shortbuf[255];
+  char c, * pidpathname, shortbuf[255];
   int testflag = 0, dbnp = 0, i, status, fdlisten, fd = 0;
   sigset_t set;
   size_t msglen;
@@ -163,7 +171,7 @@ int realMain(int argc, char **argv)
   
   if(inetd == 0) {
 
-    if((pidpath = chk4pid(NULL)) == NULL) {	/* bail if another bdbreader is running	*/
+    if((pidpathname = chk4pid(NULL)) == NULL) {	/* bail if another bdbreader is running	*/
       rtn = mybuffer;
       sprintf(rtn, "%d already running", pidrun);
       goto ErrorExit;
@@ -178,7 +186,7 @@ int realMain(int argc, char **argv)
     if(!dflag && !testflag)
       godaemon();
 
-    savpid(pidpath);
+    savpid(pidpathname);
   
   /* tell 'em we're here... */
     openlog(argv[0],0,LOGFAC);
@@ -200,7 +208,7 @@ int realMain(int argc, char **argv)
     }
     sigprocmask (SIG_UNBLOCK, &sa.sa_mask, 0);
 
-} /* inetd == 0	*/
+} /* end if inetd == 0	*/
 
 
   /* loop! */
@@ -211,10 +219,12 @@ int realMain(int argc, char **argv)
       if ((fd = accept_client(fdlisten)) == 0)
         continue;				/* failed to connect	*/
     }
-    if(inetd || forkchild() == 0) {		/* child		*/
+    if(inetd || (parent = forkchild()) == 0) {		/* child		*/
       if(inetd == 0)
         close(fdlisten);			/* close listening socket	*/
 
+      savpid(pidpath());				/* register child PID		*/
+      
       if((msglen = read_msg(fd)) > 0) {
 	if (datalog) {
 	  rtn = mybuffer;
@@ -273,6 +283,7 @@ int realMain(int argc, char **argv)
     CleanUp:
       dbtp_close(&dbtp);
       close(fd);
+      unlink(pidpath());
       exit(0);
     }
     else

@@ -22,12 +22,28 @@ print "ok 1\n";
 
 $test = 2;
 
+umask 007;
+foreach my $dir (qw(tmp tmp.dbhome tmp.bogus)) {
+  if (-d $dir) {         # clean up previous test runs
+    opendir(T,$dir);
+    @_ = grep(!/^\./, readdir(T));
+    closedir T;
+    foreach(@_) {
+      unlink "$dir/$_";
+    }
+    rmdir $dir or die "COULD NOT REMOVE $dir DIRECTORY\n";
+  }
+  unlink $dir if -e $dir;       # remove files of this name as well
+}
+
 sub ok {
   print "ok $test\n";
   ++$test;
 }
 
 my $localdir = cwd();
+my $testdir = $localdir .'/tmp.dbhome';
+mkdir $testdir;
 
 sub fqdn {
   (gethostbyname(&{"${TCTEST}::t_short"}()))[0];
@@ -239,7 +255,7 @@ dumpargs(@x);
 checkextra('Usage: dnsbls <options>');
 
 ## test 207 check error name server missing
-@x = ();
+@x = ('-r', $testdir);
 dumpargs(@x);
 checkextra('Error: -n');
 

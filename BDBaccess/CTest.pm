@@ -98,6 +98,11 @@ the the 'C' pieces for F<bdbaccess>
   test routine should issue SIGINT 
   to child and catch resulting text
 
+=item * t_set_parent(val);
+
+  set the value of "parent"
+  return the previous value
+
 =item * $pid = t_pidrun()
 
   input:	none

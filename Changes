@@ -1,5 +1,66 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.17  Sat Oct 11 08:28:02 PDT 2003
+	squash a test bug in DNSBLserver
+
+	modifiy sc_session.pl to access database directly for CIDR/24
+	related IP lookups rather than have cannibal.cgi use BDBclient. 
+	The lookup time for 255 addresses over the remote link was 
+	much too long.
+
+	add remote commands to sc_remote.pl to support insEBLK, getC24 delBLK
+
+0.16  Fri Oct 10 13:46:42 PDT 2003
+
+	This release contains many bug fixes as well as some new features
+	in the admin interfac.
+	The following modules should be updated when installing this
+	release:
+
+		IPTables::IPv4::DBTarpit verion 0.22
+		Net::DNS::Codes 0.08
+		Net::DNS::ToolKit 0.14
+	and the optional
+		LaBrea::Tarpit version 1.20
+	---------------------------------------------------------------
+	add "add CIDR/24 and delete CIDR24" functions to admin tools
+
+	corrected bad use of 'clean' function in sc_session.pl
+	on non-strings such as netaddrs, addresses which end in '0'
+	like 1.2.3.10 are truncated by 'clean'. This function SHOULD always
+	be called on real strings or numbers, not string like objects such
+	as netaddrs.
+
+	add -x expires option to sc_cleanup.pl
+
+	add dbjob_xxx utilities to ScriptSupport.pm 0.10 for db watcher
+
+	add missing PidUtil qw(get_script_name) to sc_mailfilter.pl
+
+	update test suites to accomodate libdbtarpit change
+
+	add support for DB watcher to all daemons and scripts.
+	each daemon and script creates a PID file in the db environment 
+	directory and NOW removes the file on clean exit. The watcher script
+	periodically checks whether the files described by the pid's are
+	actually running and will signal the remaining jobs to exit, 
+	remove and recreate the environment and restart the jobs.
+
+	add administrative screen shots to document package
+
+	correct sc_web.conf.example for missing entry to 
+	support admin change password
+
+	change nav.incl a href for 'docs' to 'docs/' to 
+	for the web robots. This is comsmetic since the 
+	href is not used anyway, but the robots see it.
+
+	in cannibal.cgi, modify 'whois' and 'lookup' to insert the 
+	IP address into the text box when the web interface is used.
+	Correct typo *gt should be &gt
+
+	update DNSBL list in sc_BlackList.conf
+
 0.15  Tue Sep 30 10:01:08 PDT 2003
 
 	modify spam_report.cgi to do a better job of extracting

@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 #
 # sc_cleanup.pl
-# version 1.00, 9-6-03
+# version 1.02, 10-7-03
 #
 #################################################################
 # WARNING! do not modify this script, make one with a new name. #
@@ -31,7 +31,10 @@ use strict;
 use lib qw(blib/lib blib/arch);
 use IPTables::IPv4::DBTarpit::Tools qw(inet_ntoa);
 use Mail::SpamCannibal::SiteConfig;
-use Mail::SpamCannibal::PidUtil qw(if_run_exit);
+use Mail::SpamCannibal::PidUtil 0.02 qw(
+	if_run_exit
+	zap_pidfile
+);
 use NetAddr::IP;
 use Mail::SpamCannibal::ScriptSupport qw(
 	zap_one
@@ -44,6 +47,9 @@ Syntax:	$0 -q
     or
 	$0 -d
 	$0 -v
+    or
+	$0 [options] -x nnn
+
 
 The -q switch is for normal, quiet operation.
 The -d switch allows you to see what the 
@@ -51,6 +57,9 @@ script will do without any db updates
 taking place. The -v switch will print
 the scripts actions to the screen. 
 The -d switch implies a -v.
+
+The -x switch expires records more than 'nnn'
+days old and removes them from the database.
 
 |;
   exit 1;
@@ -60,6 +69,7 @@ $| = 1;
 my $DEBUG = 0;
 my $VERBOSE = 0;
 my $q = 0;
+my $expires = 0;
 
 while ($_ = shift @ARGV) {
   if ($_ eq '-d') {
@@ -75,6 +85,13 @@ while ($_ = shift @ARGV) {
   }
   elsif ( $_ eq '-q') {
     $q++;
+  }
+  elsif ($_ eq '-x') {
+    $q++;
+    $expires = shift @ARGV;
+    next unless $expires;
+    $expires *= 60*60*24;
+    $expires = time - $expires;
   }
 }
 
@@ -100,6 +117,14 @@ my %default = (
 	VERBOSE	=> $VERBOSE,
 );
 
+die <<EOF if -e $CONFIG->{DBTP_ENVHOME_DIR} .'/'. 'blockedBYwatcher';
+##############################################
+
+  startup blocked by DB watcher process
+
+##############################################
+EOF
+
 if_run_exit($environment,'already running');
 
 # strategy	IGNORE 127.xxx.xxx.xxx records
@@ -109,19 +134,24 @@ if_run_exit($environment,'already running');
 # 3)	delete any EVIDENCE not in TARPIT
 # 4)	check contents of CONTRIB against TARPIT
 # 5)	delete any CONTRIB not found in TARPIT
-# 6)	check TARPIT against CONTRIB + EVIDENCE
-# 7)	delete any TARPIT not found in C or E
+# 6)	check TARPIT age and present in CONTRIB or EVIDENCE
+# 7)	delete overage records
+# 8)	delete any TARPIT not found in C or E
 
 {
   my $config = \%default;
-  my($record,$netaddy,$ip,$zapped);
+  my($record,$netaddy,$timestamp,$ip,$zapped);
 
   my $localnet = new NetAddr::IP('127.0.0.0','255.0.0.0');
+
+  my $run = 1;
+  local $SIG{TERM} = sub { $run = 0; };
+
   my $tool = new IPTables::IPv4::DBTarpit::Tools(%$config);
 
 # 1)	check contents of EVIDENCE against TARPIT
   $record = 1;
-  while($netaddy = $tool->getrecno($evidence,$record)) {
+  while($run && ($netaddy = $tool->getrecno($evidence,$record))) {
     $zapped = 0;
     $ip = inet_ntoa($netaddy);
     print "$evidence: $ip "
@@ -144,7 +174,7 @@ if_run_exit($environment,'already running');
 
   $record = 1;
 # 4)	check contents of CONTRIB against TARPIT
-  while($netaddy = $tool->getrecno($contrib,$record)) {
+  while($run && ($netaddy = $tool->getrecno($contrib,$record))) {
     $zapped = 0;
     $ip = inet_ntoa($netaddy);
     print "$contrib: ", inet_ntoa($netaddy), ' '
@@ -164,8 +194,8 @@ if_run_exit($environment,'already running');
   print "\n$contrib = $tcontrib records\n\n" if $VERBOSE;
 
   $record = 1;
-# 6)	check TARPIT against CONTRIB + EVIDENCE
-  while($netaddy = $tool->getrecno($tarpit,$record)) {
+# 6)	check TARPIT age and present in CONTRIB or EVIDENCE
+  while($run && (($netaddy,$timestamp) = $tool->getrecno($tarpit,$record))) {
     $zapped = 0;
     $ip = inet_ntoa($netaddy);
     print "$tarpit: ", inet_ntoa($netaddy), ' '
@@ -174,9 +204,16 @@ if_run_exit($environment,'already running');
         print 'skipping...' if $VERBOSE;
         next;
     }
+# 7)	delete overage records
+    if ($expires && $timestamp < $expires) {	# record if overage
+	$zapped = zap_one($tool,$netaddy,$tarpit,$DEBUG,$VERBOSE,"timestamp: ". scalar localtime($timestamp));
+	zap_one($tool,$netaddy,$contrib,$DEBUG,$VERBOSE,' : contrib');
+	zap_one($tool,$netaddy,$evidence,$DEBUG,$VERBOSE,' : evidence');
+	next;
+    }
   next if $tool->get($contrib,$netaddy);
   next if $tool->get($evidence,$netaddy);
-# 7)	delete any TARPIT not found in C or E
+# 8)	delete any TARPIT not found in C or E
     $zapped = zap_one($tool,$netaddy,$tarpit,$DEBUG,$VERBOSE,"not in $contrib or $evidence");
   } continue {
     $record += 1 unless $zapped;
@@ -190,4 +227,6 @@ $evidence = $tevidence records
 $contrib = $tcontrib records
 |;
   }
+  $tool->closedb;
 }
+zap_pidfile($environment);

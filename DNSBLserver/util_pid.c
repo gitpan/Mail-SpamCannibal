@@ -26,16 +26,18 @@
  *	pid_t getpid(void)
  */
 
-extern char mybuffer[], * dbhome;
-extern pid_t pidrun;
-static char pidfile[] = "dnsbls.pid";
+static char pidfile[] = "dnsbls";
+int unlinkOK = 0;
 
 void
 savpid(char * fpath)
 {
+  extern int unlinkOK;
   FILE *fd;
+  
+  unlinkOK = getpid();
   if ((fd = fopen(fpath, "w")) != NULL) {
-    fprintf(fd, "%u\n", getpid());
+    fprintf(fd, "%u\n", unlinkOK);
     (void)fclose(fd);
   }
 }
@@ -43,9 +45,14 @@ savpid(char * fpath)
 char *
 pidpath()
 {
-  strcpy(mybuffer, dbhome);
-  strcat(mybuffer, "/");
-  strcat(mybuffer, pidfile);
+  extern char mybuffer[], * dbhome;
+  extern int parent;
+  
+  if (parent)
+    sprintf(mybuffer,"%s/%s.pid",dbhome,pidfile);
+  else
+    sprintf(mybuffer,"%s/%s.%d.pid",dbhome,pidfile,getpid());
+
   return(mybuffer);
 }
 
@@ -59,6 +66,7 @@ pidpath()
 char *
 chk4pid(char * fpath)
 {
+  extern pid_t pidrun;
   FILE *fd;
 
   pidrun = 0;

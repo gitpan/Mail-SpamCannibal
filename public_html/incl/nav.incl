@@ -14,7 +14,7 @@
 <tr align=center><td class=gry><a href="#top" onClick="return(nav('whois'));" 
   onMouseOver="return(show('Whois IP'));" onMouseOut="return(off());">Whois IP</a></td></tr>
 
-<tr align=center><td class=wht><a href="#top" onClick="location = 'docs/';return false;"
+<tr align=center><td class=wht><a href="docs/" onClick="location = 'docs/';return false;"
   onMouseOver="return(show('DOCUMENTATION'));" onMouseOut="return(off());">Documentation</a></td></tr>
 
 <tr align=center><td class=gry><a href="#top" onClick="return(nav('download'));" 

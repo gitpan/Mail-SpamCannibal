@@ -19,6 +19,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+#include <unistd.h>
 #include <time.h>
 #include <stdio.h>
 #include <signal.h>
@@ -26,6 +27,7 @@
 #include <signal.h>
 #include <sys/wait.h>
 #include "defines.h"
+#include "util_pid_func.h"
 
 void
 LogPrint(char *output) {
@@ -46,7 +48,7 @@ LogPrint(char *output) {
 void
 CleanExit(int sig) {
   extern DBTPD dbtp;
-  extern int logopen, fdUDP, fdTCPlisten, fdTCP, parent;
+  extern int logopen, fdUDP, fdTCPlisten, fdTCP, parent, unlinkOK;
   extern char str2[], str3[];
   
   if(sig == SIGHUP) {
@@ -64,6 +66,9 @@ CleanExit(int sig) {
     close(fdTCPlisten);
   if (fdTCP)
     close(fdTCP);
+
+  if (unlinkOK)
+	unlink(pidpath());	/* remove pid file	*/
 
   /* shut down syslog connection */
   if(parent)

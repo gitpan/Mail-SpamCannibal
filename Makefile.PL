@@ -67,10 +67,10 @@ my %makeparms = (
    'NAME'         => 'Mail::SpamCannibal',
    'VERSION_FROM' => 'SpamCannibal.pm',		# finds $VERSION
    'PREREQ_PM'	  => {
-			'IPTables::IPv4::DBTarpit' => '0.10',
+			'IPTables::IPv4::DBTarpit' => '0.22',
 			'Sys::Hostname::FQDN'	=> '0.06',
-			'Net::DNS::Codes'	=> '0.07',
-			'Net::DNS::ToolKit'	=> '0.07',
+			'Net::DNS::Codes'	=> '0.08',
+			'Net::DNS::ToolKit'	=> '0.14',
 			'NetAddr::IP'		=> '0.35',
 			'Net::SMTP'		=> '2.10',
 			'Net::Whois::IP'	=> '0.35',
@@ -78,6 +78,7 @@ my %makeparms = (
 			'Digest::MD5'		=> '2.00',
 			'Test::Harness'		=> '2.01',
 			'Test::Simple'		=> '0.42',
+			'Unix::Syslog'		=> '0.97',
 		  },
    'PM'		  => {  'SpamCannibal.pm' => '$(INST_LIBDIR)/SpamCannibal.pm',
 			'SiteConfig.pm' => '$(INST_LIB)/Mail/SpamCannibal/SiteConfig.pm',
@@ -150,7 +151,9 @@ my %makeparms = (
 			'lib/Mail/SpamCannibal/PidUtil.pm'	 => 'docs/PidUtil.html',
 			'lib/Mail/SpamCannibal/LaBreaDaemon.pm'	 => 'docs/LaBreaDaemon.html',
 		),},
-   'HTMLSCRIPTPODS'	=> {	'DNSBLserver/rc.dnsbls' => 'docs/rc.dnsbls.html',
+   'HTMLSCRIPTPODS'	=> {	'rc.sc_dbwatch'		=> 'docs/rc.sc_dbwatch.html',
+				'rc.sc_lbdaemon.sample'	=> 'docs/rc.sc_lbdaemon.html',
+				'DNSBLserver/rc.dnsbls' => 'docs/rc.dnsbls.html',
 				'BDBaccess/rc.bdbaccess' => 'docs/rc.bdbaccess.html',
 		  },
    'clean'	  => { FILES	=> "*~ tmp* docs* script/sc_sesswrap"},
@@ -193,13 +196,15 @@ SiteConfig.pm : config.db
 install_spamcannibal	: scripts/sc_sesswrap
 	@$(MKPATH) $(SPMCNBL_CONFIG_DIR)
 	@$(MKPATH) $(SPMCNBL_SCRIPT_DIR)
-	rm -f $(SPMCNBL_SCRIPT_DIR)/sc_remotewrap
+	$(RM_F) $(SPMCNBL_SCRIPT_DIR)/sc_remotewrap
+	$(CP) -p rc.sc_lbdaemon.sample $(SPMCNBL_SCRIPT_DIR)
+	$(CP) -p rc.sc_dbwatch	$(SPMCNBL_SCRIPT_DIR)
 	$(CP) -p scripts/*.pl $(SPMCNBL_SCRIPT_DIR)
 	$(CP) -p scripts/sc_sesswrap $(SPMCNBL_SCRIPT_DIR)
 	@ln -s $(SPMCNBL_SCRIPT_DIR)/sc_sesswrap $(SPMCNBL_SCRIPT_DIR)/sc_remotewrap
 	$(CP) -p config/*.sample $(SPMCNBL_CONFIG_DIR)
 	$(CP) -rp public_html $(SPAMCANNIBAL_HOME)
-	rm -f $(SPAMCANNIBAL_HOME)/public_html/admin.cgi
+	$(RM_F) $(SPAMCANNIBAL_HOME)/public_html/admin.cgi
 	@ln -s $(SPAMCANNIBAL_HOME)/public_html/cannibal.cgi $(SPAMCANNIBAL_HOME)/public_html/admin.cgi
 	@$(MKPATH) $(SPAMCANNIBAL_HOME)/sess
 	@$(MKPATH) $(SPAMCANNIBAL_HOME)/private
@@ -220,7 +225,7 @@ install_sc_permissions	:
 	chmod 01700 $(SPMCNBL_SCRIPT_DIR)/sc_session.pl
 	chmod 0700 $(SPMCNBL_SCRIPT_DIR)/sc_remote.pl
 	if [ -d $(SPAMCANNIBAL_HOME)/public_html/tmp ]; then \
-	    rm -f $(SPAMCANNIBAL_HOME)/public_html/tmp/* \
+	    $(RM_F) $(SPAMCANNIBAL_HOME)/public_html/tmp/*; \
 	else \
 	    $(MKPATH) $(SPAMCANNIBAL_HOME)/public_html/tmp; \
 	    chown -R $(SPAMUID) $(SPAMCANNIBAL_HOME)/public_html/tmp; \
@@ -292,10 +297,10 @@ sub MY::install {
 sub MY::realclean {
   package MY;   
   my $inherited = shift->SUPER::realclean(@_) . q|
-	rm -f config.db
-	rm -f SiteConfig.pm
-	rm -f scripts/sc_sesswrap
-	rm -f INSTALL
+	$(RM_F) config.db
+	$(RM_F) SiteConfig.pm
+	$(RM_F) scripts/sc_sesswrap
+	$(RM_F) INSTALL
 |;
 }
 

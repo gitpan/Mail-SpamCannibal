@@ -2,7 +2,7 @@
 #
 # sc_session.pl
 #
-# version 1.04, 8-28-03
+# version 1.06, 10-11-03
 #
 #################################################################
 # WARNING! if you modify this script, make a backup copy.	#
@@ -95,9 +95,12 @@ Syntax:	sc_session.pl command [arg1] [arg2] ...
   sc_session.pl updpass	session_id expire user newpass oldpass
   sc_session.pl	chksess session_id expire (relative)
   sc_session.pl rmvsess	session_id
+  sc_session.pl getC24	session_id expire dot.quad.ip.addr
   sc_session.pl insBL	session_id expire dot.quad.ip.addr stuff...
   sc_session.pl	insEVD	session_id expire dot.quad.ip.addr stuff...
+  sc_session.pl insEBLK	session_id expire dot.quad.ip.addr stuff...
   sc_session.pl delete	session_id expire dot.quad.ip.addr
+  sc_session.pl delBLK	session_id expire dot.quad.ip.addr
 
   admin		returns "OK status"
 	allow admin addition/deletion of users
@@ -106,6 +109,7 @@ Syntax:	sc_session.pl command [arg1] [arg2] ...
 	blank passwords deletes user (not self)
   chksess	returns "OK username" or (error text)
   rmvsess	returns OK or (error text)
+  getC24	returns OK packed result or (error text)
   insBL		returns OK or (error text)
 		insert blacklist contrib
 		the arguments are (in order):
@@ -125,8 +129,14 @@ Syntax:	sc_session.pl command [arg1] [arg2] ...
 	message terminated on the last line by a single
 	.
 
+  insEBLK	same as insEVD except that the insertion is done for
+		the entire CIDR/24 block specified by the IP address
+
   delete	returns OK or (error text)
 		deletes dot.quad.ip.addr in all databases
+
+  delBLK	returns OK or (error text)
+		deletes CIDR/24 described by dot.quad.ip.addr
 
 EOF
   exit;
@@ -163,8 +173,14 @@ elsif ($action =~ /^insBL/) {	# insert a Black List item
 elsif ($action =~ /^insEVD/) {	# insert an Evidence item
   $rv = InsEVD();
 }
-elsif ($action =~ /^delete/) {	# delete and address from database
+elsif ($action =~ /^insEBLK/) {	# insert an Evidence CIDR/24
+  $rv = InsEBLK();
+}
+elsif ($action =~ /^delete/) {	# delete an address from database
   $rv = Delete();
+}
+elsif ($action =~ /^delBLK/) {	# delete CIDR/24 block from database
+  $rv = DelBLK();
 }
 elsif ($action =~ /^admin/) {	# allow / disallow admin user additions/deletions
   $rv = Admin();
@@ -178,6 +194,9 @@ elsif ($action =~ /^echo/) {	# echo test
 elsif ($action =~ /^rmvsess/) {	# remove session
   $rv = Remove();
 }
+elsif ($action =~ /^getC24/) {	# get CIDR/24 tarpit data
+  $rv = GetC24();
+}
 else {
   syntax;
 }
@@ -188,9 +207,9 @@ sub getip {
   my($adr) = @_;
   $error = 'bad IP address';
   return undef unless $adr;
+  $adr = clean($adr);
   my $rv = inet_aton($adr);
-  return undef unless $rv;
-  clean($rv);
+  return ($rv) || undef;
 }
 
 sub db_open {
@@ -336,7 +355,7 @@ sub ChkSess {
   return 'OK '. $user;
 }
   
-sub RmvSess {
+sub Remove {
   my $sesid = clean($ARGV[0]);
   my $file = $session_dir .'/'. (split('.',$sesid,3))[2];
   return 'session missing'
@@ -371,8 +390,14 @@ sub InsBL {
   $error = $tool->touch($DBCONFIG->{SPMCNBL_DB_TARPIT},$saddr);
   return dberreturn($tool, $DBCONFIG->{SPMCNBL_DB_TARPIT}, $error)
 	if $error;
+  $error = $tool->sync($DBCONFIG->{SPMCNBL_DB_TARPIT});
+  return dberreturn($tool, $DBCONFIG->{SPMCNBL_DB_TARPIT}, $error)
+	if $error;
   $error = $tool->put($DBCONFIG->{SPMCNBL_DB_CONTRIB},
 		$saddr,pack("a4 x A* x a4 x N x A*",$orsp,$err,$trsp,$tim,$zon));
+  return dberreturn($tool, $DBCONFIG->{SPMCNBL_DB_CONTRIB}, $error)
+	if $error;
+  $error = $tool->sync($DBCONFIG->{SPMCNBL_DB_CONTRIB});
   return dberreturn($tool, $DBCONFIG->{SPMCNBL_DB_CONTRIB}, $error)
 	if $error;
   $tool->closedb;
@@ -396,7 +421,53 @@ sub InsEVD {
   $error = $tool->touch($DBCONFIG->{SPMCNBL_DB_TARPIT},$saddr);
   return dberreturn($tool, $DBCONFIG->{SPMCNBL_DB_TARPIT}, $error)
 	if $error;
+  $error = $tool->sync($DBCONFIG->{SPMCNBL_DB_TARPIT});
+  return dberreturn($tool, $DBCONFIG->{SPMCNBL_DB_TARPIT}, $error)
+	if $error;
   $error = $tool->put($DBCONFIG->{SPMCNBL_DB_EVIDENCE},$saddr,$string);
+  return dberreturn($tool, $DBCONFIG->{SPMCNBL_DB_EVIDENCE}, $error)
+	if $error;
+  $error = $tool->sync($DBCONFIG->{SPMCNBL_DB_EVIDENCE});
+  return dberreturn($tool, $DBCONFIG->{SPMCNBL_DB_EVIDENCE}, $error)
+	if $error;
+  $tool->closedb;
+  return 'OK';
+}
+
+sub InsEBLK {
+  my ($sesid,$expire,$addr) = @ARGV;
+  validate($session_dir,$sesid,$secret,\$error,$expire) 
+	or return $error;
+  return $error unless getip($addr);
+  my $string = '';
+  while($_ = <STDIN>) {
+    last if $_ =~/^\.$/;
+    $string .= $_;
+  }
+  $db_config{txtfile} = [$DBCONFIG->{SPMCNBL_DB_EVIDENCE}];
+  (my $tool = db_open())
+	or return $error;
+
+  ($addr = clean($addr)) =~ /\d+\.\d+\.\d+\./;
+  my $cidr = $&;
+  foreach(0..255) {
+    my $target = "${cidr}$_";
+    my $saddr = inet_aton($target);
+    my $rv = $tool->get($DBCONFIG->{SPMCNBL_DB_TARPIT},$saddr);
+    return dberreturn($tool, $DBCONFIG->{SPMCNBL_DB_TARPIT}, $DBTP_ERROR)
+	if defined $rv && !$rv;	# return real errors to caller
+    next if $rv && $target ne $addr;	# preserve old records
+    $error = $tool->touch($DBCONFIG->{SPMCNBL_DB_TARPIT},$saddr);
+    return dberreturn($tool, $DBCONFIG->{SPMCNBL_DB_TARPIT}, $error)
+	if $error;
+    $error = $tool->put($DBCONFIG->{SPMCNBL_DB_EVIDENCE},$saddr,$string);
+    return dberreturn($tool, $DBCONFIG->{SPMCNBL_DB_EVIDENCE}, $error)
+	if $error;
+  }
+  $error = $tool->sync($DBCONFIG->{SPMCNBL_DB_TARPIT});
+  return dberreturn($tool, $DBCONFIG->{SPMCNBL_DB_TARPIT}, $error)
+	if $error;
+  $error = $tool->sync($DBCONFIG->{SPMCNBL_DB_EVIDENCE});
   return dberreturn($tool, $DBCONFIG->{SPMCNBL_DB_EVIDENCE}, $error)
 	if $error;
   $tool->closedb;
@@ -421,8 +492,79 @@ sub Delete {
     $error = $tool->remove($_,$saddr);
     return dberreturn($tool, $_, $error)
 	if $error;
+    $error = $tool->sync($_);
+    return dberreturn($tool, $_, $error)
+	if $error;
   }
-    $tool->closedb; 
+  $tool->closedb; 
   return 'OK';    
+}
+
+sub DelBLK {
+  my ($sesid,$expire,$addr) = @ARGV;
+  validate($session_dir,$sesid,$secret,\$error,$expire)
+	or return $error;
+  return $error unless getip($addr);
+
+  ($addr = clean($addr)) =~ /\d+\.\d+\.\d+\./;
+  my $cidr = $&;
+
+  $db_config{dbfile} = [$DBCONFIG->{SPMCNBL_DB_TARPIT},
+			$DBCONFIG->{SPMCNBL_DB_ARCHIVE},];
+  (my $tool = db_open())
+	or return $error;
+
+  foreach (	$DBCONFIG->{SPMCNBL_DB_TARPIT},
+		$DBCONFIG->{SPMCNBL_DB_ARCHIVE},
+		$DBCONFIG->{SPMCNBL_DB_CONTRIB},
+		$DBCONFIG->{SPMCNBL_DB_EVIDENCE},
+	) {
+    my $saddr;
+    foreach $saddr (0..255) {
+      my $target = "${cidr}$saddr";
+      $saddr = inet_aton($target);
+      $error = $tool->remove($_,$saddr);
+      return dberreturn($tool, $_, $error)
+	if $error;
+    }
+    $error = $tool->sync($_);
+    return dberreturn($tool, $_, $error)
+	if $error;
+  }
+  $tool->closedb; 
+  return 'OK';    
+}
+
+sub GetC24 {
+  my ($sesid,$expire,$addr) = @ARGV;
+  validate($session_dir,$sesid,$secret,\$error,$expire)
+	or return $error;
+  return $error unless getip($addr);
+
+  (my $tool = db_open())
+	or return $error;
+  ($addr = clean($addr)) =~  /\d+\.\d+\.\d+\./;
+  my $cidr = $&;
+  use integer;
+  my $vec = '';
+  my $vals = '';
+  my $prev = 0;
+  foreach(0..255) {
+    my $saddr = inet_aton("${cidr}$_");
+    my $rv = $tool->get($DBCONFIG->{SPMCNBL_DB_TARPIT},$saddr);
+    return dberretrun($tool,$DBCONFIG->{SPMCNBL_DB_TARPIT},$DBTP_ERROR)
+	if defined $rv && !$rv;
+    if($rv) {
+      $vals .= ':'. ($rv - $prev);
+      $prev = $rv;
+      $vec .= 1;
+    } else {
+      $vec .= 0;
+    }
+  }
+  $vals =~ s/:-/;/g;	# compress ':-' to ';'
+  $vals = $vec . $vals;
+  $tool->closedb;
+  return 'OK '. $vals;
 }
 

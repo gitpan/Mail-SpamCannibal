@@ -5,7 +5,7 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..10\n"; }
+BEGIN { $| = 1; print "1..12\n"; }
 END {print "not ok 1\n" unless $loaded;}
 
 #use diagnostics;
@@ -96,9 +96,19 @@ print "got: $_, exp: 0\nnot "
 	if ($_ = is_running($pidfile));
 &ok;
 
-unlink $pidfile;
+## test 10	unlink pid file
+print "could not unlink PID file\nnot "
+	unless zap_pidfile($path);
 
-## test 10       check nothing is running
+&ok;
+
+## test 11	check that it's really gone
+print "PID file still exists\nnot "
+	if -e $pidfile;
+&ok;
+
+## test 12       check nothing is running
 print "got: $_, exp: 0\nnot "
         if ($_ = is_running($pidfile));
 &ok;
+

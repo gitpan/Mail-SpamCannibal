@@ -20,6 +20,12 @@
     available on <a href="http://CPAN.org/">CPAN.org</a><br>
   <a href="http://search.cpan.org/search?query=Test::Simple">Test::Simple</a>
     available on <a href="http://CPAN.org/">CPAN.org</a><br>
+  <a href="http://search.cpan.org/search?query=MIME::Base64">MIME::Base64</a>
+    available on <a href="http://CPAN.org/">CPAN.org</a><br>
+  <a href="http://search.cpan.org/search?query=Digest::MD5">Digest::MD5</a>
+    available on <a href="http://CPAN.org/">CPAN.org</a><br>
+  <a href="http://search.cpan.org/search?query=Unix::Syslog">Unix::Syslog</a>
+    available on <a href="http://CPAN.org/">CPAN.org</a><br>
   <a href="http://search.cpan.org/search?query=NetAddr::IP">NetAddr::IP</a> version 3.14 or better
     available on <a href="http://CPAN.org/">CPAN.org</a><br>
   <a href="http://search.cpan.org/search?query=Net::Whois::IP">Net::Whois::IP</a> version 0.35 or better

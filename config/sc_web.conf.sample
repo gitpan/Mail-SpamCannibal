@@ -1,5 +1,5 @@
 # sc_web.conf.sample
-# version 1.03, 9-10-03
+# version 1.05, 10-11-03
 #
 # The configuration file is divided into three sections
 #
@@ -61,7 +61,7 @@ my $CONFIG = {
 # will be used. See more below.
 
 #  bdbDAEMON	=> /var/run/dbtarpit/bdbread
-#  bdbDAEMON	=> ['myhost.com:8888',10],
+#  bdbDAEMON	=> ['myhost.com:8888',30],
 
 # Where to send contact messages [REQUIRED]
 #
@@ -95,6 +95,7 @@ my $CONFIG = {
 	login
 	blklist
 	spamlst
+	updpass
   )],
 
 #########################################################################
@@ -126,6 +127,7 @@ my $CONFIG = {
   contact => './incl/contact.incl',
   spamlst => './incl/spamlst.incl',
   login	  => './incl/login.incl',
+  updpass => './incl/updpass.incl',
   home	  => './incl/home.incl',
   down	  => './incl/download.incl',
   lookup  => './incl/lookup.incl',	# partial top text, some dynamic

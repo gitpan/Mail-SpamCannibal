@@ -26,17 +26,19 @@
  *	pid_t getpid(void)
  */
 
-extern char mybuffer[], * dbhome;
-extern pid_t pidrun;
-static char u_pidfile[] = "bdbaccess_unix.pid";
-static char n_pidfile[] = "bdbaccess_net.pid";
+static char u_pidfile[] = "bdbaccess_unix";
+static char n_pidfile[] = "bdbaccess_net";
+int unlinkOK = 0;
 
 void
 savpid(char * fpath)
 {
+  extern int unlinkOK;
   FILE *fd;
+  
+  unlinkOK = getpid();
   if ((fd = fopen(fpath, "w")) != NULL) {
-    fprintf(fd, "%u\n", getpid());
+    fprintf(fd, "%u\n", unlinkOK);
     (void)fclose(fd);
   }
 }
@@ -44,13 +46,21 @@ savpid(char * fpath)
 char *
 pidpath()
 {
-  extern int port;
+  extern char mybuffer[], * dbhome;
+  extern int port, parent, inetd;
+  char * fptr;
   strcpy(mybuffer, dbhome);
   strcat(mybuffer, "/");
   if (port)
-    strcat(mybuffer, n_pidfile);
+    fptr = n_pidfile;
   else
-    strcat(mybuffer, u_pidfile);
+    fptr = u_pidfile;
+
+  if (parent == 0 || inetd)
+    sprintf(mybuffer,"%s/%s.%d.pid",dbhome,fptr,getpid());
+  else
+    sprintf(mybuffer,"%s/%s.pid",dbhome,fptr);
+
   return(mybuffer);
 }
 
@@ -64,6 +74,7 @@ pidpath()
 char *
 chk4pid(char * fpath)
 {
+  extern pid_t pidrun;
   FILE *fd;
 
   pidrun = 0;

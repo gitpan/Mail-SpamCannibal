@@ -1,7 +1,8 @@
 NAME
     Mail::SpamCannibal - HOWTO Install SpamCannibal
 
-WHERE TO GET SPAMCANNIBAL
+Where to get SpamCannibal
+Support and Project Participation
 Creating the SpamCannibal user
     Create a user account for the SpamCannibal client. The mail client
     should not be run as a root user, to do so creates an unacceptable
@@ -121,6 +122,7 @@ Building Perl modules
       Test::More
       MIME::Base64
       Digest::MD5
+      Unix::Syslog
       Net::DNS::Codes
       Net::DNS::ToolKit
       NetAddr::IP
@@ -185,8 +187,11 @@ Building Perl modules
 
    setting up 'dbtarpit'
 
-    Copy the rc.dbtarpit script to the appropriate startup directory and
-    edit the host startup scripts so that it is included.
+    If you will be using the SpamCannibal sc_dbwatch script (recommended)
+    then copy the rc.dbtarpit script to the SpamCannibal (home)/scripts
+    directory, otherwise opy the rc.dbtarpit script to the appropriate
+    startup directory and edit the host startup scripts so that it is
+    included.
 
     Note: this is a Perl program. DO NOT place in in a start up script
     prefixed with a period '.' This instructs the shell to process the file
@@ -369,6 +374,51 @@ SpamCannibal setup
       -v -v does it more verbosely.
       The -d switch implies a single -v.
 
+   activating sc_cleanup.pl
+
+    sc_cleanup.pl periodically runs through the databases and *optionally*
+    expires very old records and checks that there are not multiple entries
+    in the database for the same IP address or an entry that is present in
+    one database that is missing a corresponding entry in a companion
+    database.
+
+    For example:
+
+      A spam messages arrives and makes it through the system to your in
+      box. Subsequently, sc_BLcheck.pl finds the IP address of the spam host
+      in a remote DNSBL and adds records to the tarpit and blcontrib
+      databases. You find the spam on your desktop and add it to the tarpit
+      and evidence databases via the sc_mailfilter.pl robot script. Now
+      there is an extra record in blcontrib that is unused.
+
+    There are many more possible ways for such inconsistencies to occur and
+    sc_cleanup.pl removes these records automatically.
+
+    Login as the spamcannibal user and put an entry in your crontab
+    something like this:
+
+      # check valid blcontrib every few days
+      21 0 */4 * * ./scripts/sc_cleanup.pl
+
+    Since this is a background job, a better entry might be:
+
+      21 0 */4 * * /usr/bin/nice -n 20 ./sc_cleanup.pl
+
+      Syntax: scripts/sc_cleanup.pl -q
+        or
+            scripts/sc_cleanup.pl -d
+            scripts/sc_cleanup.pl -v
+        or
+            scripts/sc_cleanup.pl [options] -x nnn
+
+    The -q switch is for normal, quiet operation. The -d switch allows you
+    to see what the script will do without any db updates taking place. The
+    -v switch will print the scripts actions to the screen. The -d switch
+    implies a -v.
+
+    The -x switch expires records more than 'nnn' days old and removes them
+    from the database.
+
   Setting up the DNS blacklist daemon
 
     The first part of the installation guide assumes that the host has no
@@ -382,7 +432,7 @@ SpamCannibal setup
       cp dnsbls.conf.sample dnsbls.conf
 
     Edit dnsbls.conf for your site. The file is heavily commented and should
-    be self explainatory. Your comments and additions to this documment are
+    be self explanatory. Your comments and additions to this documment are
     welcomed.
 
     Most of the configuration items do not need changing. What MUST be
@@ -400,6 +450,9 @@ SpamCannibal setup
     the start script.
 
             ./rc.dnsbls start
+
+    The ./rc.dnsbls start and ./rc.dnsbls stop commands should be included
+    in the sc_dbwatch.conf file described later in this document.
 
    running DNSBL concurrently with BIND
 
@@ -480,7 +533,8 @@ SpamCannibal setup
    bdbaccess local access
 
     The default configuration of the rc.bdbaccess file provides local
-    access. In the host startup scripts put a lines like this:
+    access. In the sc_dbwatch.conf file or your host startup scripts put a
+    lines like this:
 
       rc.bdbaccess start
             and
@@ -812,13 +866,24 @@ SpamCannibal setup
     If your script won't run and the permissions are different than above,
     this may be the reason for the difficulty.
 
-   configuring sc_lbdaemon.pl
+   configuring rc.sc_lbdaemon.pl
 
     This is the data collection daemon. It attaches to a unix domain socket
     that provides the log output of the tarpit daemon.
 
-    Copy the daemon to the startup directory of your system and edit the
-    startup script to include it at run time.
+    If your SpamCannibal installation will be running the sc_dbwatch daemon
+    (recommended) then the daemon script is already correctly installed in
+    the SpamCannibal (home)/scripts directory. Just copy
+    rc.sc_lbdaemon.pl.sample to rc.sc_lbdaemon.pl and include the
+    appropriate
+
+            rc.sc_lbdaemon  start
+            rc.sc_lbdaemon  stop
+
+    entries in the sc_dbwatch.conf file.
+
+    Otherwise, copy the daemon to the startup directory of your system and
+    edit the startup script to include it at run time.
 
             /path/rc.sc_lbdaemon.pl
 
@@ -845,6 +910,70 @@ SpamCannibal setup
         to connect to the service port. Defaults to ALL. Use the name or IP
         address of the allowed host(s) or 'localhost' if the web server is
         on the same host.
+
+  Setting up the DB watch daemon
+
+    The sc_dbwatch daemon and startup script provides a single interface
+    point for the host system. The daemon periodically checks that all DB
+    tasks that have registered and exited have done so in a normal manner.
+    If a task exits abnormally, then sc_dbwatch will kill all remaining
+    registered tasks, block the starting of any new tasks and cron jobs then
+    recover the database environment and restart the DB daemon tasks.
+
+    Follow these steps for configuration:
+
+    Login as the SpamCannibal user and...
+
+            cd config
+            cp sc_dbwatch.conf.sample sc_dbwatch.conf
+
+    Edit the configuration file for your site. The configuration file is
+    well commented and each of the entries has an explanation.
+
+    The individual tasks that will be started and stopped by sc_dbwatch
+    should be configured and tested prior to inclusion in the configuration
+    file. It should be noted that in a running system there is not
+    particular reason to start and stop all tasks to maintain or reconfigure
+    just one. It is quite proper to start and stop the daemons individually
+    using their respective rc.xxxxx scripts.
+
+    When this is completed, copy the rc.sc_dbwatch file from the
+    SpamCannibal source installation directory to the appropriate startup
+    directory on your host and edit the startup scripts as required to
+    instantiate it at system start and stop.
+
+   developing new scripts and daemons that use sc_dbwatch
+
+    sc_dbwatch determines if a job has exited badly by checking that each
+    pid file in the database directory has a corresponding running job. Jobs
+    that are found not to be running are marked as crashed and will force an
+    automatic task shutdown and database recovery.
+
+    Cron jobs, scripts, daemons and their children that use the databases
+    have a minimum set of requirements as follows:
+
+    * create a pid file
+        To register with the sc_dbwatch program, tasks using the database
+        add their pid files to the watched directory. The pid file should be
+        of the form "name.pid" for scripts and daemon parents and of the
+        form "name.nnn.pid" (where nnn is the PID number) for any child
+        process. This exact format is not a requirement. The only
+        requirement is that the pid files end in the suffix .pid and that
+        the file names be unique for all tasks that are registered.
+
+        The pid file should be placed in the same directory as the
+        databases. The directory path is determined for a 'C' process by
+        using the "dbhome" directory pointer and for a perl process by using
+        the
+
+    * respond to SIGTERM
+        Every process that registers its pid file should respond to a
+        SIGTERM by gracefully terminating its activity as quickly as
+        possible, removing its pid file and exiting.
+
+    * remove pid file on exit
+        Every process that registers its pid file should remove it when it
+        finishes using the databases.
 
 SpamCannibal mail robot script sc_mailfilter.pl
     SpamCannibal provides a mail header parsing script, sc_mailfilter.pl,

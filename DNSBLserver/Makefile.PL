@@ -46,6 +46,7 @@ elsif (join(' ',@INC) =~ /$home/) {     # checkfor rebuild flag
 my $BDBTARPIT_CONF = new IPTables::IPv4::DBTarpit::SiteConfig;
 my $objects	= 'host_info.o main.o netio.o ns.o util_pid.o';
 my $daemon	= 'dnsbls';
+my $rcfile	= 'rc.'.$daemon;
 
 my $include = '-I'. $BDBTARPIT_CONF->{DBTP_INCLUDE_DIR};
 my $extralibs = '-L'. $BDBTARPIT_CONF->{DBTP_LIBRARY_DIR};
@@ -86,12 +87,18 @@ README  : DNSBLserver.pm
 
 .PHONY: clean_CTest $(SPMCNBL_DAEMON_DIR)/|. $daemon .q| $(SPMCNBL_CONFIG_DIR)/|. $daemon .q|.conf.sample
 
-install_daemon : |. $daemon .q| $(SPMCNBL_DAEMON_DIR)/|. $daemon .q| $(SPMCNBL_CONFIG_DIR)/|. $daemon .q|.conf.sample
+install_daemon : |. $daemon .q| $(SPMCNBL_DAEMON_DIR)/|. $daemon .q| \
+		$(SPMCNBL_CONFIG_DIR)/|. $daemon .q|.conf.sample \
+		$(SPMCNBL_SCRIPT_DIR)/|. $rcfile .q|
 	@$(NOOP)
+
+$(SPMCNBL_SCRIPT_DIR)/|. $rcfile .q|  :
+	@$(MKPATH) $(SPMCNBL_SCRIPT_DIR)
+	$(CP) -p |. $rcfile .q| $(SPMCNBL_SCRIPT_DIR)/|. $rcfile .q|
 
 $(SPMCNBL_DAEMON_DIR)/|. $daemon .q|  :
 	@$(MKPATH) $(SPMCNBL_DAEMON_DIR)
-	$(CP) |. $daemon .q| $(SPMCNBL_DAEMON_DIR)/|. $daemon .q|
+	$(CP) -p |. $daemon .q| $(SPMCNBL_DAEMON_DIR)/|. $daemon .q|
 
 $(SPMCNBL_CONFIG_DIR)/|. $daemon .q|.conf.sample	:
 	@$(MKPATH) $(SPMCNBL_CONFIG_DIR)

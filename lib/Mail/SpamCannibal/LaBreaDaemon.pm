@@ -2,7 +2,7 @@
 package Mail::SpamCannibal::LaBreaDaemon;
 
 use strict;
-use LaBrea::Tarpit 1.17 qw(daemon);
+use LaBrea::Tarpit 1.20 qw(daemon);
 use vars qw(@ISA @EXPORT $FIFO $VERSION);
 require Exporter;
 
@@ -39,8 +39,8 @@ routine to start and run its data collection daemon.
                                         # NOT recommended
   'allowed'     => 'localhost,remote.com',      # default is ALL
                                         # recommend only 'localhost'
-  'pid'         => '/var/run/dbtarpit',
-  'cache'       => '/var/run/dbtarpit',
+  'pid'         => '/var/run/dbtarpit/sc_lbdaemon.pid',
+  'cache'       => '/var/run/dbtarpit/sc_lbdaemon.cache',
   'fifo'        => '/var/run/dbtarpit/dbtplog',
  # 'kids'       => default 5            # kids to deliver net msgs
                                         # why would you need more??

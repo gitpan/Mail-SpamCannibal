@@ -1,8 +1,10 @@
 <font size="+1">Welcome to the SpamCannibal</font>
 <p>
+<img src=images/protect1.gif width=127 height=38 align=left hspace=5>
 SpamCannibal blocks spam at the origination server and can be configured to 
 block DoS attacks.
-<p>
+<br clear=left>&nbsp;
+<br>
 SpamCannibal uses a continually updated database containing the 
 IP addresses of spam or DoS servers and blocks
 their ability to connect using a TCP/IP tarpit,

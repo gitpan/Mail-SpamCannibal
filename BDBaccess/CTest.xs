@@ -39,7 +39,7 @@
 /* Global Variables from main.c */
   extern DBTPD	dbtp;
   extern int oflag, logopen, bflag, port;
-  extern pid_t pidrun;
+  extern pid_t pidrun, parent;
   extern char * zone_name, local_name[], * contact, * errormsg;
   extern int zone_name_len, zoneEQlocal;
   extern int h_name_ctr;        /* name service buffer ring pointer     */
@@ -336,5 +336,14 @@ t_bdbcount(name)
 	char * name
     CODE:
 	RETVAL = dbtp_statn(&dbtp,name);
+    OUTPUT:
+	RETVAL
+
+int
+t_set_parent(val)
+	int val
+    CODE:
+	RETVAL = parent;
+	parent = val;
     OUTPUT:
 	RETVAL

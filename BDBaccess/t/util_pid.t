@@ -5,7 +5,7 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..17\n"; }
+BEGIN { $| = 1; print "1..22\n"; }
 END {print "not ok 1\n" unless $loaded;}
 
 use Cwd;
@@ -46,6 +46,10 @@ mkdir 'tmp';
 my $localdir = cwd();
 
 my $expect = '/var/run/dbtarpit/bdbaccess_unix.pid';
+my $expchild = '/var/run/dbtarpit/bdbaccess_unix.'. $$ . '.pid';
+
+# initialize since 'main' is not called
+&{"${TCTEST}::t_set_parent"}(1);
 
 ## test 2 - retrieve default path
 my $path =  &{"${TCTEST}::t_pidpath"}();
@@ -160,11 +164,38 @@ print "found pid $pid, expected $pidexp\nnot "
         unless $pidexp = $pid;
 &ok;
 
+## test 17      check child functions
+print "got: $_, exp: 1\nnot "
+        unless ($_ = &{"${TCTEST}::t_set_parent"}(0)) == 1;
+&ok;
+
+## test 18      check that pid filename is correct
+print "got: $_, exp: $expchild\nnot "
+        unless $expchild eq ($_ = &{"${TCTEST}::t_pidpath"}());
+&ok;
+
+## test 19	put back in parent mode
+print "got: $_, exp: 0\nnot "
+        unless ($_ = &{"${TCTEST}::t_set_parent"}(1)) == 0;
+&ok;
+
 $expect = '/var/run/dbtarpit/bdbaccess_net.pid';
 
-## test 17 - retrieve default path
+## test 20 - retrieve default path
 &{"${TCTEST}::t_setport"}(5);
 $path =  &{"${TCTEST}::t_pidpath"}();
 print "exp: $expect\ngot: $path\nnot "
 	unless $path eq $expect;
+&ok;
+
+$expchild = '/var/run/dbtarpit/bdbaccess_net.'. $$ .'.pid';
+
+## test 21      check child functions
+print "got: $_, exp: 1\nnot "
+        unless ($_ = &{"${TCTEST}::t_set_parent"}(0)) == 1;
+&ok;
+
+## test 22      check that pid filename is correct
+print "got: $_, exp: $expchild\nnot "
+        unless $expchild eq ($_ = &{"${TCTEST}::t_pidpath"}());
 &ok;

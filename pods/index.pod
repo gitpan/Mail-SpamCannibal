@@ -5,14 +5,17 @@ All - SpamCannibal Documentation
 
 =for html <font size=+2>Documentation for the SpamCannibal Package</font>
 <br>&nbsp;
-<br><!-- version 1.02, 9-26-03 -->
+<br><!-- version 1.07, 10-10-03 -->
+<font size=+1><a href="install.html#support">Support and Project Participation</a></font><br>
 <font size=+1><a href=howtouse.html>HOWTO use SpamCannibal</a></font> with your mail system<br>
 <font size=+1><a href=howitworks.html>HOW SpamCannibal Works</a></font><br>
-<font size=+1><a href=install.html>HOWTO install SpamCannibal</a></font><br>
-<font size=+1><a href=recover.html>Database Recovery - Everything Stopped Working</a></font>
-<blockquote>
-Detailed installation instructions for all packages
-</blockquote>
+<font size=+1><a href=install.html>HOWTO install SpamCannibal</a></font>
+Detailed installation instructions for all packages<br>
+<font size=+1><a href=recover.html>Database Recovery - Everything Stopped Working</a></font><br>
+<font size=+1><a href=admin_screens.html>Adminstration Package Screen Shots</a></font>
+<br>&nbsp;
+<br>&nbsp;
+<br>
 <font size=+1><b>DAEMONS</b></font>
 <blockquote>
 <table cellpadding=4 border=0>
@@ -27,8 +30,13 @@ Detailed installation instructions for all packages
 <tr><td>rc.dbtarpit</a></td><td>type: rc.dbtaript.pl -h and see the manpage for dbtarpit</td></tr>
 <tr><td><a href=rc.dnsbls.html>rc.dnsbls</a></td><td>dnsbls startup script</td></tr>
 <tr><td><a href=rc.bdbaccess.html>rc.bdbaccess</a></td><td>bdbaccess startup script</td></tr>
+<tr><td><a href=rc.sc_dbwatch.html>rc.sc_dbwatch</a></td><td>database watcher ALL daemon start script</td></tr>
+<tr><td><a href=rc.sc_lbdaemon.html>rc.sc_lbdaemon</a></td><td>statistics display startup script</td></tr>
 </table>
 </blockquote>
+<font size=+1><a href=scripts.html>SpamCannibal Utility Scripts</a></font> brief synopsis of each script
+<br>&nbsp;
+<br>
 <font size=+1><b>SpamCannibal modules</b></font> <i>developers</i>
 <blockquote>
 <table cellpadding=4 border=0>
@@ -65,7 +73,7 @@ Detailed installation instructions for all packages
 <tr><td><a href=Sys-Hostname-FQDN.html>Sys::Hostname::FQDN</a></td><td>routine to return local host name</td></tr>
 </table>
 </blockquote>
-<font size=+1><a href=scripts.html>SpamCannibal Scripts</a></font> brief synopsis of each script
+<hr>
 <blockquote>
 <a href=../>HOME</a>
 <blockquote>

@@ -79,7 +79,8 @@ SpamCannibal was installed for this site.
 
 =head1 COPYRIGHT
 
-Copyright 2003, Michael Robinton <michael@bizsystems.com
+Copyright 2003, Michael Robinton <michael@bizsystems.com>
+
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or 

@@ -1,5 +1,14 @@
 Revision history for Perl extension Mail::SpamCannibal::BDBreader
 
+0.13  Wed Oct  8 11:36:59 PDT 2003
+	add Makefile entry to copy rc.bdbaccess to install script directory
+	update test suites to accomodate libdbtarpit change
+
+0.12  Fri Oct  3 16:49:27 PDT 2003
+	add code to generate pid file for each child and
+	for each task to delete its own pid file on exit
+	in support of the db watcher
+
 0.11  Thu Sep 25 10:55:48 PDT 2003
 	add Makefile constant MY_POD2TEXT
 

@@ -1,5 +1,18 @@
 Revision history for Perl extension Mail::SpamCannibal::DNSBLserver.
 
+0.20  Sat Oct 11 08:28:02 PDT 2003
+	modify util_pid.c and misc.c to include unlinkOK as in BDBaccess.
+	update options.t to test correctly when default /var/run/dbtarpit 
+	directory is not present
+
+0.19  Wed Oct  8 11:36:59 PDT 2003
+	add makefile entry to copy rc.dnsbls to install script file directory
+	update test suites to accomodate libdbtarpit changes
+
+0.18  Fri Oct  3 15:54:00 PDT 2003
+	add code to generate child pid files and 
+	for each task to remove it's own pid file on exit
+
 0.17  Thu Sep 25 11:02:02 PDT 2003
 	add Makefile constant MY_POD2TEXT
 

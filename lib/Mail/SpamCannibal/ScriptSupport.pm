@@ -13,7 +13,9 @@ BEGIN {
   $_ccode = inet_aton('127.0.0.3');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.07 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.10 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+
+#use AutoLoader 'AUTOLOAD';
 
 use IPTables::IPv4::DBTarpit::Tools;
 
@@ -61,11 +63,14 @@ use Mail::SpamCannibal::BDBclient qw(
 	dataquery
 );
 
+use Mail::SpamCannibal::PidUtil qw(
+	is_running
+);
+
 use constant SerialEntry => $_scode;
 use constant TarpitEntry => $_tcode;
 use constant DNSBL_Entry => $_ccode;
 
-use AutoLoader 'AUTOLOAD';
 require Exporter;
 @ISA = qw(Exporter);
 
@@ -84,6 +89,10 @@ require Exporter;
 	validIP
 	zap_one
 	zap_pair
+	job_died
+	dbjob_chk
+	dbjob_kill
+	dbjob_recover
 	unpack_contrib
 	lookupIP
 	list2NetAddr
@@ -120,6 +129,10 @@ Mail::SpamCannibal::ScriptSupport - A collection of script helpers
 	validIP
 	zap_one
 	zap_pair
+	job_died
+	dbjob_chk
+	dbjob_kill
+	dbjob_recover
 	unpack_contrib
 	lookupIP
 	list2NetAddr
@@ -141,6 +154,10 @@ Mail::SpamCannibal::ScriptSupport - A collection of script helpers
   ($expire,$error,$dnresp)=zone_def($zone,\%dnsbl);
   $dotquad = valid127($dotquad);
   $dotquad = validIP($dotquad);
+  $rv = job_died(\%jobstatus,$directory);
+  $rv = dbjob_chk(\%default_config);
+  dbjob_kill(\%default_config,$graceperiod);
+  dbjob_recover(\%default_config);
   ($respip,$err,$blrsp,$exp,$zon)=unpack_contrib($record);
   ($which,$text)=lookupIP(\%config,$dotquadIP,$sockpath,$is_network);
   $rv=list2NetAddr(\@inlist,\@NAobject);
@@ -201,8 +218,8 @@ Make sure and use the parens at the end of the function.
 
 =cut
 
-1;
-__END__
+#1;
+#__END__
 
 ############################################
 ############################################
@@ -467,6 +484,7 @@ address is outside that range.
 
 sub valid127 {
   my ($IP) = @_;
+  $IP =~ s/\s//g;
   return '127.0.0.3' unless $IP && inet_aton($IP);
 
   unless ($rblkbegin) {	# fill object cache if empty
@@ -490,6 +508,7 @@ This function inspects an IP address and returns it if is valid.
 
 sub validIP {
   my ($IP) = @_;
+  $IP =~ s/\s//g;
   return undef unless $IP =~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/;
   eval {return inet_ntoa(inet_aton($IP))};
 }
@@ -571,6 +590,152 @@ sub zap_pair {
   }
 }
 
+=item & $rv = job_died(\%jobstatus,$directory);
+
+This function checks for pid files in the $directory. The absolute
+pid file path is inserted into %jobstatus with a value of it's pid.
+Tasks that are not running return a pid value of zero (0).
+
+  input:	pointer to job status hash,
+		pid file directory
+  returns:	true if a task is not running
+		else false
+
+=cut
+
+sub job_died {
+  my($jsp, $dir) = @_;	# get job status pointer
+  opendir(PIDS,$dir) || die "could not open DB $dir directory\n";
+  my @pidfile = grep(/\.pid$/,readdir(PIDS));
+  closedir PIDS;
+  my $dead = 0;
+  my $running;
+  foreach(@pidfile) {
+    unless ($running = is_running($dir .'/'. $_)) { # check for normal exit that has now removed it's pid file
+      next unless -e $dir .'/'. $_;		    # ignore bogus entry
+      $dead = 1;
+    }
+    $jsp->{$dir .'/'. $_} = $running;
+  }
+  return $dead;
+}
+
+=item * $rv = dbjob_chk(\%default_config);
+
+This function checks if data base tasks have exited abnormally. If an abnormal exit
+is detected, the file B<blockedBYwatcher> containing the watcher pid is created in the environment
+directory and the function return false, otherwise it returns true.
+
+  input:	pointer to db configuration,
+  returns:	true if all known tasks are running
+		or exited normally, else returns false
+
+=cut
+
+sub dbjob_chk {
+  my($default) = @_;
+  my %jobstatus;
+  return 1 unless job_died(\%jobstatus,$default->{dbhome});
+
+  open(BLOCKED,'>'. $default->{dbhome} .'/blockedBYwatcher');
+  print BLOCKED $$,"\n";
+  close BLOCKED;
+  return 0;
+}
+
+=item * dbjob_kill(\%default_config,$graceperiod);
+
+This function kills all db tasks that have registered PID files in the environment
+directory. These jobs are shutdown, first with a SIG TERM and if they do not
+respond withing the grace period, a SIG KILL.
+
+  input:	pointer to db configuration,
+		task shutdown grace period
+  returns:	nothing
+
+=cut
+
+sub dbjob_kill {
+  my($default,$gracep) = @_;
+  $gracep = 3 unless $gracep > 2;
+  my $signal = 15;			# kill signal is polite to begin with
+  my %jobstatus;
+  while ($gracep > 0) {
+    %jobstatus = ();
+    job_died(\%jobstatus,$default->{dbhome});	# get pid files of remaining jobs
+    my %tmp = reverse %jobstatus;
+    if ($tmp{$$}) {
+      delete $jobstatus{$tmp{$$}};		# remove ME
+    }
+    last unless keys %jobstatus;
+    foreach(keys %jobstatus) {
+      next if $jobstatus{$_} == $$;	# skip me
+      if ($jobstatus{$_}) {		# job running when checked
+	kill $signal, $jobstatus{$_};
+	no warnings;
+	waitpid($jobstatus{$_},0);	# reap if the user was sloppy
+      } else {
+	unlink $_;		# remove pid files for dead jobs
+      }
+    }
+    $gracep--;
+    unless ($gracep > 2) {
+      $signal = 9;		# on last try, kill forceably
+    }
+    sleep 1;
+  }
+}
+
+=item * dbjob_recover(\%default_config);
+
+This function destroys and reinstantiates the database environment. The file
+B<blockedBYwatcher> is removed from the environment directory if it is
+present. 
+
+All DB tasks should be terminated prior to calling this function. 
+
+DO NOT call this job for a DB environment that has not been initialized.
+
+ usage: if(dbjob_chk(\%default_config) {
+	  dbjob_kill(\%default_config,$graceperiod);
+	  dbjob_recover(\%default_config);
+	... restart db jobs
+	}
+
+  input:	pointer to db configuration,
+  returns:	nothing
+
+=cut
+
+sub dbjob_recover {
+  my($default) = @_;
+# all jobs should be dead
+# get the UID and GID of the environment files
+  opendir(ENVF,$default->{dbhome}) || die "could not open DB $default->{dbhome} directory\n";
+  my @env = grep(/^__/,readdir(ENVF));
+  closedir ENVF;
+  my($mode,$uid,$gid) = (stat($default->{dbhome} .'/'. $env[0]))[2,4,5];
+  $mode &= 0777;
+    
+  my %local_default = %$default;
+  $local_default{recover} = 1;
+# recover the environment
+  my $tool = new IPTables::IPv4::DBTarpit::Tools(%local_default);
+  $tool->closedb;
+
+# restore permissions
+  opendir(ENVF,$default->{dbhome}) || die "could not open DB $default->{dbhome} directory\n";
+  @env = grep(/^__/,readdir(ENVF));
+  closedir ENVF;
+  foreach(@env) {
+    chmod $mode, $default->{dbhome} .'/'. $_;
+    chown $uid, $gid, $default->{dbhome} .'/'. $_;
+  }
+
+# it's now ok to restart jobs
+  unlink $default->{dbhome} .'/blockedBYwatcher';	# remove the job block
+}
+
 =item * ($respip,$err,$blrsp,$exp,$zon)=unpack_contrib($record);
 
 Unpack a 'blcontrib' record.
@@ -629,6 +794,7 @@ no remote data record found, says it all
 
 sub lookupIP {
   my($CONFIG,$dotquad,$sockpath,$timeout) = @_;
+  $dotquad =~ s/\s//g;
   my $IP = inet_aton($dotquad);
   return (0,'invalid IP address')
 	unless $IP;
@@ -693,6 +859,7 @@ sub list2NetAddr {
   my $IP;
   no strict;
   foreach $IP (@$inref) {
+    $IP =~ s/\s//g;
 	# 11.22.33.44
     if ($IP =~ /^\d+\.\d+\.\d+\.\d+$/o) {
       push @$outref, NetAddr::IP->new($IP), 0;
@@ -726,6 +893,7 @@ Check if an IP address appears in a list of NetAddr objects.
 
 sub matchNetAddr { 
   my($ip,$naref) = @_;
+  $ip =~ s/\s//g;
   return 0 unless $ip && $ip =~ /\d+\.\d+\.\d+\.\d+/;
   $ip = new NetAddr::IP($ip);
   my $i;
@@ -759,6 +927,9 @@ See: config/sc_BlackList.conf.sample for a detailed description of each
 element in the configuration file. See: scripts/sc_BLcheck.pl for usage and
 configuration information for the db config hash reference.
 
+This routine will return if it catches a SIGTERM. The longest it will wait
+is the timeout for a DNS query.
+
 =cut
 
 sub BLcheck {
@@ -775,6 +946,9 @@ sub BLcheck {
   list2NetAddr($DNSBL->{IGNORE},\@NAignor)
 	or return('missing IGNORE array in config file');
 
+  my $run = 1;
+  local $SIG{TERM} = sub { $run = 0 };	# graceful exit;
+	
   (my $tool = new IPTables::IPv4::DBTarpit::Tools(%$default))
 	or return('could not open database environment, check your installation');
 
@@ -790,7 +964,7 @@ sub BLcheck {
 
   my $key;
   Record:
-  while ($key = $tool->getrecno($archive,$cursor)) {
+  while ($run && ($key = $tool->getrecno($archive,$cursor))) {
 # get each entry in the archive
     my $IP = inet_ntoa($key);
     print "Checking $IP " if $VERBOSE;
@@ -806,6 +980,7 @@ sub BLcheck {
 # check in each available DNSBL until exhausted or entry is found
    CheckZone:
     foreach my $zone (keys %$DNSBL) {
+      last Record unless $run;			# SIGTERM ?
       next CheckZone if $deadDNSBL{"$zone"} > $numberoftries;
       my ($expire,$error,$dnresp,$timeout) = zone_def($zone,$DNSBL);
       print $zone,' ' if $VERBOSE;
@@ -929,6 +1104,9 @@ See: config/sc_BlackList.conf.sample for a detailed description of each
 element in the configuration file. See: scripts/sc_BLpreen.pl for usage and
 configuration information for the db config hash reference.
 
+This routine will return if it catches a SIGTERM. The longest it will wait is
+the timeout interval for a DNS query.
+
 =cut
 
 sub BLpreen {
@@ -946,6 +1124,9 @@ sub BLpreen {
   list2NetAddr($DNSBL->{IGNORE},\@NAignor)
 	or return('missing IGNORE array in config file');
 
+  my $run = 1;
+  local $SIG{TERM} = sub { $run = 0 };  # graceful exit;
+
   (my $tool = new IPTables::IPv4::DBTarpit::Tools(%$default))
 	or return('could not open database environment, check your installation');
 
@@ -962,7 +1143,7 @@ sub BLpreen {
   my $now = time;
   my ($key,$validate,$zapped);
   Record:
-  while (@_ = $tool->getrecno($contrib,$cursor)) {
+  while ($run && (@_ = $tool->getrecno($contrib,$cursor))) {
     $zapped = 0;
     $validate = 0;
 # get each entry in the contrib database
@@ -1176,6 +1357,9 @@ sub mailcheck {
 # close incomming connection
   dispose_of($fh);
 
+  return(3,"startup blocked by DB watcher process")
+	if -e $default->{dbhome} .'/'. 'blockedBYwatcher';
+
 # skip the headers from local client
   my @discard;
   return (1,'no message found')
@@ -1298,6 +1482,10 @@ sub mailcheck {
 	validIP
 	zap_one
 	zap_pair
+	job_died
+	dbjob_chk
+	dbjob_kill
+	dbjob_recover
 	unpack_contrib
 	lookupIP
 	list2NetAddr

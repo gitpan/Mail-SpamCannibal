@@ -59,9 +59,9 @@ static __inline int forkchild(void) {
   if((pid = fork()) > 0)
     return(pid);	/* parent	*/
 
-  if(pid < 0) {		/* error, log and return	*/
+  if(pid < 0) {		/* error, log and fail	*/
     LogPrint(err26);
-    return(pid);
+    CleanExit(0);
   }
   return(0);
 }

@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 1.07, 9-29-03
+# version 1.10, 10-11-03
 #
 # Copyright 2003, Michael Robinton <michael@bizsystems.com>
 #   
@@ -34,6 +34,13 @@ use Mail::SpamCannibal::ScriptSupport qw(
 	lookupIP
 	validIP
 	valid127
+);
+use Mail::SpamCannibal::BDBclient qw(
+        dataquery
+        retrieve
+        INADDR_NONE
+        inet_ntoa
+	inet_aton
 );
 
 #########################################################################
@@ -189,6 +196,9 @@ while (1) {
 Due to the excessive load placed on our system, we have disabled the ability
 for third party sites to query the Whois Proxy through the web
 interface. Please enter your request manually.
+<script language=javascript1.1>
+whois.whois.value = '$IP';
+</script>
 |;
       } else {
 	require Mail::SpamCannibal::WhoisIP;
@@ -269,8 +279,7 @@ IP address:	$query{IP}
 ######	LOOKUP
 
   if ($query{page} =~ /^lookup/) {
-    my $IP = ($query{lookup} && $query{lookup} =~ /(\d+\.\d+\.\d+\.\d+)/)
-	? $1 : '';
+    my $IP = validIP($query{lookup});
     foreach (qw(
 	top
 	logo2
@@ -285,6 +294,9 @@ IP address:	$query{IP}
       if ($ENV{HTTP_REFERER} !~ /$ENV{SERVER_NAME}/i) {
 	$html .= qq|
 Automated lookups not allowed.
+<script language=javascript1.1>
+lookup.lookup.value = '$IP';
+</script>
 |;
       } else {
 	require Mail::SpamCannibal::SiteConfig;
@@ -314,7 +326,12 @@ function wIP(ip) {
 	  $html .= q|
 </td><td width=20>&nbsp;</td><td><table cellspacing=0 cellpadding=2 border=1>
 <tr><td class=hot><a href="#top" class=hot onMouseOver="return(show('delete |. $IP .q|'));" onMouseOut="return(off());"
-  onClick="self.location = location.pathname + '?page=delete&remove=' + '|. $IP .q|'; return false;">X</a></td></tr></table><td>delete</td>|;
+  onClick="self.location = location.pathname + '?page=delete&remove=' + '|. 
+	  $IP .q|'; return false;">X</a></td></tr></table></td><td>delete</td>
+    <td><table cellspacing=0 cellpadding=2 border=1>
+      <td class=hot><a href="#top" class=hot onMouseOver="return(show('delete CIDR/24 |. $IP .q|'));" onMouseOut="return(off());"
+  onClick="if (confirm('do you really want to delete a 256 address block?')) { self.location = location.pathname + '?page=delBLK&remove=' + '|.
+	  $IP .q|'; } return false;">X CIDR/24</a></td></tr></table>|;
 	}
 	my ($second,$text);
 	if(ref $CONFIG->{bdbDAEMON}) {	# remote?
@@ -324,24 +341,59 @@ function wIP(ip) {
 	}
 	if($second) {		# if secondary db 'blcontrib'
 	  $text =~ s|(http://([\w\.\-\?#&=/]+))|\<a href="$1"\>$2\</a\>|;
-#	  $text =~ s|(http://([^\s]+))|\<a href="$1"\>$2\</a\>|;
 	  $_ = "\n<p>\n". $text;
 	}else {
 	  $text =~ s/</&lt;/g;		# unmask html <
-	  $text =~ s/>/*gt;/g;		# unmask html >
-	  $text =~ s/$IP/$substr/g;
+	  $text =~ s/>/&gt;/g;		# unmask html >
+	  $text =~ s/$IP[^\d]/$substr/g;
 	  $_ = "\n<pre>\n". $text ."\n</pre>";
 	}
 	if ($admin && $text =~ /^not\s+in\s+\w+\s+database/) {
 	  $html .= q|
 <td width=20>&nbsp;</td><td><table cellspacing=0 cellpadding=2 border=1>
     <td class=cold><a href="#top" class=cold onMouseOver="return(show('tarpit |. $IP .q|'));" onMouseOut="return(off());"
-  onClick="self.location = location.pathname + '?page=spamlst&host=' + '|. $IP .q|'; return false;">&#164;</td></tr></table><td>add to tarpit</td>|;
+  onClick="self.location = location.pathname + '?page=spamlst&host=' + '|. $IP .q|'; return false;">&#164;</a></td></tr></table><td>add to tarpit</td>|;
 	}
-	$html .= '</td></tr></table>';
-	$html .= $_ . q|
+	$html .= '</td></tr></table>'. $_ .q|
 </form>
 |;
+	if ($admin) {
+	  use integer;
+	  my $found = 0;
+	  my $related = '';
+	  $IP =~ /\d+\.\d+\.\d+\./;
+	  my $cidr = $&;
+# get CIDR differential data and recover minus's
+	  ($_ = sesswrap("$admin getC24 $sess $expire $IP")) =~ s/;/:-/g;
+	  if ($_ =~ /^OK\s+(.+)/) {
+	    my($vec,@vals) =  split(':',$1);	# differential values to @vals
+	    @_ = split('',$vec);
+	    my $timetag = 0;
+	    foreach(0..$#_) {
+	      next unless $_[$_];
+	      $timetag += shift @vals;
+	      my $addr = "${cidr}$_";
+	      next if $addr eq $IP;
+	      $found += 1;
+	      $related .= q|<tr><td><a href="#top" onMouseOver="return(show('lookup |. $addr .q|'));" onMouseOut="return(off());"
+  onClick="lookup.lookup.value='|. $addr .q|';lookup.submit();return false;">|. $addr .q|</a></td><td>|.
+	      scalar localtime($timetag) .q|</td></tr>
+|;
+	    }
+	  } else {	# response was NOT OK
+	    $html .= '<font size="+1" color=red><pre>' . $_ . '</pre></font><br>'
+	  }
+	  if ($found) {
+	    $html .= q|<blockquote>
+<b>|. $found .q| record|. (($found > 1) ? 's' : '') .q| in the same netblock</b>
+<p>
+<table cellspacing=0 cellpadding=2 border=1>
+  <tr><td align=center>host address</td><td align=center>last contact</td></tr>|.
+	    $related .q|
+</table></blockquote>
+|;
+	  }
+	}
       }
     }
     last PageGen;
@@ -426,6 +478,17 @@ function wIP(ip) {
       next PageGen;
     }
 
+    require Mail::SpamCannibal::SiteConfig;
+    my $sc = $CONFIG->{SiteConfig} || do { 
+      require Mail::SpamCannibal::SiteConfig;
+      new Mail::SpamCannibal::SiteConfig;
+    };
+    unless (exists $CONFIG->{bdbDAEMON}) {
+      $CONFIG->{bdbDAEMON} = $sc->{SPMCNBL_ENVIRONMENT} .'/bdbread';
+    }
+
+    my $action = ($query{submit} =~ /CIDR/) ? 'insEBLK' : 'insEVD';
+
     foreach(0..$#spam) {
       $spam[$_] = '>'. $spam[$_]
 	if $spam[$_] eq '.' && $_ != $#spam;
@@ -433,7 +496,9 @@ function wIP(ip) {
     push @spam, '.'
 	if $spam[$#spam] ne '.';
     my $spam = array2string(\@spam);
-    $_ = sesswrap("$admin insEVD $sess $expire $host",$spam);
+
+    $_ = sesswrap("$admin $action $sess $expire $host",$spam);
+
     if ($_ =~ /^OK/) {
       $query{page} = 'lookup';
       $query{lookup} = $host;
@@ -503,7 +568,9 @@ function wIP(ip) {
 
 ######  DELETE
 
-  if ($admin && $query{page} =~ /^delete/) {
+  if ($admin && 
+      (	$query{page} =~ /^delete/ ||
+	$query{page} =~ /^delBLK/ )) {
     foreach (qw(
 	top
 	logo2
@@ -513,9 +580,16 @@ function wIP(ip) {
 	) {  
       html_cat(\$html,$_,$CONFIG,\%ftxt);
     }
-    $_ = sesswrap("$admin delete $sess $expire $query{remove}");
+    my $action = ($query{page} =~ /^delBLK/) ? 'delBLK' : 'delete';
+    $_ = sesswrap("$admin $action $sess $expire $query{remove}");
+    $action = ($query{page} =~ /^delBLK/) ? 'CIDR/24 block removed' : 'removed';
     if ($_ =~ /^OK/) {
-      $html .= qq|<center><font size=5><b>$query{remove}</b></font> removed</center>\n|;
+      $html .= q|<form name=RemoveLook action="" method=POST>
+<input type=hidden name=page value=lookup>
+<input type=hidden name=lookup value="|. $query{remove} .q|">
+<center><font size=5><a href="#top" onMouseOver="return(show('lookup |. $query{remove} .q|'));" onMouseOut="return(off());"
+  onClick="document.RemoveLook.action=location.pathname;submit();return false;">|. $query{remove} .q|</a></font> |. $action .q|</center>
+</form>|;
     } else {
       $html .= qq|$query{remove} $_\n|;
     }
@@ -525,13 +599,6 @@ function wIP(ip) {
 ######  VIEW DB
 
   if ($admin && $query{page} =~ /^viewdb/) {
-    require Mail::SpamCannibal::BDBclient;
-    import Mail::SpamCannibal::BDBclient qw(
-	dataquery
-	retrieve
-	INADDR_NONE
-	inet_ntoa
-    );
     foreach (qw(
 	top
 	logo2
@@ -697,9 +764,12 @@ document.UpdPass.newuser.value = '|. $user .q|';
 </script>
 | if $query{page} =~ /^updpass/;
 
+$query{spam} =~ s/\r//g;
+$query{spam} =~ s/\n/\\n/g;
 $html .= q|
 <script language=javascript1.1>
 document.SpamAdd.host.value = '|. $query{host} .q|';
+document.SpamAdd.spam.value = "|. $query{spam} .q|";
 </script>
 | if $query{page} =~ spamlst &&
 	validIP($query{host});

@@ -47,7 +47,7 @@
 /* Global Variables from main.c */
   extern DBTPD dbtp;
   extern int oflag, logopen, bflag, zflag;
-  extern pid_t pidrun;
+  extern pid_t pidrun, parent;
   extern char * zone_name, * local_name, * contact, * errormsg;
   extern int zone_name_len, zoneEQlocal;
   extern int h_name_ctr;        /* name service buffer ring pointer     */
@@ -498,3 +498,13 @@ t_name_skip(buf)
 	RETVAL = (int)(out - buf);
     OUTPUT:
 	RETVAL
+
+int
+t_set_parent(val)
+	int val
+    CODE:
+	RETVAL = parent;
+	parent = val;
+    OUTPUT:
+	RETVAL
+	

@@ -3,7 +3,7 @@
 # sc_BlackList.conf
 # Configuration for sc_BLcheck.pl and sc_BLpreen.pl
 #
-# version 1.01, 9-7-03
+# version 1.04, 10-3-03
 #
 my $DNSBL = {
 
@@ -29,14 +29,15 @@ my $DNSBL = {
 #	single address	xxx.xxx.xxx.xxx/32
 #
   'IGNORE'	=> [
-	    # a single address
-	'11.22.33.44',
-	    # a range of ip's, ONLY VALID WITHIN THE SAME CLASS 'C'
-	'22.33.44.55 - 22.33.44.65',
-	    # a CIDR range
-	'5.6.7.16/28',
-	    # a range specified with a netmask
-	'7.8.9.128/255.255.255.240',
+#	    # a single address
+#	'11.22.33.44',
+#	    # a range of ip's, ONLY VALID WITHIN THE SAME CLASS 'C'
+#	'22.33.44.55 - 22.33.44.65',
+#	    # a CIDR range
+#	'5.6.7.16/28',
+#	    # a range specified with a netmask
+#	'7.8.9.128/255.255.255.240',
+
 	    # this should ALWAYS be here
 	'127.0.0.0/8',	# ignore all test entries and localhost
   ],
@@ -70,7 +71,7 @@ my $DNSBL = {
 #
 #	error	    => 'IP address blocked, see http://www.somehost.com?ip=',
 #
-#	expire	    => 7d',	# optional default expiration if DNSBL can not be reached
+#	expire	    => '7d',	# optional default expiration if DNSBL can not be reached
 #				# may be specified in any combination of seconds, minutes, hours, days, weeks
 #				#  i.e. 604800 or 604800s, 10080m, 168h
 				#	1w 3d
@@ -78,8 +79,8 @@ my $DNSBL = {
 
   'dnsbl.sorbs.net'	=> {	# see http://www.dnsbl.sorbs.net/using.html
 	accept	=> {	# list of codes for which we tarpit
-#		'127.0.0.2'  =>	'open http proxie',
-#		'127.0.0.3'  =>	'open socks proxie',
+		'127.0.0.2'  =>	'open http proxie',
+		'127.0.0.3'  =>	'open socks proxie',
 		'127.0.0.4'  =>	'open proxy server',
 		'127.0.0.5'  =>	'open smtp relay',
 		'127.0.0.6'  =>	'spam supporting ISP',
@@ -98,10 +99,10 @@ my $DNSBL = {
   'dnsbl.njabl.org'	=> {	# see http://dnsbl.njabl.org/use.html
 	accept	=> {	# list of codes for which we tarpit
 		'127.0.0.2'  =>	'open relays',
-#		'127.0.0.3'  =>	'dial-up/dynamic IP ranges',
+		'127.0.0.3'  =>	'dial-up/dynamic IP ranges',
 		'127.0.0.4'  =>	'spam sources',
 		'127.0.0.5'  =>	'multi-stage openrelay',
-#		'127.0.0.8'  =>	'open web - form mail servers',
+		'127.0.0.8'  =>	'open web - form mail servers',
 		'127.0.0.9'  =>	'open proxy servers',
 	},
 	confirm		=> 1,
@@ -153,8 +154,58 @@ my $DNSBL = {
 	accept	=> {
 		'127.0.0.2' => '',
 	},
-	error		=> 'for removal see: http://spamcop.net/w3m?action=checkblock&ip=',
+	error		=> 'for removal see: http://www.spamcop.net/w3m?action=checkblock&ip=',
 	expire		=> '30d',
   },
 
+  'cbl.abuseat.org'	=> {	# see http://cbl.abuseat.org
+	accept  => {
+		'127.0.0.2' => '',
+	},
+	error		=> 'for removal see: http://cbl.abuseat.org/lookup.cgi?.submit=lookup&ip=',
+	expire		=> '30d',
+  },
+
+  'sbl.spamhaus.org'	=> {	# see http://www.spamhaus.org
+	accept	=> {
+		'127.0.0.2' => '',
+	},
+	error		=> 'for removal see http://abuse.net/sbl.phtml?IP=',
+	expire		=> '30d',
+  },
+
+  'dynablock.easynet.nl' => {	# see http://abuse.easynet.nl/dynablocker.html
+	accept => {
+		'127.0.0.2' => '',
+	},
+	error		=> 'for removal see http://informatie.easynet.nl/error/errors.html',
+	expire		=> '30d',
+  },
+
+  'list.dsbl.org'       => {    # see http://dsbl.org
+	accept => {
+		'127.0.0.2' => '', 
+	},
+	error		=> 'for removal see http://dsbl.org/listing?',
+	expire		=> '30d',
+  },
+
+# higher risk
+#  'blackholes.five-ten-sg.com' => { # see http://www.five-ten-sg.com/blackhole.php
+#	accept => {
+#		'127.0.0.2' => 'spam source',
+#		'127.0.0.3' => 'dialup address',
+#		'127.0.0.4' => 'multistage open relay',
+#		'127.0.0.5' => 'openrelay',
+#		'127.0.0.6' => 'spam supporting ISP',
+#		'127.0.0.7' => 'web form',
+#		'127.0.0.8' => 'relay/open proxy',
+#		'127.0.0.9' => 'klez source',
+#		'127.0.0.10' => 'violate TCPA',
+#		'127.0.0.11' => 'spam supporting freemailer',
+#	},
+#	confirm		=> 1,
+#	error		=> 'for removal see http://www.five-ten-sg.com/blackhole.php?ip=',
+#	expire		=> '30d',
+#  },
 };

@@ -4,7 +4,7 @@
 eval 'exec /usr/bin/perl -w -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 #
-# rc.bdbaccess version 0.03, 8-22-03
+# rc.bdbaccess version 0.04, 10-4-03
 #
 # Copyright 2003, Michael Robinton <michael@bizsystems.com>
 # rc.bdbaccess is free software; you can redistribute it and/or 
@@ -100,6 +100,14 @@ die <<EOF unless -e $daemonX && -x $daemonX;
   Can not find $daemon daemon. Please check your installation
 
 ###############################################################
+EOF
+
+die <<EOF if -e $CONFIG->{SPMCNBL_ENVIRONMENT} .'/'. 'blockedBYwatcher';
+##############################################
+
+  startup blocked by DB watcher process
+
+##############################################   
 EOF
 
 $| = 1;

@@ -24,7 +24,9 @@
 #include <syslog.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <unistd.h>
 #include "defines.h"
+#include "util_pid_func.h"
 
 void
 LogPrint(char *output) {
@@ -38,7 +40,7 @@ LogPrint(char *output) {
 void
 CleanExit(int sig) {
   extern DBTPD dbtp;
-  extern int fd, logopen, parent, inetd;
+  extern int fd, logopen, parent, inetd, unlinkOK;
   if(sig == SIGHUP) {
     LogPrint(str2);
     return;
@@ -51,6 +53,9 @@ CleanExit(int sig) {
   if (fd)
     close(fd);
 
+  if (unlinkOK)
+	unlink(pidpath());	/* unlink pid file to unregister task	*/
+  
   /* shut down syslog connection */
   if(parent && inetd == 0)
     LogPrint(str3);

@@ -6,10 +6,12 @@ Makefile.PL
 README.pgp_gpg
 SpamCannibal.pm
 config/sc_BlackList.conf.sample
+config/sc_dbwatch.conf.sample
 config/sc_mailfilter.conf.sample
 config/sc_web.conf.sample
 executableTestPath.conf
-rc.sc_lbdaemon.pl
+rc.sc_dbwatch
+rc.sc_lbdaemon.sample
 cdata/sc_sesswrap.c
 fixup/perl2html.pl
 inst/dialog.pl
@@ -38,6 +40,7 @@ pods/howitworks.pod
 pods/howtouse.pod
 public_html/cannibal.cgi
 public_html/spam_report.cgi.example
+public_html/images/protect1.gif
 public_html/images/spam01.gif
 public_html/images/spamcan1.gif
 public_html/images/cleardot.gif
@@ -50,6 +53,15 @@ public_html/images/orgdot.gif
 public_html/images/pwait01.gif
 public_html/images/reddot.gif
 public_html/images/yeldot.gif
+public_html/docs/admin_screens.html
+public_html/images/blkadd.jpg
+public_html/images/database.jpg
+public_html/images/login.jpg
+public_html/images/lookupno.jpg
+public_html/images/lookupy.jpg
+public_html/images/spamadd.jpg
+public_html/images/spamsg.jpg
+public_html/images/updpass.jpg
 public_html/incl/README
 public_html/incl/contact.incl
 public_html/incl/home.incl
@@ -102,6 +114,7 @@ t/ses_coded.t
 t/ses_mac.t
 t/ses_val.t
 t/ss_codes.t
+t/ss_dbjobs.t
 t/ss_id.t
 t/ss_valid127.t
 t/ws_date.t

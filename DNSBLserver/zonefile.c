@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -264,9 +265,10 @@ zonefile(FILE * fd)
   u_short len;
   u_int32_t recno = 1;
   int serial_missing = 1;
+  time_t current = time(NULL);
 
 /* version, ORIGIN and TTL for SOA	*/
-  fprintf(fd,"; Version: %s\n$ORIGIN .\n$TTL %u\n",version, soa_ttl);
+  fprintf(fd,"; Version: %s\n; zone dump on %s\n$ORIGIN .\n$TTL %u\n",version,ctime(&current),soa_ttl);
   bp = mybuffer;
   tabout(bp,zone_name,"IN SOA");				/* zonename IN SOA		*/
   fprintf(fd,"%s%s. %s. (\n",bp,local_name,contact);		/* name contact (		*/

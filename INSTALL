@@ -295,7 +295,7 @@ SpamCannibal setup
     zone file is available that can be copied for http or ftp download to
     mirror providers.
 
-   rDNS direct
+   example 1: rDNS direct
 
     This method is the simplest and must be used to provide service for the
     following two methods. The dnsbls daemon is run on port 53.
@@ -309,7 +309,7 @@ SpamCannibal setup
     extensively tested and dnsbls does not have all the features, security
     and control that is available from BIND.
 
-   rDNS via BIND slave
+   example 2: rDNS via BIND slave
 
     Set up dnsbls as above. To run it on the same host as the BIND daemon,
     have it answer on port 8653 (or other suitable port). You may wish to
@@ -346,11 +346,11 @@ SpamCannibal setup
     updates, the BIND daemon cache will generally contain the entire
     contents of the zone file and will be very large.
 
-   rDNS via BIND forward only
+   example 3: rDNS via BIND forward only
 
-    Set up dnsbls as above with dnsbls running on port 8653 as above. You
-    may wish to block access to this port from all except the local network,
-    or if on the same host as BIND, all except 127.0.0.1.
+    Set up dnsbls with dnsbls running on port 8653 as in example 2. You may
+    wish to block access to this port from all except the local network, or
+    if on the same host as BIND, all except 127.0.0.1.
 
     In the BIND configuration file, named.conf, add these lines:
 
@@ -373,13 +373,90 @@ SpamCannibal setup
     recent/active dnsbl domain contents and should remain quite small (for
     dnsbl hits).
 
-    The disadvantage to this method is that no zone file is immediately
-    available for export. A zone file can be created on demand by issuing a
-    SIG_USR2 to the dnsbls daemon. Updating the zone file in this manner is
-    best left to a cron job.
+    The disadvantage to this method is that BIND will not provide recursive
+    lookup service for this zone. Access to the zone is available only for
+    clients, or other instances of BIND that are configured to query for the
+    "forward" zone as a forwarder itself. In addition, no zone file is
+    immediately available for export. A zone file can be created on demand
+    by issuing a SIG_USR2 to the dnsbls daemon. Providing a zone file in
+    this manner is best left to a cron job. See example CRON shell script in
+    the ./contrib directory of this distribution.
 
-    See example CRON shell script in the ./contrib directory of this
-    distribution.
+   example 4: rDNS -- practical combinations
+
+    To provide public rDNS service and realtime tarpit lookup service, it is
+    possible to combine the approaches above. When the dnsbl resides on the
+    same server as BIND and BIND is slaved to dnsbl to provide robust DNS
+    service, secondary servers can still access the dnsbl daemon directly
+    with a zone file that looks like:
+
+      // zone my.zonename.net
+      zone "my.zonename.net" in {
+            type forward;
+            forward only;
+            forwarders {
+      // insert the IP address of the primary dnsbl host
+                    1.2.3.4 port 8653;
+            };
+      };
+
+    The primary BIND installation would have a slave zone as described
+    above. SpamCannibal running on the primary host never access BIND for
+    its own data since it uses the database directly and not through dnsbls.
+    Thus secondary tarpit installations using the local zone configuration
+    (immediately above) would have access to the dynamic records, and the
+    public would see the zone file as delayed by the update interval. For
+    speedier service, use method one instead.
+
+   example 5: rDNS with concurrent BIND -- not using BIND
+
+    You can run the dnsbl daemon on a host running bind and provide rDNS
+    service on an alternate IP address. Set up dnsbls as in example 2,
+    running on port 8653. Assign another IP address to the host adapter
+    which will provide service to the new IP address. Issue these commands
+    at startup to bind the IP address to the host adapter.
+
+      Example:      add this to the network initialization script
+                    assuming there is only one IP address bound
+                    to the current device (i.e. eth0)
+
+      for an address at 1.2.3.132 in a CIDR/26 block
+
+      # for each additional device, increment LUN
+      # Edit for your setup.
+      NETMASK="255.255.255.192"     # YOUR netmask!
+      NETWORK="1.2.3.128"           # YOUR network address!
+      BROADCAST="1.2.3.191"         # YOUR broadcast address
+
+      # first extra IP address is logical unit 0
+      # i.e. eth0:0
+      LUN=0
+
+      SETVIRT () {
+        IFACE=${DEVICE}:${LUN}
+        /sbin/ifconfig ${IFACE} ${IPADDR} \
+         broadcast ${BROADCAST} netmask ${NETMASK}
+        /sbin/route add ${IPADDR} dev ${IFACE}
+        echo Configuring $IFACE as $IPADDR
+        LUN=$[${LUN}+1]
+      }
+
+      IPADDR="1.2.3.132"
+      SETVIRT
+
+    Add the following NAT rules in your IPTABLES file after the PREROUTING
+    entries:
+
+      DNSBL_PORT=8653
+      DNSBL_IP="1.2.3.132"
+  
+      $IPTABLES -t nat -A PREROUTING -p tcp -d $DNSBL_IP \
+            --dport 53 -j REDIRECT --to-port $DNSBL_PORT
+      $IPTABLES -t nat -A PREROUTING -p udp -d $DNSBL_IP \
+            --dport 53 -j REDIRECT --to-port $DNSBL_PORT  
+
+    With these rules, you can still slave BIND to the dnsbls as in example 2
+    and/or access the dnsbls on port 8653 as in example 4
 
   Initializing the database
 

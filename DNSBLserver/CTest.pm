@@ -100,6 +100,15 @@ the the 'C' pieces for F<dnsbls>
   set the value of "qflag"
   return the previous value
 
+=item * t_set_stop(val);
+
+  set the value of "stop"
+  return the previous value
+
+  This flag forces 'main' to return(0)
+  as soon as it enters the -T print 
+  routine BEFORE it issues STDOUT
+
 =item * $pid = t_pidrun()
 
   input:	none

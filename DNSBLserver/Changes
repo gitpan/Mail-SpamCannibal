@@ -1,5 +1,22 @@
 Revision history for Perl extension Mail::SpamCannibal::DNSBLserver.
 
+0.29  Sun Jun 27 09:04:56 PDT 2004
+	Added 'stop' variable for testing in main.c to intercept
+	processing of the -T flag and stop STDOUT
+	# Something in perl 5.8 does not allow the redirection of
+	# STDOUT in an eval to a C program. The workaround is
+	# simply to abort the call to 'main' just prior to issuing
+	# the print statements since this is all tested elsewhere
+	#
+
+0.28  Sat Jun 26 16:22:40 PDT 2004
+	added time tag to zone file dump in dnsbls::zonefile.c
+
+	changed test for zone dump so that it just checks for the
+	presence of a "zone_request" instead of no other activity + zone_request
+
+	fixed comment type in util_pid.c
+
 0.27  Fri Jun 25 11:25:29 PDT 2004
 	changed zonefile.c 'version' reporting string for zone file dump
 

@@ -97,7 +97,7 @@ u_int32_t * Astart, * Aptr;
 char mybuffer[1024], * rtn;
 int logopen = 0, datalog = 0, savedatalog = 0;
 int run, zone_name_len, zoneEQlocal, port = 53, zone_request = 0;
-int dflag = 0, oflag = 0, bflag = 0, zflag = 0, qflag = 0, Zflag = 0;
+int dflag = 0, oflag = 0, bflag = 0, zflag = 0, qflag = 0, Zflag = 0, stop = 0;
 int fdUDP = 0, fdTCPlisten = 0, fdTCP = 0;
 u_int32_t refresh = 43200, retry = 3600, expire = 86400, minimum = 10800, soa_ttl = 0;
 pid_t pidrun, parent = 1;
@@ -323,6 +323,8 @@ Error_nsname:
   contact = rname;
   
   if(testflag) {
+    if (stop)			/* if testing and no STDOUT is wanted	*/
+	return(0);
     printf("dbhome      -r	=> %s\n", dbhome);
     printf("tarpit      -i	=> %s\n", dbtp.dbfile[DBtarpit]);
     printf("contrib     -j	=> %s\n", dbtp.dbfile[DBcontrib]);
@@ -453,9 +455,8 @@ Error_nsname:
       else if (errno == ECONNABORTED)
             continue;		/* tcp aborted			*/
 	
-    } else if (ready == 0) {
+    } else if (zone_request) {
     
-      if (zone_request)
 	zonedump();
 
     } else if (ready > 0) {

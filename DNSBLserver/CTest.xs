@@ -49,7 +49,7 @@
 
 /* Global Variables from main.c */
   extern DBTPD dbtp;
-  extern int oflag, logopen, bflag, zflag, qflag, Zflag;
+  extern int oflag, logopen, bflag, zflag, qflag, Zflag, stop;
   extern pid_t pidrun, parent;
   extern char * zone_name, * local_name, * contact, * errormsg, mybuffer[], * dbhome;
   extern int zone_name_len, zoneEQlocal;
@@ -583,6 +583,15 @@ t_set_qflag(val)
     CODE:
 	RETVAL = qflag;
 	qflag = val;
+    OUTPUT:
+	RETVAL
+
+int
+t_set_stop(val)
+	int val
+    CODE:
+	RETVAL = stop;
+	stop = val;
     OUTPUT:
 	RETVAL
 

@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.17 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.18 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -1445,7 +1445,12 @@ sub BLpreen {
   (my $tool = new IPTables::IPv4::DBTarpit::Tools(%$default))
 	or return('could not open database environment, check your installation');
 
-  my $numberoftries = 6;
+  $tool->{SS_BLpreen_cache} = {		# cache for write back operations
+	limit	=>	100,		# size of cache
+	cache	=>	{},		# value cache
+  };
+
+  my $numberoftries = 6;		# number of DNSBL attempts before marking as failed
 
   my %deadDNSBL;
   foreach(keys %$DNSBL) {
@@ -1651,6 +1656,7 @@ sub BLpreen {
       $cursor++;
     }
   }
+  _flush_BLp_cache($tool,$tarpit,$contrib);	# flush any remaining cached values
   $tool->closedb;
   return '';
 }
@@ -1671,7 +1677,10 @@ sub BLpreen {
 # $contrib	DB pointer
 # $key		netaddr $IP - address of interest  [inet_aton($IP)]
 # $tarpit	DB pointer
-
+#
+# if $tool carries the SS_BLpreen_cache key, use caching for updates
+# otherwise, write the values directly to the database
+#
 sub _updateTpentry {
   my($tool,$reason,$error,$IP,$expire,$ipA,$dnresp,$netA,$zon,$contrib,$key,$tarpit,$DEBUG,$VERBOSE) = @_;
 	if ($reason =~ m|http://.+\..+| or $reason =~ /www\..+\..+/) {
@@ -1707,16 +1716,43 @@ zone response => $ipA
 	my $cz = 0;
 	unless ($DEBUG) {
 	  $_ = pack("a4 x A* x a4 x N x A*",$dnresp,$error,$netA,$expire,$zon);
-	  unless ($tool->put($contrib,$key,$_)) {
-	    $tool->sync($contrib);
-	    unless ($tool->touch($tarpit,SerialEntry())) {	# and update the serial number
-	      $tool->sync($tarpit);
+	  if (exists $tool->{SS_BLpreen_cache}) {
+	    $tool->{SS_BLpreen_cache}->{cache}->{$key} = $_;
+	    unless (keys %{$tool->{SS_BLpreen_cache}->{cache}} < $tool->{SS_BLpreen_cache}->{limit}) {
+	      _flush_BLp_cache($tool,$tarpit,$contrib);
 	    }
 	  }
+	  else {
+	    unless ($tool->put($contrib,$key,$_)) {
+	      $tool->sync($contrib);
+	      unless ($tool->touch($tarpit,SerialEntry())) {	# and update the serial number
+	        $tool->sync($tarpit);
+	      }
+	    }
+	  }
+
+
 	  $cz = 1;	# last CheckZone;
 	}
 	return $cz;
 }
+
+sub _flush_BLp_cache {
+  my($tool,$tarpit,$contrib) = @_;
+  return unless (@_ = sort keys %{$tool->{SS_BLpreen_cache}->{cache}});
+  my $nosync;
+  foreach(@_) {
+    last if ($nosync = $tool->put($contrib,$_,$tool->{SS_BLpreen_cache}->{cache}->{$_}));	# exit loop if failure
+  }
+  %{$tool->{SS_BLpreen_cache}->{cache}} = ();		# destroy old cache
+  unless ($nosync) {
+    $tool->sync($contrib);				# flush contrib db to file
+    unless ($tool->touch($tarpit,SerialEntry())) {	# and update the serial number
+      $tool->sync($tarpit);
+    }
+  }
+}
+    
 
 =item * @err=mailcheck($fh,\%MAILFILTER,\%DNSBL,\%default,\@NAignor)
 

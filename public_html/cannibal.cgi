@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 1.17, 2-9-04
+# version 1.18, 2-10-04
 #
 # Copyright 2003, 2004, Michael Robinton <michael@bizsystems.com>
 #   
@@ -378,7 +378,7 @@ function wIP(ip) {
 	}else {
 	  $text =~ s/</&lt;/g;		# unmask html <
 	  $text =~ s/>/&gt;/g;		# unmask html >
-	  $text =~ s/$IP[^\d]/$substr/g;
+	  $text =~ s/$IP(\D)/$substr$1/g;
 	  $results = "\n<pre>\n". $text ."\n</pre>";
 	}
 	if ($admin && $text =~ /^not\s+in\s+\w+\s+database/) {

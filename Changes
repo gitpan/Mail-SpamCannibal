@@ -1,5 +1,12 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.28  Sat Feb 21 11:42:10 PST 2004
+	add db write cacheing to BLpreen in ScriptSupport v0.18 
+	to reduce disk thrashing and speed preening process
+
+	correct cannibal.cgi v1.18 to display truncated character
+	after hotlink for IP address in secondary db display
+
 0.27  Mon Feb  9 16:20:27 PST 2004
 	Re-write 'restart' routines for:
 	DNSBLserver/rc.dnsbls v0.8

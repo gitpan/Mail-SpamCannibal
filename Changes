@@ -1,0 +1,106 @@
+Revision history for Perl extension Mail::SpamCannibal
+
+FIRST BETA RELEASE
+0.12  Thu Sep 25 17:21:24 PDT 2003
+	add fixup script to do POD2HTML conversions for versions
+	of perl newer than 5.6 where this has been removed.
+
+0.11  Wed Sep 24 14:57:49 PDT 2003
+	modify BDBaccess and DNSBLserver to have 32/64 bit
+	platform independent code. See Changes in those 
+	subdirectories for additional information on 
+	OS independent modifications. No functional changes.
+
+0.10  Sat Sep 20 12:01:08 PDT 2003
+	upgrade to DNSBLserver 0.15
+
+0.09  Mon Sep 15 11:50:06 PDT 2003
+	missing file public_html/whois.cgi
+	added to archive
+
+0.08  Tue Sep  9 18:00:28 PDT 2003
+	DNSBLserver version 0.12
+	improve database use efficiency
+
+	DNSBLserver version 0.11
+	main.c -- modified the child network socket loop to fix a timing 
+	problem when interrogating the dnsbls from the local host via bind.
+
+	modify rc.dnsbls so that record 127.0.0.2 is 
+	forceably added without user intervention.
+
+	add conditional @fqdn to "to" address in SMTPsend version 0.02
+
+	fix LaBreaDaemon.pm to properly open the unix domain interface
+	to dbtarpit.
+	set LaBreaDaemon ps-string to script name
+
+	add report scripts for site statistics
+
+	correct verbose Exceptions reporting for
+	mailcheck in ScriptSupport.pm
+
+0.07  Sun Sep  7 19:38:28 PDT 2003
+	ScriptSupport 0.05 -- correct flaw in BLpreen check which did not
+	remove IP from tarpit when the blacklist host no longer has record.
+
+	sc_initdb.pl	chown environment directory to 
+	spamcannibal user,group
+
+	add UtilPid.pm for checking and managing PID files, etc...
+	add pid checking to sc_BLcheck.pl and sc_BLpreen.pl
+	add LaBreaDaemon.pm to support data collection and display
+
+	add sc_cleanup.pl to remove spurious records
+	add pods/recover.pod
+
+	updated cannibal.cgi to unmask html in the evidence record
+
+0.06  Wed Sep  3 16:35:13 PDT 2003
+	update prerequisite list and home page documentation
+	permissions on sc_web.conf.sample instead of sc_web.conf
+
+	dnsbls version 0.10
+	Add -N option for naming the localhost DNS object
+	Correct error in mungemacros.c where buffer size constraint
+	was MSGsize instead of IP_MAXPACKET
+	Add lookup in the evidence file to ns.c. Evidence must be
+	consulted before blcontrib to prevent non-reporting of
+	127.0.0.2 'A' records if they appear in both blcontrib and evidence.
+
+0.05  Fri Aug 29 14:55:27 PDT 2003
+	updates from first beta install including documentation corrections
+
+	modify usage for INADDR_NONE in cannibal.cgi
+
+	set submit false for ViewDB in cannibal.cgi to prevent
+	POSTs to index.html
+
+	modify Session.pm to support modperl across 'fork' operation
+
+	correct failure to skip tarpit operation for ignored hosts in
+
+	sc_BLcheck.pl (ScriptSupport::BLcheck).
+
+	set real to effective uid in sc_mailfilter.pl to accomodate
+	the suid from the local mail delivery agent
+
+	correct WebService to properly return query string elements
+	that contain '='
+
+0.04  Sat Aug 23 12:22:28 PDT 2003
+	added web support for users and admins
+
+0.03  Sat Aug  2 19:44:13 PDT 2003
+	updates
+
+0.02  Tue Jul 29 19:29:58 PDT 2003
+	move GoodPrivacy and ParseMessage
+	into lib/
+
+	add	scrpits/sc_initdb.pl
+		scripts/sc_addspam.pl
+	    	config/sc_addspam.conf.sample
+
+0.01  Thu Jul 23 15:13:03 PDT 2003
+	alpha release

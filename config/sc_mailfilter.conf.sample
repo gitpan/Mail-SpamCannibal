@@ -1,0 +1,113 @@
+#!/usr/bin/perl
+
+# sc_mailfilter.conf
+# Configuration for sc_mailfilter.pl
+
+my $MAILFILTER = {
+
+# Location of the "sc_BlackList.conf" file. The "IGNORE" array is used
+# to exclude listed hosts.
+#
+# [ REQUIRED ]
+
+	BLCONFIG	=> '/usr/local/spamcannibal/config/sc_BlackList.conf',
+#
+
+# A list of mail host which are terminating servers for incoming mail to
+# this site. Include the IP addresses of any acceptable relays and backup 
+# servers. The "sending" host to these servers are the ones that will be 
+# placed in the tarpit. At a minimum, this should include all servers
+# for which there are MX records for your domains.
+#
+# Entries may be dot.quad.addresses, host.names or CIDR netblocks of the 
+# form:		12.34.56.0/28
+#
+# The IP addresses of "named" hosts are resolved for multiple interfaces. 
+# If you do not want this behavior then always use dot.quad notation.
+#
+# [ REQUIRED ]
+#
+	MXhosts   => [qw(
+		mail2.ournetwork.net
+		mail2.foo.com
+		ns2.foo.com
+		ns2.ournetwork.net
+
+		mail1.ournetwork.net
+		mail3.ournetwork.net
+		mail1.foo.com
+		mail3.foo.com
+		ns3.ournetwork.net
+		ns3.foo.com
+
+		mailbackup.ournetwork.net
+		mail4.ournetwork.net
+	)],
+
+# Do not automatically include private network addresses in MXhosts.
+#	127./8, 10./8, 172.16/12, 192.168/16
+#
+# [ OPTIONAL ]
+
+#	NOPRIVATE => 1;
+
+#
+# Report exceptions and failed entry attempts
+#
+# [ OPTIONAL ]
+
+	REPORT	  => 'my.email@addy.com',
+#
+
+# PGP or GPG configuration information to decrypt incomming messages.
+# Verify that a message has PGP encrypted content prior to decryption so
+# that plain text messages are not inadvertently passed to the to the
+# tarpit. Prevent unauthorized access/addition to the tarpit.
+#
+# See: man Mail::SpamCannibal::GoodPrivacy 'decrypt' for details
+#
+# [ RECOMMENDED ]
+
+	PGP	  => {
+#		ExeFile	   => '/usr/local/bin/pgp',
+		ExeFile    => '/usr/local/bin/gpg',
+#		KeyPath	   => '/usr/local/spamcannibal/.pgp',
+		KeyPath    => '/usr/local/spamcannibal/.gnupg',
+		Password   => 'mySPAMpasswd',
+		UserID	   => 'Spam',
+		Version	   => '',	# might be 2.62
+#		Exceptions => 0,
+	},
+
+# If "REPORT" is set above, and "Exceptions" is true. Non-PGP messages
+# will be forwarded to the REPORT target for evaluation.
+
+
+# Use dirty read of headers. Use this procedure only if you can not avoid
+# auto-wrapping in your mail client. Some goofy stuff can slip through or
+# headers may be mangled and not properly parsed.
+#
+# See man Mail::SpamCannibal::ParseMessage 'headers' and 'rfheaders'
+# for a detailed explanation.
+#
+# [ OPTIONAL ] not recommended, sigh... but usually needed
+
+	DIRTY	  => 1,
+
+# Validate IP's spam hosts against SPMCNBL_DB_ARCHIVE
+# as a condition of adding to tarpit. 
+#
+# The ip address double checked against the 'archive' database to
+# to see if it exists before being added to the 'tarpit'. This is 
+# a belt and suspenders approach to validating spammers and won't
+# work well if the 'archive' is checked often since it will constantly
+# be emptied by sc_BLcheck.pl. This approach may provide some measure
+# of relief from false positive spam source identification in mail headers
+# if the archive is run once or twice a day and all mail is posted to the
+# spamcannibal user prior to the 'archive' run.
+#
+# [ OPTIONAL ] experimental
+
+#	VALIDATE  => 1,
+
+};

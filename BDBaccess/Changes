@@ -1,0 +1,38 @@
+Revision history for Perl extension Mail::SpamCannibal::BDBreader
+
+0.11  Thu Sep 25 10:55:48 PDT 2003
+	add Makefile constant MY_POD2TEXT
+
+0.10  Wed Sep 24 10:28:57 PDT 2003
+	adjusted pointer arithmetic for systems that don't tolerate
+	address pointers on odd boundries.
+	change print strings to eliminate null pointers that segfault
+	on some OS's
+
+0.09  Sat Aug 23 15:25:31 PDT 2003
+	add inetd logic
+
+0.08  Wed Jul 30 09:55:14 PDT 2003
+	change conflicting name Config.pm to SiteConfig.pm
+
+0.07  Sat Jul 26 13:22:09 PDT 2003
+	add network socket support and inetd mode
+
+0.06  Sat Jul 26 10:10:53 PDT 2003
+	add multiple record key only read capability
+
+0.05  Fri Jul 18 21:47:30 PDT 2003
+	convert to use libdbtarpit shared library
+
+0.04  Mon Jul 14 13:11:02 PDT 2003
+	fix minor bug in dsocket.t related to 
+	changes in version reporting
+
+0.03  Sat Jul 12 11:18:12 PDT 2003
+	update bdb functions to use common bdbtarpit library
+
+0.02  Tue Jul  9 14:17:25 PDT 2003
+	account for big/little endian storage
+
+0.01  Sat Jul  5 14:48:50 PDT 2003
+	alpha release

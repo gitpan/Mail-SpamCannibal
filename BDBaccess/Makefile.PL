@@ -1,0 +1,175 @@
+use ExtUtils::MakeMaker;
+# See lib/ExtUtils/MakeMaker.pm for details of how to influence
+# the contents of the Makefile that is written.
+
+##########################################################
+##        if built from a parent directory,              # 
+##   at install, the parent Makefile must execute        #
+##                                                       #
+##         as first step in the install process          #
+##  @cd BDBaccess && $(MAKE) install_daemon $(PASTHRU)   #
+##                                                       #
+##         as the step imediately following 'all'        #
+##  @cd BDBaccess && $(MAKE) clean_CTest $(PASTHRU)      #
+##                                                       #
+##########################################################
+
+use Config;
+use vars qw($CONFIG);
+use Cwd qw(abs_path);
+use IPTables::IPv4::DBTarpit::Inst qw(:all);
+use IPTables::IPv4::DBTarpit::SiteConfig;
+
+my $conf = 'config.db';
+my $home = abs_path('./');
+my $localconf = $home .'/'. $conf;
+
+# what to do with dialog if called from MAKE or parent Makefile
+my $configtxt;
+
+if ((caller)[0]) {	# exists, the called by another routine
+  my $master = abs_path('../').'/'.$conf;
+  hard_fail("failed to access $_")
+	if ($_ = cpfromto($master,$localconf));
+
+  $CONFIG = do $localconf;
+  $configtxt = make_text($CONFIG);
+}
+# If rebuilding the make file, skip the dialog
+elsif (join(' ',@INC) =~ /$home/) {	# checkfor rebuild flag
+  $CONFIG = do $localconf;
+  $configtxt = make_text($CONFIG);
+} else {
+  $configtxt = do 'inst/dialog.pl';
+  $CONFIG = do 'config.db';
+}
+
+my $BDBTARPIT_CONF = new IPTables::IPv4::DBTarpit::SiteConfig;
+my $objects	= 'main.o netio.o util_pid.o';
+my $daemon	= 'bdbaccess';
+
+my $include = '-I'. $BDBTARPIT_CONF->{DBTP_INCLUDE_DIR};
+my $extralibs = '-L'. $BDBTARPIT_CONF->{DBTP_LIBRARY_DIR};
+
+%makeparms = (
+    'NAME'		=> 'Mail::SpamCannibal::BDBaccess::CTest',
+    'DISTNAME'		=> 'Mail-SpamCannibal-BDBaccess',
+    'VERSION_FROM'	=> 'BDBaccess.pm', # finds $VERSION
+    'PM'		=> {'BDBaccess.pm' => '$(INST_LIB)/Mail/SpamCannibal/BDBaccess.pm',
+	'lib/Mail/SpamCannibal/BDBclient.pm'  => '$(INST_LIB)/Mail/SpamCannibal/BDBclient.pm'
+			   },
+    'MAN1PODS'		=> {$daemon .'.pod' => '$(INST_MAN1DIR)/'. $daemon .'.$(MAN1EXT)',
+			},
+    'MAN3PODS'		=> {'BDBaccess.pm' => '$(INST_MAN3DIR)/Mail::SpamCannibal::BDBaccess.$(MAN3EXT)',
+			    'lib/Mail/SpamCannibal/BDBclient.pm' => 
+				'$(INST_MAN3DIR)/Mail::SpamCannibal::BDBclient.$(MAN3EXT)',
+			},
+    'LIBS'		=> ['-ldb '. $extralibs . ' -ldbtarpit'], # e.g., '-lm'
+    'DEFINE'		=> '', # e.g., '-DHAVE_SOMETHING'
+	# Insert -I. if you add *.h files later:
+    'INC'		=> "$include", # e.g., '-I/usr/include/other'
+	# Un-comment this if you add C files to link with later:
+    'OBJECT'		=> "CTest.o $objects", # link all the C files too
+    'PREREQ_PM'		=> { 'IPTables::IPv4::DBTarpit::Tools' => '0.11',
+			   },
+    'clean'		=> { FILES	=> "$daemon *.bs *.o *~ tmp*"},
+    'HTMLLIBPODS'	=> {},
+);
+
+if ( -f '../fixup/perl2html.pl' ) {	# if building withing SpamCannibal tree
+  require '../fixup/perl2html.pl';
+  pf_html_check(\%makeparms);
+}
+
+WriteMakefile(%makeparms);
+
+sub MY::post_constants {
+  my $post_constants = q|
+|. $configtxt .q|
+
+MY_POD2TEXT = |. $Config{scriptdirexp} .'/pod2text' .q|
+|;
+} 
+
+sub MY::postamble {
+  package MY;
+  my $postamble = q|
+README  : BDBaccess.pm
+	$(MY_POD2TEXT) BDBaccess.pm > README
+
+.PHONY: clean_CTest $(SPMCNBL_DAEMON_DIR)/|. $daemon .q|
+
+install_daemon : |. $daemon .q| $(SPMCNBL_DAEMON_DIR)/|. $daemon .q|
+	@$(NOOP)
+
+$(SPMCNBL_DAEMON_DIR)/|. $daemon .q|  :
+	@$(MKPATH) $(SPMCNBL_DAEMON_DIR)
+	$(CP) |. $daemon .q| $(SPMCNBL_DAEMON_DIR)/|. $daemon .q|
+
+# Since these are only used for testing and are large, remove them
+# from the install image as they will be rebuilt as needed.
+
+clean_CTest     :
+	@$(RM_RF) $(INST_AUTODIR) 
+	@$(RM_RF) $(INST_ARCHAUTODIR)
+
+|;
+}
+
+sub MY::top_targets {
+  package MY;   # add dependencies for .pm and xs files
+  my $inherited = shift->SUPER::top_targets(@_);
+  $inherited =~ s/(pure_all\s+::.+)/$1 $daemon README/;
+  $inherited .= q|
+
+# Added for for '|. $daemon .qq|'
+
+$daemon|.q|		: |. $objects .q|
+	 LD_RUN_PATH="$(LD_RUN_PATH)" LD_LIBRARY_PATH="$(LD_RUN_PATH)" $(LD) $(LDFLAGS) -s |. $objects .q| -o |. $daemon .q| $(LDLOADLIBS)
+
+main.o		: main.c data.c godaemon.c misc.c defines.h util_pid_func.h BDBaccess.pm
+	$(CC) -c $(INC) $(CCFLAGS) $(OPTIMIZE) main.c
+
+netio.o		: netio.c
+	$(CC) -c $(INC) $(CCFLAGS) $(OPTIMIZE) netio.c
+
+util_pid.o	: util_pid.c
+	$(CC) -c $(INC) $(CCFLAGS) $(OPTIMIZE) util_pid.c
+
+|. $daemon .q|.pod : BDBaccess.pm
+	$(CP) BDBaccess.pm |. $daemon .q|.pod
+|;
+}
+
+sub MY::install {
+  package MY;
+  my $inherited = shift->SUPER::install(@_);
+  $inherited =~ s/(\ninstall\s+::)/$1 install_daemon/;
+  $inherited =~ s/(\ninstall_perl\s+::)/$1 install_daemon/;
+  $inherited =~ s/(\ninstall_site\s+::)/$1 install_daemon/;
+  $inherited =~ s/\s+all\s+/ all clean_CTest /g;
+  $inherited;
+}
+
+sub MY::makefile {
+  package MY;
+  my $inherited = shift->SUPER::makefile(@_);
+# insert harmless rebuild flag which is the fully qualified path to "."
+  $inherited =~ s/([^\s:]+)\s+Makefile\.PL.+/$1 "-I$home" Makefile.PL/;
+  $inherited;
+}
+
+sub MY::realclean {
+  package MY;   
+  my $inherited = shift->SUPER::realclean(@_) . q|
+	rm -f config.db
+	rm -f bdbaccess.pod
+|;
+}
+
+sub MY::dynamic_lib {
+  package MY;
+  my $inherited = shift->SUPER::dynamic_lib(@_);
+  $inherited =~ s/(LD_RUN_PATH=([^\s]+))/$1 LD_LIBRARY_PATH=$2/;
+  $inherited;
+}

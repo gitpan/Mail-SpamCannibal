@@ -1,0 +1,14 @@
+<center>
+<form name=login action="" method=POST>
+<table border=0>
+<tr><td>
+<font size="-1">User Name:</font><br>
+<input type=text name=user></td></tr>
+<tr><td>
+<font size="-1">Password:</font><br>
+<input type=password name=passwd></td></tr>
+</table>
+<input type=hidden name=page value=ahome>
+<input type=submit value=LOGIN onClick="document.login.action = location.pathname;">
+</form>
+</center>

@@ -1,0 +1,172 @@
+use ExtUtils::MakeMaker;
+# See lib/ExtUtils/MakeMaker.pm for details of how to influence
+# the contents of the Makefile that is written.
+
+##########################################################
+##         if built from a parent directory,             #
+##    at install, the parent Makefile must execute       #
+##                                                       #
+##       as the first step in the install process        #
+##  @cd DNSBLserver && $(MAKE) install_daemon $(PASTHRU) #    
+##                                                       #
+##       as the step immediately following 'all'         #
+##  @cd DNSBLserver && $(MAKE) clean_CTest $(PASTHRU)    #
+##                                                       #
+##########################################################
+
+use Config;
+use vars qw($CONFIG);
+use Cwd qw(abs_path);
+use IPTables::IPv4::DBTarpit::Inst qw(:all);
+
+my $conf = 'config.db';
+my $home = abs_path('./');
+my $localconf = $home .'/'. $conf;
+
+# what to do with dialog if called from MAKE or parent Makefile
+my $configtxt;
+
+if ((caller)[0]) {      # exists, the called by another routine
+  my $master = abs_path('../').'/'.$conf;
+  hard_fail("failed to access $_")
+        if ($_ = cpfromto($master,$localconf));
+
+  $CONFIG = do $localconf;
+  $configtxt = make_text($CONFIG);
+}
+# If rebuilding the make file, skip the dialog
+elsif (join(' ',@INC) =~ /$home/) {     # checkfor rebuild flag
+  $CONFIG = do $localconf;
+  $configtxt = make_text($CONFIG);
+} else {
+  $configtxt = do 'inst/dialog.pl';
+  $CONFIG = do 'config.db';
+}
+
+my $BDBTARPIT_CONF = new IPTables::IPv4::DBTarpit::SiteConfig;
+my $objects	= 'host_info.o main.o netio.o ns.o util_pid.o';
+my $daemon	= 'dnsbls';
+
+my $include = '-I'. $BDBTARPIT_CONF->{DBTP_INCLUDE_DIR};
+my $extralibs = '-L'. $BDBTARPIT_CONF->{DBTP_LIBRARY_DIR};
+
+WriteMakefile(
+    'NAME'		=> 'Mail::SpamCannibal::DNSBLserver::CTest',
+    'DISTNAME'		=> 'Mail-SpamCannibal-DNSBLserver',
+    'VERSION_FROM'	=> 'DNSBLserver.pm', # finds $VERSION
+    'PM'		=> {'DNSBLserver.pm' => '$(INST_LIB)/Mail/SpamCannibal/DNSBLserver.pm'},
+    'MAN1PODS'		=> {$daemon .'.pod' => '$(INST_MAN1DIR)/'. $daemon .'.$(MAN1EXT)',},
+    'MAN3PODS'		=> { 'DNSBLserver.pm' => '$(INST_MAN3DIR)/Mail::SpamCannibal::DNSBLserver.$(MAN3EXT)'},
+    'LIBS'		=> ['-ldb -lresolv '. $extralibs . ' -ldbtarpit'], # e.g., '-lm'
+    'DEFINE'		=> '', # e.g., '-DHAVE_SOMETHING'
+	# Insert -I. if you add *.h files later:
+    'INC'		=> "$include", # e.g., '-I/usr/include/other'
+	# Un-comment this if you add C files to link with later:
+    'OBJECT'		=> "CTest.o $objects", # link all the C files too
+    'PREREQ_PM'		=> { 'IPTables::IPv4::DBTarpit::Tools' => '0.11',
+			     'Net::DNS::Codes'	 => '0.06',
+			     'Net::DNS::ToolKit' => '0.07',
+			   },
+    'clean'		=> { FILES	=> "$daemon *.bs *.o *~ tmp*"},
+);
+
+sub MY::post_constants {
+  my $post_constants = q|
+|. $configtxt .q|
+
+MY_POD2TEXT = |. $Config{scriptdirexp} .'/pod2text' .q|
+|;
+} 
+
+sub MY::postamble {
+  package MY;
+  my $postamble = q|
+README  : DNSBLserver.pm
+	$(MY_POD2TEXT) DNSBLserver.pm > README
+
+.PHONY: clean_CTest $(SPMCNBL_DAEMON_DIR)/|. $daemon .q| $(SPMCNBL_CONFIG_DIR)/|. $daemon .q|.conf.sample
+
+install_daemon : |. $daemon .q| $(SPMCNBL_DAEMON_DIR)/|. $daemon .q| $(SPMCNBL_CONFIG_DIR)/|. $daemon .q|.conf.sample
+	@$(NOOP)
+
+$(SPMCNBL_DAEMON_DIR)/|. $daemon .q|  :
+	@$(MKPATH) $(SPMCNBL_DAEMON_DIR)
+	$(CP) |. $daemon .q| $(SPMCNBL_DAEMON_DIR)/|. $daemon .q|
+
+$(SPMCNBL_CONFIG_DIR)/|. $daemon .q|.conf.sample	:
+	@$(MKPATH) $(SPMCNBL_CONFIG_DIR)
+	$(CP) config/|. $daemon .q|.conf.sample $(SPMCNBL_CONFIG_DIR)/|. $daemon .q|.conf.sample
+
+# Since these are only used for testing and are large, remove them
+# from the install image as they will be rebuilt as needed.
+
+clean_CTest     :
+	@$(RM_RF) $(INST_AUTODIR) 
+	@$(RM_RF) $(INST_ARCHAUTODIR)
+
+|;
+}
+
+sub MY::top_targets {
+  package MY;   # add dependencies for .pm and xs files
+  my $inherited = shift->SUPER::top_targets(@_);
+  $inherited =~ s/(pure_all\s+::.+)/$1 $daemon README/;
+  $inherited .= q|
+
+# Added for for '|. $daemon .qq|'
+
+$daemon|.q|		: |. $objects .q|
+	LD_RUN_PATH="$(LD_RUN_PATH)" LD_LIBRARY_PATH="$(LD_RUN_PATH)" $(LD) $(LDFLAGS) -s |. $objects .q| -o |. $daemon .q| $(LDLOADLIBS)
+
+host_info.o	: host_info.c
+	$(CC) -c $(INC) $(CCFLAGS) $(OPTIMIZE) host_info.c
+
+main.o		: main.c data.c godaemon.c misc.c defines.h host_info_func.h util_pid_func.h netio_func.h ns_func.h DNSBLserver.pm
+	$(CC) -c $(INC) $(CCFLAGS) $(OPTIMIZE) main.c
+
+netio.o		: netio.c ns.h
+	$(CC) -c $(INC) $(CCFLAGS) $(OPTIMIZE) netio.c
+
+ns.o		: ns.c munge_macros.c ns.h netio_func.h host_info_func.h bswap32.h
+	$(CC) -c $(INC) $(CCFLAGS) $(OPTIMIZE) ns.c
+
+util_pid.o	: util_pid.c
+	$(CC) -c $(INC) $(CCFLAGS) $(OPTIMIZE) util_pid.c
+
+|. $daemon .q|.pod : DNSBLserver.pm
+	$(CP) DNSBLserver.pm |. $daemon .q|.pod
+|;
+}
+
+sub MY::install {
+  package MY;
+  my $inherited = shift->SUPER::install(@_);
+  $inherited =~ s/(\ninstall\s+::)/$1 install_daemon/;
+  $inherited =~ s/(\ninstall_perl\s+::)/$1 install_daemon/;
+  $inherited =~ s/(\ninstall_site\s+::)/$1 install_daemon/;
+  $inherited =~ s/\s+all\s+/ all clean_CTest /g;
+  $inherited;
+}
+
+sub MY::makefile {
+  package MY;
+  my $inherited = shift->SUPER::makefile(@_);
+# insert harmless rebuild flag which is the fully qualified path to "."
+  $inherited =~ s/([^\s:]+)\s+Makefile\.PL.+/$1 "-I$home" Makefile.PL/;
+  $inherited;
+}
+
+sub MY::realclean {
+  package MY;   
+  my $inherited = shift->SUPER::realclean(@_) . q|
+	rm -f config.db
+	rm -f dnsbls.pod
+|;
+}
+
+sub MY::dynamic_lib {
+  package MY;
+  my $inherited = shift->SUPER::dynamic_lib(@_);
+  $inherited =~ s/(LD_RUN_PATH=([^\s]+))/$1 LD_LIBRARY_PATH=$2/;
+  $inherited;
+}

@@ -1,0 +1,60 @@
+
+=head1 NAME
+
+DATABASE - RECOVERY
+
+=head2 Nothing works!
+
+It is possible to corrupt the Berkeley DB environment or one or more of the
+databases if a task is shutdown unexpectedly
+with the databases open. You can check this by attempting to view one or more of the
+databases with sc_admin.pl. If you are running sc_BLcheck.pl periodically
+then the order of the databases by size is usually as shown below. If you can
+not view one or more of the databases then then the environment and/or the databases have
+been corrupted and the Berkeley DB db_recover program should be run.
+
+To view:
+
+  ./sc_admin archive view (small)
+  ./sc_admin blcontrib view (large)
+  ./sc_admin tarpit view (larger)
+  ./sc_admin evidence view
+
+
+=head2 Repairing the database
+
+If the databases appear to be corrupted,
+you should be able to restore the database environment running the recovery
+procedure. Stop all SpamCannibal daemons that access the
+database then su - root and type:
+
+  cd /usr/local/spamcannibal/scripts
+  ./sc_initdb -R
+
+If that does not work then use the manual procedure.
+Stop all SpamCannibal daemons that access the
+database and run db_recover.
+
+  rc.dbtarpit stop
+  rc.bdbaccess stop
+  rc.dnsbls stop
+
+  cd /var/run/dbtarpit
+  db_recover -v
+
+=head2 Reinitializing the database environment
+
+To reinitialize the database environment su - root and type:
+
+  cd /usr/local/spamcannibal/scripts
+  ./sc_initdb.pl
+
+
+=head2 Restart SpamCannibal daemons
+
+Restart the SpamCannibal daemons that were previously running.
+
+  rc.dbtarpit start
+  rc.bdbaccess start
+  rc.dnsbls start
+

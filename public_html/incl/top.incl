@@ -1,0 +1,52 @@
+<html>
+<head><title>SpamCannibal</title>
+<style type="text/css">
+  .min { font-size: 4px; }
+  td { font-family: ARIAL,HELVETICA,SAN-SERIF; font-size: normal; }
+  .gry { background-color: #f0f0f0; font-weight: bold; font-size: small; }
+  .wht { font-weight: bold; font-size: small; }
+  .bld { font-family: ARIAL,HELVETICA,SAN-SERIF; font-weight: bold; }
+  .hot { font-family: ARIAL,HELVETICA,SAN-SERIF; font-size: small; font-weight: bold; background-color: #ffff99; color: red; text-decoration: none; }
+  .cold { font-family: ARIAL,HELVETICA,SAN-SERIF; font-size: small; font-weight: bold; background-color: #000000; color: white; text-decoration: none; }
+  .nav {
+    width: 100px;
+    float: right;
+}
+// in Netscape 4.xx,  this is broken
+//    border-left: 1px solid #000000;
+//    border-right: 1px solid #000000;
+//    border-top: 1px solid #000000;
+//    border-bottom: 1px solid #000000;
+//    margin: 10px 5px 10px 5px;
+//  margin  top  rgt btm  lft
+</style>
+<script language=javascript1.2>
+var navwidth = 100 + 10; // from above + margin of 10
+var labrea = '';
+function toTop() {
+  if (self.location != top.location) {
+      top.location = self.location.href;
+  }
+}
+function nav(search) {
+  document.navbar.action = location.pathname;
+  document.navbar.page.value = search;
+  document.navbar.submit();
+  return false;
+}
+function show(val) {
+  self.status = val;
+  return true;
+}
+function off() {
+  self.status = '';
+  return true;
+}
+</script>
+</head>
+<body bgcolor="#ffffff" onLoad="toTop();">
+<noscript>
+<font size=4 color=red>You must have Javascript 1.2 or greater enabled on your browser to access this site</font>
+</body>
+</html>
+</noscript>

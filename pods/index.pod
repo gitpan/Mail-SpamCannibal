@@ -1,0 +1,72 @@
+
+=head2 NAME
+
+All - SpamCannibal Documentation
+
+=for html <font size=+2>Documentation for the SpamCannibal Package</font>
+<br>&nbsp;
+<br><!-- version 1.02, 9-26-03 -->
+<font size=+1><a href=howtouse.html>HOWTO use SpamCannibal</a></font> with your mail system<br>
+<font size=+1><a href=howitworks.html>HOW SpamCannibal Works</a></font><br>
+<font size=+1><a href=install.html>HOWTO install SpamCannibal</a></font><br>
+<font size=+1><a href=recover.html>Database Recovery - Everything Stopped Working</a></font>
+<blockquote>
+Detailed installation instructions for all packages
+</blockquote>
+<font size=+1><b>DAEMONS</b></font>
+<blockquote>
+<table cellpadding=4 border=0>
+<tr><td><a href=dbtarpit.html>dbtarpit</a></td><td>tarpit and data collection daemon</td></tr>
+<tr><td><a href=dnsbls.html>dnsbls</a></td><td>dns blacklist daemon</td></tr>
+<tr><td><a href=bdbaccess.html>bdbaccess</a></td><td>local and remote database access daemon</td></tr>
+</table>
+</blockquote>
+<font size=+1><b>DAEMON rc.scripts</b></font>
+<blockquote>
+<table cellpadding=4 border=0>
+<tr><td>rc.dbtarpit</a></td><td>type: rc.dbtaript.pl -h and see the manpage for dbtarpit</td></tr>
+<tr><td><a href=rc.dnsbls.html>rc.dnsbls</a></td><td>dnsbls startup script</td></tr>
+<tr><td><a href=rc.bdbaccess.html>rc.bdbaccess</a></td><td>bdbaccess startup script</td></tr>
+</table>
+</blockquote>
+<font size=+1><b>SpamCannibal modules</b></font> <i>developers</i>
+<blockquote>
+<table cellpadding=4 border=0>
+<tr><td><a href=SpamCannibal.html>SpamCannibal</a></td><td>synopsis for SpamCannibal operation</td></tr>
+<tr><td><a href=SiteConfig.html>SiteConfig</a></td><td>configuration of this site</td></tr>
+<tr><td><a href=BDBclient.html>BDBclient</a></td><td>module to provide access to 'bdbaccess' daemon</td></tr>
+<tr><td><a href=GoodPrivacy.html>GoodPrivacy</a></td><td>PGP encode/decode wrapper for system pgp executable</td></tr>
+<tr><td><a href=LaBreaDaemon.html>LaBreaDaemon</a></td><td>interface to LaBrea::Tarpit data collection daemon
+<tr><td><a href=ParseMessage.html>ParseMessage</a></td><td>module to parse mail headers for originating MTA</td></tr>
+<tr><td><a href=Password.html>Password</a></td><td>generate and check 'crypt' style passwords</td></tr>
+<tr><td><a href=PidUtil.html>PidUtil</a></td><td>checks for running daemon, creates manges PID files</td></tr>
+<tr><td><a href=SMTPsend.html>SMTPsend</a></td><td>send mail messages without invoking local MTA</td></tr>
+<tr><td><a href=ScriptSupport.html>ScriptSupport</a></td><td>miscellaneous subroutines for SpamCannibal scripts</td></tr>
+<tr><td><a href=Session.html>Session</a></td><td>web session management and token generation</td></tr>
+<tr><td><a href=WebService.html>WebService</a></td><td>web service routines</td></tr>
+<tr><td><a href=WhoisIP.html>WhoisIP</a></td><td>world-wide IP address whois</td></tr>
+</table>
+</blockquote>
+<font size=+1><b>Supporting Modules</b></font> <i>developers</i>
+<blockquote>
+<table cellpadding=4 border=0>
+<tr><td><a href=IPTables-IPv4-DBTarpit-Tools.html>IPTables::IPv4::DBTarpit::Tools</a></td><td>tool kit for manipulating SpamCannibal databases</td></tr>
+<tr><td><a href=IPTables-IPv4-DBTarpit-Inst.html>IPTables::IPv4::DBTarpit::Inst</a></td><td>script user dialog interface</td></tr>
+<tr><td><a href=LaBrea-Tarpit.html>LaBrea::Tarpit</a></td><td>package to collect data from tarpit daemon stream or log file</td></tr>
+<tr><td><a href=LaBrea-Tarpit-Report.html>LaBrea::Tarpit::Report</a></td><td>tarpit daemon data analysis and web display</td></tr>
+<tr><td><a href=Net-DNS-Codes.html>Net::DNS::Codes</a></td><td>commonly used DNS resource record and C lib codes</td></tr>
+<tr><td><a href=Net-DNS-ToolKit.html>Net::DNS::ToolKit</a></td><td>routines to generate DNS queries and responses</td></tr>
+<tr><td><a href=Net-DNS-ToolKit-RR.html>Net::DNS::ToolKit::RR</a></td><td>DNS resource record generation/parsing</td></tr>
+<tr><td><a href=Net-DNS-ToolKit-RR-Template.html>Net::DNS::ToolKit::RR::Template</a></td><td>generic resource record template</td></tr>
+<tr><td><a href=Net-DNS-ToolKit-Question.html>Net::DNS::ToolKit::Question</a></td><td>routines to generate DNS questions/responses</td></tr>
+<tr><td><a href=Net-SMTP.html>Net::SMTP</a></td><td>perl SMTP interface</td></tr>
+<tr><td><a href=Net-Whois-IP.html>Net::Whois::IP</a></td><td>perl Whois interface</td></tr>
+<tr><td><a href=NetAddr-IP.html>NetAddr::IP</a></td><td>perl routines to manipulate IP addresses</td></tr>
+<tr><td><a href=Sys-Hostname-FQDN.html>Sys::Hostname::FQDN</a></td><td>routine to return local host name</td></tr>
+</table>
+</blockquote>
+<font size=+1><a href=scripts.html>SpamCannibal Scripts</a></font> brief synopsis of each script
+<blockquote>
+<a href=../>HOME</a>
+<blockquote>
+

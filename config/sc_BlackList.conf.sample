@@ -1,0 +1,160 @@
+#!/usr/bin/perl
+
+# sc_BlackList.conf
+# Configuration for sc_BLcheck.pl and sc_BLpreen.pl
+#
+# version 1.01, 9-7-03
+#
+my $DNSBL = {
+
+# A multi-formated array of IP address that will never be tarpitted.
+#
+# WARNING: if you are using a private network, then you should include the 
+# address description for the net/subnets that you are using or you might
+# find your DMZ or internal mail servers blocked since many DNSBLS list the
+# private network addresses as BLACKLISTED
+#
+#	127./8, 10./8, 172.16/12, 192.168/16
+#
+#	class A		xxx.0.0.0/8
+#	class B		xxx.xxx.0.0/16
+# 	class C		xxx.xxx.xxx.0/24
+#	128 subnet	xxx.xxx.xxx.xxx/25
+#	 64 subnet	xxx.xxx.xxx.xxx/26
+#	 32 subnet	xxx.xxx.xxx.xxx/27
+#	 16 subnet	xxx.xxx.xxx.xxx/28
+#	  8 subnet	xxx.xxx.xxx.xxx/29
+#	  4 subnet	xxx.xxx.xxx.xxx/30
+#	  2 subnet	xxx.xxx.xxx.xxx/31
+#	single address	xxx.xxx.xxx.xxx/32
+#
+  'IGNORE'	=> [
+	    # a single address
+	'11.22.33.44',
+	    # a range of ip's, ONLY VALID WITHIN THE SAME CLASS 'C'
+	'22.33.44.55 - 22.33.44.65',
+	    # a CIDR range
+	'5.6.7.16/28',
+	    # a range specified with a netmask
+	'7.8.9.128/255.255.255.240',
+	    # this should ALWAYS be here
+	'127.0.0.0/8',	# ignore all test entries and localhost
+  ],
+
+# all dnsbl servers must have a record a config entry as follows:
+#
+# 'zone.name'	=> {
+#	accept	    => {	# a list of codes that are ok to add to tarpit from this DNSBL
+#	 	'127.0.0.2' => 'reason',
+#		'127.0.0.3' => 'reason',
+#	},
+#
+#  WARNING !!! DO NOT USE THIS OPTION WITH DNSBL HOSTS THAT REPORT TARPIT ACTIVITY
+#
+#	confirm     => 1,			# optional, confirmation of acceptance of non - 127.0.0.2 codes
+#
+#	response    => '127.0.0.3',		# optional, our default response code for records
+#						# added because of queries to this DNSBL server
+#						# this code will be ignored if it is < 127.0.0.3
+#						# and 127.0.0.3 will be used in its place
+#
+#  error message to use with this host. 
+#  NOTE: if the DNSBL supplies a TXT record and it contains the string "http://something..." or 
+#  "www.something..." then that will be use for the error string for the matching A record. 
+#  Otherwise, the error string below will be appended to the whatever TXT is returned by the 
+#  DNSBL. If no TXT is returned, then the "reason" code from the "accept" line for the matching 
+#  127.0.0.X code will be use and the error code below will be appended.
+#
+#  If the error string ending matches /\?.+=$/ or /\?$/
+#  then the offending IP address will be automagically added
+#
+#	error	    => 'IP address blocked, see http://www.somehost.com?ip=',
+#
+#	expire	    => 7d',	# optional default expiration if DNSBL can not be reached
+#				# may be specified in any combination of seconds, minutes, hours, days, weeks
+#				#  i.e. 604800 or 604800s, 10080m, 168h
+				#	1w 3d
+# These are real entries
+
+  'dnsbl.sorbs.net'	=> {	# see http://www.dnsbl.sorbs.net/using.html
+	accept	=> {	# list of codes for which we tarpit
+#		'127.0.0.2'  =>	'open http proxie',
+#		'127.0.0.3'  =>	'open socks proxie',
+		'127.0.0.4'  =>	'open proxy server',
+		'127.0.0.5'  =>	'open smtp relay',
+		'127.0.0.6'  =>	'spam supporting ISP',
+		'127.0.0.7'  =>	'open web - form mail servers',
+		'127.0.0.8'  =>	'blocked hosts',
+		'127.0.0.9'  =>	'zombie - hijacked netblock',
+		'127.0.0.10' =>	'dynamic address range',
+		'127.0.0.11' =>	'bad config -- MX or A records inaccurate',
+		'127.0.0.12' =>	'no mail ever sent from these domains',
+  	},
+	confirm		=> 1,
+	error		=> 'for removal see: http://www.dnsbl.sorbs.net/cgi-bin/lookup?js&IP=',
+	expire		=> '30d',
+  },
+
+  'dnsbl.njabl.org'	=> {	# see http://dnsbl.njabl.org/use.html
+	accept	=> {	# list of codes for which we tarpit
+		'127.0.0.2'  =>	'open relays',
+#		'127.0.0.3'  =>	'dial-up/dynamic IP ranges',
+		'127.0.0.4'  =>	'spam sources',
+		'127.0.0.5'  =>	'multi-stage openrelay',
+#		'127.0.0.8'  =>	'open web - form mail servers',
+		'127.0.0.9'  =>	'open proxy servers',
+	},
+	confirm		=> 1,
+	error		=> 'for removal see: http://www.dnsbl.njabl.org/cgi-bin/lookup.cgi?query=',
+	expire		=> '30d',
+  },
+
+  'relays.ordb.org'	=> {	# see http://www.ordb.org/faq/#usage_dns
+	accept	=> {
+		'127.0.0.2' => '',
+	},
+	error		=> 'for removal see: http://www.ordb.org/submit',
+	expire		=> '30d',
+  },
+
+## commented out per notice on osirusoft server - out of commission for now
+#  'relays.osirusoft.com' => {	# see http://relays.osirusoft.com/faq.html#_Toc533558164
+#	accept	=> {
+#		'127.0.0.2' => 'Verified Open Relay',
+#		'127.0.0.3' => 'Dialup Spam Source',
+#		'127.0.0.4' => 'Confirmed Spam Source',
+##		'127.0.0.5' => 'Smart Host', # (In progress)
+#			# A Smart host is a site determined to be secure, 
+#			# but relays for those who are not, defeating one 
+#			# level of security. When this is ready, it will be
+#			# labeled outputs.osirusoft.com. 
+#			# NOTE: I strongly discourage using of outputs
+#			# due to it being way too effective to be useful.
+#		'127.0.0.6' => 'A Spamware software developer', # or spamvertized site. This
+#			# information is maintained by spamsites.org and spamhaus.org.
+#		'127.0.0.7' => 'Opt in listserv, no confirmation',
+##		'127.0.0.8' => 'An insecure formmail.cgi script',
+#		'127.0.0.9' => 'Open proxy server',
+#	},
+#	confirm		=> 1,
+#	error		=> 'for removal see: http://www.osirusoft.com/cgi-bin/rbcheck.cgi?addr=',		
+#	expire		=> '30d',
+#  },
+
+  'dsbl.org'	=>	{	# see http://dsbl.org/usage
+	accept	=> {
+		'127.0.0.2' => '',
+	},
+	error		=> 'for removal see: http://dnsbl.org/listing?',
+	expire		=> '30d',
+  },
+
+  'bl.spamcop.net'	=> {	# see http://spamcop.net/fom-serve/cache/291.html
+	accept	=> {
+		'127.0.0.2' => '',
+	},
+	error		=> 'for removal see: http://spamcop.net/w3m?action=checkblock&ip=',
+	expire		=> '30d',
+  },
+
+};

@@ -1,0 +1,78 @@
+Revision history for Perl extension Mail::SpamCannibal::DNSBLserver.
+
+0.17  Thu Sep 25 11:02:02 PDT 2003
+	add Makefile constant MY_POD2TEXT
+
+0.16  Wed Sep 24 14:08:42 PDT 2003
+	modify source to be 32/64 bit independent
+	modify ns.t to ignore poor implementations of dn_comp
+	add os independent library calls/macros
+
+0.15  Sat Sep 20 11:44:11 PDT 2003
+	Add child wait status to tcp service so that the connection remains
+	open until closed by the client or an alarm event.
+	Add minimal IXFR service.
+
+0.14  Thu Sep 18 15:13:15 PDT 2003
+	place - holder
+
+0.13  Thu Sep 18 15:13:15 PDT 2003
+	incremental changes - place holder
+
+0.12  Sun Sep 14 09:40:23 PDT 2003
+	ns.c, rework the order of database interrogation for lookups
+	of black list addresses. The old way produced three database hits 
+	as the norm, this has been reduced to two.
+
+0.11  Tue Sep  9 18:00:28 PDT 2003
+	main.c -- modified the child network socket loop to fix a timing 
+	problem when interrogating the dnsbls from the local host via bind.
+
+	modify rc.dnsbls so that record 127.0.0.2 is 
+	forceably added without user intervention.
+
+0.10  Tue Sep  2 21:04:13 PDT 2003
+	Revert -M option -- this turns out to be unneeded
+	Add -N option for naming the localhost DNS object
+	Correct error in mungemacros.c where buffer size constraint
+	was MSGsize instead of IP_MAXPACKET
+	Add lookup in the evidence file to ns.c. Evidence must be
+	consulted before blcontrib to prevent non-reporting of 
+	127.0.0.2 'A' records if they appear in both blcontrib and evidence.
+
+0.09  Mon Sep  1 15:32:36 PDT 2003
+	Add -M masquerade option to main.c, host_info.c
+	When dnsbl is run on a virtual address, it must use the
+	zone name and designated IP address from the command line
+
+0.08  Tue Aug 12 15:53:46 PDT 2003
+	Modify ns.c to disallow response codes outside
+	the range of 127.0.0.3 => 127.255.255.255 for
+	the blcontrib database. This will prevent
+	feedback loops from developing among cooperating
+	promiscious DNSBL servers
+
+0.07  Sat Aug  2 22:25:05 PDT 2003
+	set -P option for promiscious reporting
+
+0.06  Wed Jul 30 09:59:09 PDT 2003
+	change conflicting name Config.pm to SiteConfig.pm
+
+0.05  Sat Jul 23 13:53:44 PDT 2003
+	update to use libdbtarpit
+
+0.04  Sat Jul 12 12:29:48 PDT 2003
+	update to use bdbtarpit.c library
+
+0.03  Thu Jul 10 07:37:26 PDT 2003
+	add promiscious mode flag to
+	enable reporting of tarpit
+	additions by secondary DNSBL's
+
+0.02  Sun Jul  6 17:00:06 PDT 2003
+	correct malformed TXT records,
+	add statistics for verbose logging,
+	fix SIGCHLD bug in set_signals
+
+0.01  Sat Jul  5 14:48:50 PDT 2003
+	alpha release

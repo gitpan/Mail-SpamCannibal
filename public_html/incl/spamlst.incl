@@ -1,0 +1,14 @@
+<font size="+2">Add Spam to Tarpit</font>
+<br>
+Evidence of spam sent to this site.
+<br>
+<blockquote>
+<form name=SpamAdd action="" method=POST>
+<input type=hidden name=page value=spamadd>
+<input type=text name=host> host dot quad IP address<br>
+<textarea name=spam cols=60 rows=15 wrap=off></textarea><br>
+<blockquote>
+<input type=submit value="ADD SPAM" onClick="document.SpamAdd.action=location.pathname;">
+</blockquote>
+</form>
+</blockquote>

@@ -1,5 +1,35 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.55	Tue Mar  1 10:40:10 PST 2005
+        modify DNSBLserver/ns.c to always hide 127.0.0.0 AND 127.0.0.1 responses
+
+	updated contrib/robots.txt
+
+	updated public_html/cannibal.cgi to revisit the 'lookup'
+	page after a 'remove' operation instead of posting a
+	removed xxx.xxx.xxx.xxx message. script version 1.25
+
+	update contrib/mimedefang-filter to include '.rar' file
+	extension in bad extension list and to accept strings that
+	appear to be rDNS number failures that begin with 'mail'
+	(accomodate braindead Verizion mta's).
+
+	update contrib/mimedefang-filter sub 'filter_sender' to 
+	include test for known_bad_domains
+
+	update contrib/zone_cron.sh
+	add "search" feature to scripts/sc_admin.pl v1.05
+
+  ##### NOTE: this change is not compatible for previous version of 
+		public_html/incl/top.incl
+		public_html/cannibal.cgi
+	If you have modified these files, do a diff of cannibal.cgi
+	against the version in distro 0.54 and apply the diff to you file
+
+	split top.incl into two pieces -- top.incl, top2.incl
+	add a parameter "bgcolor" to sc_web.conf
+	modify cannibal.cgi to insert bgcolor from config file into pages
+
 0.54  Tue Jan 11 15:45:02 PST 2005
 	in DNSBLserver,
 	change query response for record not found 

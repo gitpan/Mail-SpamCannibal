@@ -524,7 +524,13 @@ ns_response()
   stdErr_response = errormsg;
   
   if (*(u_char *)dbtp.keydbt.data == 0x7F) {
-    if ((dbtp_get(&dbtp, DBcontrib, (void *)(dbtp.keydbt.data),sizeof(in.s_addr))) == 0) {
+/*	suppress numeric record for 127.0.0.0, it is used internally
+	127.0.0.1 should never be reported, it is the localhost         */
+    if ((*(u_char *)(dbtp.keydbt.data +3) & 0xFE) == 0 &&
+	*(u_char *)(dbtp.keydbt.data +2) == 0 &&
+	*(u_char *)(dbtp.keydbt.data +1) == 0)
+	    return(NULL);			/* skip serial number and localhost	*/
+    else if ((dbtp_get(&dbtp, DBcontrib, (void *)(dbtp.keydbt.data),sizeof(in.s_addr))) == 0) {
 	A_resp = (u_int32_t *)dbtp.mgdbt.data;
 	stdErr_response = dbtp.mgdbt.data + INADDRSZ + 1;
     }
@@ -901,12 +907,13 @@ NS_errorExit:
 		if (dbtp_getrecno(&dbtp,DBtarpit, axfrc++))
 			goto NS_AXFR_last_SOA;
 
-/*	suppress numeric record for 127.0.0.0, it is used internally	*/
+/*	suppress numeric record for 127.0.0.0, it is used internally
+	127.0.0.1 should never be reported, it is the localhost		*/
 		if (*(u_char *)dbtp.keydbt.data == 0x7F &&
-		    *(u_char *)(dbtp.keydbt.data +1) == 0 &&
+		   (*(u_char *)(dbtp.keydbt.data +3) & 0xFE) == 0 &&
 		    *(u_char *)(dbtp.keydbt.data +2) == 0 &&
-		    *(u_char *)(dbtp.keydbt.data +3) == 0)
-			goto NS_AXFR_next;			/* skip serial number	*/
+		    *(u_char *)(dbtp.keydbt.data +1) == 0)
+			goto NS_AXFR_next;			/* skip serial number & localhost	*/
 
 		in.s_addr = *(u_int32_t *)dbtp.keydbt.data;
 		bswap32((u_char *)&rev.s_addr,(u_char *)dbtp.keydbt.data);

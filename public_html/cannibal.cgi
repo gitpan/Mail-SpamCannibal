@@ -5,9 +5,9 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 1.24, 11-26-04
+# version 1.26, 3-1-05
 #
-# Copyright 2003, 2004, Michael Robinton <michael@bizsystems.com>
+# Copyright 2003 - 2005, Michael Robinton <michael@bizsystems.com>
 #   
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -81,8 +81,8 @@ die "could not load config file"
 	unless $CONFIG;
 
 my ($admin,$sess,%extraheaders);
-my $expire = $CONFIG->{expire} || 300;		# default expiration 5 minutes
-my %query = get_query();
+my $expire	= $CONFIG->{expire} || 300;		# default expiration 5 minutes
+my %query	= get_query();
 
 # check for query from LaBrea client & convert if necessary
 if ($query{query} && $query{query} =~ /(\d+\.\d+\.\d+\.\d+)/) {
@@ -143,6 +143,10 @@ else {
 # exist if there is a previous instantiation of this script
 
 %ftxt = () unless %ftxt;
+my $bgcolor = ($CONFIG->{bgcolor} && $CONFIG->{bgcolor} =~ /^#[0-9a-fA-F]{6}$/)
+	? $CONFIG->{bgcolor}
+	:'#ffffff';
+$ftxt{bgcolor} = qq| bgcolor="$bgcolor" |;
 
 my $html = '';
 my $pagerror = '';
@@ -166,6 +170,8 @@ while (1) {
     if ($query{page} =~ /^$name/) {
       foreach (qw(
 		top
+		bgcolor
+		top2
 		logo2
 		stats
 		),
@@ -184,6 +190,8 @@ while (1) {
   if ($query{page} =~ /^home/) {
     foreach (qw(
 	top
+	bgcolor
+	top2
 	logo1
 	stats
 	),
@@ -212,6 +220,8 @@ purpose is freely available for anyone to look at and use as they see fit.
 	? $1 : '';
     foreach (qw(
 	top
+	bgcolor
+	top2
 	logo2
 	stats
 	),
@@ -260,6 +270,8 @@ onMouseOver="return(show('lookup |. $IP .qq|'));" onMouseOut="return(off());">$I
     die "email contact not configured" unless $CONFIG->{email};
     foreach (qw(
         top
+	bgcolor
+	top2
         logo2
 	stats
         ),
@@ -284,6 +296,8 @@ onMouseOver="return(show('lookup |. $IP .qq|'));" onMouseOut="return(off());">$I
     die "email contact not configured" unless $CONFIG->{email};
     foreach (qw(
         top
+	bgcolor
+	top2
         logo2 
 	stats
         ),
@@ -326,6 +340,8 @@ IP address:	$query{IP}
     my $IP = validIP($query{lookup});
     foreach (qw(
 	top
+	bgcolor
+	top2
 	logo2
 	stats
 	),
@@ -334,6 +350,7 @@ IP address:	$query{IP}
 	) {
       html_cat(\$html,$_,$CONFIG,\%ftxt);
     }
+    $html .= $query{pagerror};
     if ($IP) {
       if ($ENV{HTTP_REFERER} !~ /$ENV{SERVER_NAME}/i || $ENV{HTTP_REFERER} =~ m|/\?|) {
 	$html .= qq|
@@ -488,6 +505,8 @@ function wIP(ip) {
   if ($admin && $query{page} =~ 'ahome') {
     foreach (qw(
 	top
+	bgcolor
+	top2
 	logo2
 	stats
 	),
@@ -614,29 +633,14 @@ function wIP(ip) {
   if ($admin && 
       (	$query{page} =~ /^delete/ ||
 	$query{page} =~ /^delBLK/ )) {
-    foreach (qw(
-	top
-	logo2
-	stats
-	),   
-	$nav,
-	) {  
-      html_cat(\$html,$_,$CONFIG,\%ftxt);
-    }
     my $action = ($query{page} =~ /^delBLK/) ? 'delBLK' : 'delete';
     $_ = sesswrap("$admin $action $sess $expire $query{remove}");
-    $action = ($query{page} =~ /^delBLK/) ? 'CIDR/24 block removed' : 'removed';
-    if ($_ =~ /^OK/) {
-      $html .= q|<form name=RemoveLook action="" method=POST>
-<input type=hidden name=page value=lookup>
-<input type=hidden name=lookup value="|. $query{remove} .q|">
-<center><font size=5><a href="#top" onMouseOver="return(show('lookup |. $query{remove} .q|'));" onMouseOut="return(off());"
-  onClick="document.RemoveLook.action=location.pathname;document.RemoveLook.submit();return false;">|. $query{remove} .q|</a></font> |. $action .q|</center>
-</form>|;
-    } else {
-      $html .= qq|$query{remove} $_\n|;
-    }
-    last PageGen;
+    unless ($_ =~ /^OK/) {
+      $query{pagerror} = '<font size="+1" color=red>'. $_ .'</font><br>';
+    } 
+    $query{page} = 'lookup';
+    $query{lookup} = $query{remove};
+    next PageGen;
   }
 
 ######  VIEW DB
@@ -644,6 +648,8 @@ function wIP(ip) {
   if ($admin && $query{page} =~ /^viewdb/) {
     foreach (qw(
 	top
+	bgcolor
+	top2
 	logo2
 	stats
 	),

@@ -1,5 +1,5 @@
 # sc_web.conf.sample
-# version 1.05, 10-11-03
+# version 1.06, 3-1-05
 #
 # The configuration file is divided into three sections
 #
@@ -80,6 +80,10 @@ my $CONFIG = {
 #
 #  secure	=> 1,		# true value
 
+# Background page color, default if not present is 'white'
+#
+#  bgcolor	=> '#ffffff',
+
 # A list of the the static pages, using the SECOND PAGE format 
 # (logo2, not 'home' page), whose content come entirely from the 
 # 'incl/xxxx.incl' files
@@ -128,6 +132,7 @@ purpose is freely available for anyone to look at and use as they see fit.
 # them from being overwritten by software updates
 #
   top	  => './incl/top.incl',		# used by all pages
+  top2	  => './incl/top2.incl',	# used by all pages
   logo1	  => './incl/logo1.incl',	# for the home page
   logo2	  => './incl/logo2.incl',	# for all other pages
 #  stats	  => './incl/stats.incl',	# OPTIONAL LaBrea stats pages

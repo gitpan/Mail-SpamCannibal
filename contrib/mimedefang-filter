@@ -1,5 +1,5 @@
 #
-# my version 1.16, 1-12-05 michael@bizsystems.com
+# my version 1.21, 2-11-05 michael@bizsystems.com
 # -*- Perl -*-
 #***********************************************************************
 #
@@ -102,7 +102,7 @@ sub filter_bad_filename ($) {
     my($bad_exts, $re);
 
     # Bad extensions
-    $bad_exts = '(ade|adp|app|asd|asf|asx|bas|bat|chm|cmd|com|cpl|crt|dll|exe|fxp|hlp|hta|hto|inf|ini|ins|isp|jse?|lib|lnk|mdb|mde|msc|msi|msp|mst|ocx|pcd|pif|prg|reg|scr|sct|sh|shb|shs|sys|url|vb|vbe|vbs|vcs|vxd|wmd|wms|wmz|wsc|wsf|wsh|\{[^\}]+\})';
+    $bad_exts = '(ade|adp|app|asd|asf|asx|bas|bat|chm|cmd|com|cpl|crt|dll|exe|fxp|hlp|hta|hto|inf|ini|ins|isp|jse?|lib|lnk|mdb|mde|msc|msi|msp|mst|ocx|pcd|pif|prg|rar|reg|scr|sct|sh|shb|shs|sys|url|vb|vbe|vbs|vcs|vxd|wmd|wms|wmz|wsc|wsf|wsh|\{[^\}]+\})';
 
     # Do not allow:
     # - CLSIDs  {foobarbaz}
@@ -199,7 +199,7 @@ my @dyn_ok_domains = qw(
 # dynamic or non MX static accounts
 #
 my $pattern =
-'not-active|ipad|unknown|customer|unused|no-dns|'.
+'pooles|not-active|ipad|unknown|customer|unused|no-dns|'.
 'reverse|wlan|user|usr|nat|catv|modem|cable|modemcable|'.
 'cdm|cm\d|client|cust|dhcp|dial|dialuol|dialup|dialip|dip|'.
 'docsis|(a|c|s|x|v|)dsl|dyn(amic|dsl|)|host|pool|ppp|in\-addr\.arpa';
@@ -239,12 +239,21 @@ sub filter_sender {
 # discard bogus known hosts
   return(sc_profile('bogus_helo','REJECT',"bogus HELO $helo")) if $helo =~ /localhost/i  && $ip ne '127.0.0.1';
   return(sc_profile('bad_hostname','REJECT',"bogus localhost $ip")) if $hostname eq 'localhost' && $ip ne '127.0.0.1';
-  return(sc_profile('bad_hostname','REJECT',"bogus host $hostname")) if $hostname =~ /unassigned/i;
+  return(sc_profile('bad_hostname','REJECT',"bogus host $hostname")) if $hostname =~ /unassigned/i || $hostname =~ /local$/i;
 
 # return if not possible dynamic host
+  return ('CONTINUE','ok') if $hostname =~ /^mail/i;
   return (sc_profile('reverse_IP','REJECT',"bad reverse IP |$&| $hostname"))
 	if $hostname =~ /$ipattern/o;
   return ('CONTINUE','ok') unless $hostname =~ /([(.\-]|\b)($pattern).?[.\-\d]/io;
+my @known_bad_domains = (	# these are dynamic patterns for specific domains
+	'^FL.+mesh\.ad\.jp',
+	'^pc.+\d+.+\.comcast\.net',
+	'^cncln.online.ln.cn',
+	'^s[a-z0-9]+\..+shawcable\.net',
+	'^nameservices.net',
+);
+
   my $match = $&;
 # return if definetly not dynamic host, ends in 'match'.org|com|etc...
   return ('CONTINUE','ok') if $hostname =~ /(($match)[\.]?[a-z]+)$/io;
@@ -258,6 +267,9 @@ sub filter_sender {
 #
 sub filter_recipient {
   my($recip, $sender, $ip, $host, $first, $helo,
+
+# fail known dynamic host patterns
+  return(sc_profile('bad_hostname','REJECT',"dynamic host $hostname")) if grep($hostname =~ /$_/i,@known_bad_domains);
 	$rcpt_mailer, $rcpt_host, $rcpt_addr) = @_;
   my $cleanrecip = sc_clean_email($recip);
   my @match = grep($cleanrecip =~ /\@$_$/i,keys %Relay_checklist);

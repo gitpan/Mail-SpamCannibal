@@ -2,7 +2,7 @@
 #
 # sc_admin.pl
 #
-# version 1.04, 9-3-03
+# version 1.05, 1-25-05
 #
 #################################################################
 # WARNING! do not modify this script, make one with a new name.	#
@@ -62,6 +62,7 @@ Syntax:	sc_admin.pl db_name (action) [dot.quad.ip.addr] [stuff]
   sc_admin.pl  db_name delete	dot.quad.ip.addr
   sc_admin.pl  db_name zap	key (unconstrained delete)
   sc_admin.pl  db_name view
+  sc_admin.pl  db_name search	"search string"
   sc_admin.pl  db_name clear
     and
 		where db_name is one of
@@ -91,6 +92,13 @@ EOF
 	mail headers +
 	message terminated on the last line by a
 	.
+
+  for "|,	$DBCONFIG->{SPMCNBL_DB_CONTRIB}, '" and "',
+		$DBCONFIG->{SPMCNBL_DB_EVIDENCE}, q|" only, a string
+	search in the "value" portion of the database.
+
+  WARNING:	terminating any of these operations before 
+		before completion risks corrupting the database
 
 |;
   exit;
@@ -131,6 +139,9 @@ elsif ($action =~ /^zap/) {	# zap a key
 elsif ($action =~ /^clear/) {	# clear db
   Clear();
 }
+elsif ($action =~ /^search/) {	# search db
+  Search();
+}
 else {
   syntax;
 }
@@ -156,19 +167,28 @@ sub get_t_a {
   print "${ip}\t=> $time .. $stime\n";
 }
 
+
+sub print_contrib {
+  print get_contrib(@_);
+}
+
 sub get_contrib {
   my($saddr,$record) = @_;
   my $ip = safe_inet_ntoa($saddr);
   my ($orsp,$err,$trsp,$tim,$zon) = unpack_contrib($record);
   my $stime = scalar localtime($tim);
-  print "${ip}\t=> ", safe_inet_ntoa($orsp), ', ', $err, ",\n\t",
-	safe_inet_ntoa($trsp), ", $stime, $zon\n";
+  return "${ip}\t=> ". safe_inet_ntoa($orsp). ', '. $err . ",\n\t".
+	safe_inet_ntoa($trsp). ", $stime, $zon\n";
+}
+
+sub print_e {
+  print get_e(@_);
 }
 
 sub get_e {
   my($saddr,$record) = @_;
   my $ip = safe_inet_ntoa($saddr);
-      print "${ip}\t=>\n$record\n";
+      return "${ip}\t=>\n$record\n";
 }
 
 sub Get {
@@ -184,10 +204,10 @@ sub Get {
 	get_t_a($saddr,$_);
   }
   elsif ($dbname eq $DBCONFIG->{SPMCNBL_DB_CONTRIB}) {
-	get_contrib($saddr,$_);
+	print_contrib($saddr,$_);
   }
   elsif ($dbname eq $DBCONFIG->{SPMCNBL_DB_EVIDENCE}) {
-	get_e($saddr,$_);
+	print_e($saddr,$_);
   }
   $tool->closedb;
 }
@@ -275,13 +295,46 @@ sub View {
   }
   elsif ($dbname eq $DBCONFIG->{SPMCNBL_DB_CONTRIB}) {
     foreach(sort keys %$dump) {
-	get_contrib($_,$dump->{$_});
+	print_contrib($_,$dump->{$_});
     }
   }
   elsif ($dbname eq $DBCONFIG->{SPMCNBL_DB_EVIDENCE}) {
     foreach(sort keys %$dump) {  
-	get_e($_,$dump->{$_});
+	print_e($_,$dump->{$_});
     }
+  }
+  $tool->closedb;
+}
+
+sub Search {
+# $addr contains search string
+  if (	$dbname eq $DBCONFIG->{SPMCNBL_DB_TARPIT} ||
+	$dbname eq $DBCONFIG->{SPMCNBL_DB_ARCHIVE} ) {
+    die "Search not allowed in $dbname\n";
+  }
+
+  my $tool = db_open();
+
+  if ($_ = $tool->nkeys($dbname)) {
+    print "Searching $_ records in $dbname\n\n";
+    my $record = 1;
+    my @result;
+    if ($dbname eq $DBCONFIG->{SPMCNBL_DB_CONTRIB}) {
+      while (@result = $tool->getrecno($dbname,$record)) {
+        $record++;
+        my $dbstring = get_contrib(@result);
+        print $dbstring if $dbstring =~ /$addr/i;
+      }
+    }
+    elsif ($dbname eq $DBCONFIG->{SPMCNBL_DB_EVIDENCE}) {
+      while (@result = $tool->getrecno($dbname,$record)) {
+        $record++;
+        my $dbstring = get_e(@result);
+        print $dbstring if $dbstring =~ /$addr/i;
+      }
+    }
+  } else {
+    print "No records found in $dbname\n";
   }
   $tool->closedb;
 }

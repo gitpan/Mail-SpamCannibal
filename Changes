@@ -1,5 +1,18 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.51  Sun Nov 14 22:12:03 PST 2004
+	update DNSBLserver v0.34
+        add the number of records dumped by zonfile.c comment
+        text in the zonefile. the form of the zonfile header is:
+
+        ; Version: dnsbls 0.34, 11-14-04
+        ; 375624 A records
+        ; zone dump on Sun Nov 14 22:05:52 2004
+
+	add contrib/zone_cron.pl to compliment
+	contrib/zone_cron.sh and extract record count
+	from the zone file to make a web 'include' file
+
 0.50  Sat Nov 13 14:41:21 PST 2004
 	update config/sc_Blacklist.conf.example
 

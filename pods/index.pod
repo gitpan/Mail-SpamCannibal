@@ -5,7 +5,7 @@ All - SpamCannibal Documentation
 
 =for html <font size=+2>Documentation for the SpamCannibal Package</font>
 <br>&nbsp;
-<br><!-- version 1.11, 11-12-04 -->
+<br><!-- version 1.12, 11-14-04 -->
 <font size=+1><a href="install.html#support">Support and Project Participation</a></font><br>
 <font size=+1><a href=howtouse.html>HOWTO use SpamCannibal</a></font> with your mail system<br>
 <font size=+1><a href=howitworks.html>HOW SpamCannibal Works</a></font><br>
@@ -50,6 +50,7 @@ The included dynamic files for this page are transferred periodically from their
 <tr valign=top><td>rc_debian_spamcannibal</td><td>start up file for debian, redhat, and possibly other Linux distributions</td></tr>
 <tr valign=top><td>robots.txt</td><td>file from the SpamCannibal web site</td></tr>
 <tr valign=top><td>zone_cron.sh</td><td>a shell script example to periodically dump a SpamCannibal DNSBL zone file for web export, etc.... much more resource efficient than allowing access to your dnsbl daemon for zone transfers</td></tr>
+<tr valign=top><td>zone_cron.pl</td><td>a perl script example to extract the record count from a SpamCannibal DNSBL zone file for a web include page</td></tr>
 </table>
 </blockquote>
 <font size=+1><b>SpamCannibal modules</b></font> <i>developers</i>

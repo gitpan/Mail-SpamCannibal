@@ -261,14 +261,23 @@ zonefile(FILE * fd)
   
   int type, class, n, i;
   char * Hptr, * bp;
-  u_int32_t serial, lserial, * Aptr, * Astart, * A_resp;
+  u_int32_t serial, lserial, * Aptr, * Astart, * A_resp, numrecs;
   u_short len;
   u_int32_t recno = 1;
   int serial_missing = 1;
   time_t current = time(NULL);
 
-/* version, ORIGIN and TTL for SOA	*/
-  fprintf(fd,"; Version: %s\n; zone dump on %s\n$ORIGIN .\n$TTL %u\n",version,ctime(&current),soa_ttl);
+/* fetch the number of records 
+   (including overhead records that are not printed out) 
+   in that will be sent to zonefile
+ */
+  if (zflag != 0)			/* if promiscous reporting	*/
+    numrecs = dbtp_stati(&dbtp,DBtarpit);
+  else
+    numrecs = dbtp_stati(&dbtp,DBevidence);
+
+/* version, number of records (more or less), date, ORIGIN, and TTL for SOA	*/
+  fprintf(fd,"; Version: %s\n; %u A records\n; zone dump on %s\n$ORIGIN .\n$TTL %u\n",version,numrecs,ctime(&current),soa_ttl);
   bp = mybuffer;
   tabout(bp,zone_name,"IN SOA");				/* zonename IN SOA		*/
   fprintf(fd,"%s%s. %s. (\n",bp,local_name,contact);		/* name contact (		*/

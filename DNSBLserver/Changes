@@ -1,5 +1,14 @@
 Revision history for Perl extension Mail::SpamCannibal::DNSBLserver.
 
+0.34  Sun Nov 14 21:39:48 PST 2004
+	add the number of records dumped by zonfile.c comment 
+	text in the zonefile. the form of the zonfile header is:
+
+	; Version: dnsbls 0.34, 11-14-04
+	; 375624 A records
+	; zone dump on Sun Nov 14 22:05:52 2004
+
+
 0.33  Sat Nov 13 16:31:56 PST 2004
 	update docs
 

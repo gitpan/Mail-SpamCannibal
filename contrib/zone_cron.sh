@@ -1,10 +1,14 @@
 #!/bin/sh
 #
+# zone_cron.sh
+#
+# version 1.01, 11-14-04, michael@bizsystes.com
+#
 # dnsbls zone file dump example
 #
 # 5 minute timeout, extend if necessary
 TIMEOUT=300
-ZONE_NAME="my.zone_name"
+ZONE_NAME="bl.spamcannibal.org"
 
 DBHOME="/var/run/dbtarpit"
 PID_FILE="dnsbls.pid"
@@ -37,10 +41,10 @@ else
 # do something with the zone file such
 # as copy it to and export directory
 
-  cp ${DBHOME}/${ZONE_NAME}.in ./
-  echo "zone file update complete"
-
-
+  cp ${DBHOME}/${ZONE_NAME}.in /usr/local/spamcannibal/public_html
+  chmod 644 /usr/local/spamcannibal/public_html/${ZONE_NAME}.in
+# save some space
+  rm ${DBHOME}/${ZONE_NAME}.in
 fi
 
 rm ${DBHOME}/${SCRIPT_NAME}.running

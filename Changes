@@ -1,5 +1,9 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.24  Fri Jan 30 17:03:37 PST 2004
+	add in-addr.arpa CNAME -> PTR
+	capability to cannibal.cgi script
+
 0.23  Fri Jan 30 13:31:07 PST 2004
 	update sc_Blacklist.conf.sample to include 
 	completewhois.com

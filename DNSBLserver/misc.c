@@ -29,6 +29,8 @@
 #include "defines.h"
 #include "util_pid_func.h"
 
+pid_t zonechild = 0;
+
 void
 LogPrint(char *output) {
   extern int oflag, testflag;
@@ -112,6 +114,15 @@ ToggleLogging(int sig) {
 }
 
 void
+ZoneDump(int sig)
+{
+  extern int zone_request;
+
+  zone_request = 1;
+  LogPrint(str1); 
+}
+
+void
 SigHup(int sig)
 {
   extern int datalog;
@@ -123,12 +134,15 @@ SigHup(int sig)
 void
 SigChild(int sig)
 {
-  extern int datalog;
-  extern char mybuffer[];
+  extern pid_t zonechild;
+
   pid_t rv;
   if (sig == SIGCHLD) {
-    while((rv = waitpid(-1, NULL, WNOHANG)) > 0)
-	;
+    do {
+      rv = waitpid(-1, NULL, WNOHANG);
+      if (zonechild && zonechild == rv)
+      	zonechild = 0;
+    } while (rv > 0);
   }
   return;
 }
@@ -140,6 +154,8 @@ q_handler (int sig)
 	case SIGALRM	: CleanExit(sig);
 			  break;
 	case SIGUSR1	: ToggleLogging(sig);
+			  break;
+	case SIGUSR2	: ZoneDump(sig);
 			  break;
 	case SIGCHLD	: SigChild(sig);
 			  break;
@@ -162,6 +178,7 @@ set_signals (void)
   sigaddset (&sa.sa_mask, SIGTERM);
   sigaddset (&sa.sa_mask, SIGHUP);
   sigaddset (&sa.sa_mask, SIGUSR1);
+  sigaddset (&sa.sa_mask, SIGUSR2);
   sigaddset (&sa.sa_mask, SIGQUIT);
   sigaddset (&sa.sa_mask, SIGINT);
   sigaddset (&sa.sa_mask, SIGALRM);
@@ -172,6 +189,7 @@ set_signals (void)
   sigaction (SIGINT, &sa, NULL);
   sigaction (SIGQUIT, &sa, NULL);
   sigaction (SIGUSR1, &sa, NULL);
+  sigaction (SIGUSR2, &sa, NULL);
   sigaction (SIGTERM, &sa, NULL);
   sigaction (SIGHUP, &sa, NULL);
 }

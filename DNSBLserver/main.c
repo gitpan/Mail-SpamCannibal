@@ -20,6 +20,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <time.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -45,44 +46,47 @@
 #include "godaemon.c"
 #include "host_info_func.h"
 #include "util_pid_func.h"
+#include "zonedump.c"
+#include "ns_func.h"
 
 /*
-  -z    : Zone Name: bl.domain.com     [default: this hostname]
-  -n    : Name Servers: abc.domain.com (Note 1)  
-  -H    : same as -n, but sets host name (Note 1)
-  -a    : NS Address xxx.xxx.xxx.xxx    [default: lookup via DNS]
- ...there can be more than one set of entrys 
-  -n    : Another NS dul.domain.com (up to 5)
-  -a    : eth0 NS Address yyy.yyy.yyy.yyy    
-  -a    : eth1 another NS Address (up to 10) 
-  -m    : 10 mark preference for MX entry (Note 2)
+  -z   : Zone Name: bl.domain.com      [default: this hostname]
+  -n   : Name Servers: abc.domain.com (Note 1)
+  -N   : same as -n, but sets host name (Note 1)
+  -a   : NS Address xxx.xxx.xxx.xxx    [default: lookup via DNS]
+ ...there can be more than one set of entrys
+  -n   : Another NS dul.domain.com (up to 5)
+  -a   : eth0 NS Address yyy.yyy.yyy.yyy
+  -a   : eth1 another NS Address (up to 10)
+  -m   : 10 mark preference for MX entry (Note 2)
 
-  -u    : 43200 : SOA update/refresh interval
-  -y    : 3600  : SOA retry interval
-  -x    : 86400 : SOA expire
-  -t    : 10800 : SOA ttl/minimum   
+  -u   : 43200 : SOA update/refresh interval
+  -y   : 3600  : SOA retry interval
+  -x   : 86400 : SOA expire
+  -t   : 10800 : SOA ttl/minimum
 
-  -c    : SOA zone contact: contact@somewhere.com
+  -c   : SOA zone contact: contact@somewhere.com
 
-  -e    : ERROR: this DNSBL's error message  "http://....."
-  -b    : Block AXFR transfers
+  -e   : ERROR: this RBL's error message  "http://....."
+  -b   : Block AXFR transfers
 
-  -r    : Alternate DB root directory   [default: /var/run/dbtarpit]
-  -f    : Alternate primary DB file     [default: tarpit]
+  -r   : Alternate DB root directory   [default: /var/run/dbtarpit]
+  -i   : Alternate tarpit DB file      [default: tarpit]
+  -j   : Alternate contrib DB file     [default: blcontrib]
+  -k   : Alternate evidence DB file    [default: evidence]
 
-  -s    : Alternate secondary DB file   [default: blcontrib]
-
-  -p    : Port number [default: 53]
-  -d    : Do NOT detach process.
-  -l    : Log activity to syslog (Note 3)
-  -v    : Verbose logging to syslog
-  -o    : Output to stdout instead of syslog (Note 4)
-  -V    : Print version information and exit
-  -T    : Test mode - Print out debug info and exit  
-  -P    : Enable promiscuous reporting of contributed entries (Note 5)
-  -i    : Internal test flag - tcpmode, see ns.c, t/ns.t
-  -h    : Print this help information
-  -?    : Print this help information
+  -p   : Port number [default: 53]
+  -d   : Do NOT detach process.
+  -l   : Log activity to syslog (Note 3)
+  -v   : Verbose logging to syslog
+  -o   : Output to stdout instead of syslog (Note 4)
+  -V   : Print version information and exit
+  -T   : Test mode - Print out debug info and exit
+  -P   : Enable promiscious reporting of contributed entries (Note 5)
+  -Z   : Zap TXT records in zonefile dump, A records ONLY
+  -g   : Internal test flag - tcpmode, see ns.c, t/ns.t, CTest.pm::t_mode
+  -h   : Print this help information
+  -?   : Print this help information
  */
 
 DBTPD dbtp;
@@ -92,9 +96,10 @@ char * zone_name = NULL, * contact = NULL, rname[MAXDNAME], undef_err[] = "undef
 u_int32_t * Astart, * Aptr;
 char mybuffer[1024], * rtn;
 int logopen = 0, datalog = 0, savedatalog = 0;
-int run, zone_name_len, zoneEQlocal, port = 53, dflag = 0, oflag = 0, bflag = 0, zflag = 0, qflag = 0;
+int run, zone_name_len, zoneEQlocal, port = 53, zone_request = 0;
+int dflag = 0, oflag = 0, bflag = 0, zflag = 0, qflag = 0, Zflag = 0;
 int fdUDP = 0, fdTCPlisten = 0, fdTCP = 0;
-u_int32_t refresh = 43200, retry = 3600, expire = 86400, minimum = 10800;
+u_int32_t refresh = 43200, retry = 3600, expire = 86400, minimum = 10800, soa_ttl = 0;
 pid_t pidrun, parent = 1;
 struct sigaction sa;
 struct in_addr stdResp, stdRespBeg, stdRespEnd, serial_rec;
@@ -110,10 +115,10 @@ int realMain(int argc, char **argv)
   extern int h_name_ctr;	/* name service buffer ring pointer	*/
   extern char * local_name;
   extern int mxmark[];
-  extern int bflag;
+  extern int bflag, zone_request;
   extern struct in_addr stdResp, stdRespBeg, stdRespEnd, serial_rec;
   
-  char getoptstr[] = "z:a:n:N:u:y:x:m:t:c:e:g:br:i:j:k:p:dlvPVT?ho";
+  char getoptstr[] = "z:a:n:N:u:y:x:m:t:c:e:g:br:i:j:k:p:dlvPVTZ?ho";
   char c, * nsname = NULL, * addip = NULL, * pidpathname;
   int nstore = 0, Mptr = 0, mxsave = 0, aflag = 0, status, testflag = 0, gflag = 1;
   int flags, maxfd, ready;
@@ -122,6 +127,7 @@ int realMain(int argc, char **argv)
   sigset_t set;
   fd_set rset;
   size_t msglen;
+  struct timeval tloop;
 
   sigemptyset(&set);
   sigprocmask(SIG_SETMASK, &set, NULL);
@@ -261,6 +267,9 @@ int realMain(int argc, char **argv)
       case 'P':
 	zflag = 1;
 	break;
+      case 'Z':
+	Zflag = 1;
+	break;
       case '?':
       case 'h':   
       default:
@@ -327,6 +336,7 @@ Error_nsname:
     printf("Tflag		=> %d test mode\n", testflag);
     printf("promiscuous	=> %d reporting enabled\n", zflag);
     printf("zone		=> %s\n", zone_name);
+    printf("Zflag		=> %d Zap zone file TXT records\n", Zflag);
     printf("contact		=> %s\n", contact);
     printf("uflag		=>	%d	SOA update/refresh\n",refresh);
     printf("yflag		=>	%d	SOA retry\n",retry);
@@ -334,7 +344,8 @@ Error_nsname:
     printf("tflag		=>	%d	SOA ttl/minimum\n",minimum);
     printf("local records:\n");
     report_ns();
-    CleanExit(0);
+/*    CleanExit(0);	this is not needed	*/
+    return(0);
   }
 
   if(stat(dbhome,&sbuf)) {	/* bail out if dbhome directory does not exist	*/
@@ -418,18 +429,23 @@ Error_nsname:
     goto ErrorExit;
   }
 
-  sigprocmask (SIG_UNBLOCK, &sa.sa_mask, 0);
   FD_ZERO(&rset);
   if (fdUDP > fdTCPlisten)
     maxfd = fdUDP +1;
   else
     maxfd = fdTCPlisten +1;
    
+  sigprocmask (SIG_UNBLOCK, &sa.sa_mask, 0);
+
   /* loop! */
   while (run) {
+
     FD_SET(fdUDP, &rset);
     FD_SET(fdTCPlisten, &rset);
-    if ((ready = select(maxfd,&rset,NULL,NULL,NULL)) < 0) {
+
+    tloop.tv_sec = 1;		/* wake up every second		*/
+    tloop.tv_usec = 0;
+    if ((ready = select(maxfd,&rset,NULL,NULL,&tloop)) < 0) {
       if (errno == EINTR)
             continue;		/* child probably exited	*/
       else if (errno == EWOULDBLOCK)
@@ -437,7 +453,13 @@ Error_nsname:
       else if (errno == ECONNABORTED)
             continue;		/* tcp aborted			*/
 	
+    } else if (ready == 0) {
+    
+      if (zone_request)
+	zonedump();
+
     } else if (ready > 0) {
+
       if (FD_ISSET(fdUDP, &rset)) {	/* UDP first while db is open	*/
         if (dbtp.dbenv == NULL) {	/* initialize the database interface	*/
           if ((status = dbtp_init(&dbtp,dbhome,-1))) {
@@ -502,3 +524,4 @@ ErrorExit:
   CleanExit(0);
   return(0);
 }
+

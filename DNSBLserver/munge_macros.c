@@ -239,7 +239,7 @@ NOTE: SOA records are distributed by this server with TTL's of zero.
 
 /* NOTE: that serial is fresh when time tick is used, only on the first pass -- for axfr second record */
 #define RR_SOA(counter) \
-  RR_HEAD(zone_name,T_SOA,0); \
+  RR_HEAD(zone_name,T_SOA,soa_ttl); \
   if ((n = (dn_comp(local_name, cp, (IP_MAXPACKET - (cp - ns_msgbuf)), dnptrs, lastdnptr))) < 0) { \
     rcode = SERVFAIL; \
     goto NS_errorExit; \

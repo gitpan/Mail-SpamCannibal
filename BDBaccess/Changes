@@ -1,5 +1,9 @@
 Revision history for Perl extension Mail::SpamCannibal::BDBreader
 
+0.17  Tue Jun  8 16:29:39 PDT 2004
+	updated rc.bdbaccess v0.06 to fix bug for perl v5.8.3 
+	where unshift does not work properly for default @_
+
 0.16  Sat May 22 10:45:37 PDT 2004
 	removed compiler dependent bug for C version extraction 
 	from BDBaccess.pm
@@ -8,7 +12,7 @@ Revision history for Perl extension Mail::SpamCannibal::BDBreader
 	altered the comments at the beginning of BDBaccess.pm
 
 0.14  Mon Feb  9 15:56:51 PST 2004
-        rewrite 'restart' logic in rc.bdbaccess v0.5
+	rewrite 'restart' logic in rc.bdbaccess v0.5
 
 0.13  Wed Oct  8 11:36:59 PDT 2003
 	add Makefile entry to copy rc.bdbaccess to install script directory

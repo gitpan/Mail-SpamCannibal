@@ -4,7 +4,7 @@
 eval 'exec /usr/bin/perl -w -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 #
-# rc.bdbaccess version 0.05, 2-9-04
+# rc.bdbaccess version 0.06, 6-8-04
 #
 # Copyright 2003, 2004, Michael Robinton <michael@bizsystems.com>
 # rc.bdbaccess is free software; you can redistribute it and/or 
@@ -176,7 +176,9 @@ sub do_stop {
 sub do_start {
     my $extra = $_[0] || '';
     my @extra = @ARGV;
-    unshift @extra if $extra;
+    if ($extra) {
+	unshift @extra, @_;
+    }
     $extra = join ' ', @extra if @extra;
     $extra = ' '. $extra if $extra;
     if ($running) {

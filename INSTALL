@@ -75,7 +75,7 @@ Recompiling Linux 2.4x kernel with IPTABLES
     affecting performance on an aging 486 with not much memory. It's not a
     big deal.
 
-libnet-1.0.x
+libnet-1.x.x
     http://www.packetfactory.net/libnet
 
       Installation:
@@ -284,7 +284,7 @@ SpamCannibal setup
     Additional security can be provided by running dbtarpit/dnsbls daemons
     in a DMZ. Access restrictions for zone transfer can be provide by using
     BIND as the distribution DNS and updating the slave DNS servers from the
-    dnsbls server with no outside access. Users are invited to write a FAQ
+    dnsbls server with no outside access. Users are invited to write an FAQ
     or installation procedure and submit it for inclusion with this
     documentation package.
 

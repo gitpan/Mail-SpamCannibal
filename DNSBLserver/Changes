@@ -1,5 +1,20 @@
 Revision history for Perl extension Mail::SpamCannibal::DNSBLserver.
 
+0.26  Wed Jun 23 12:55:01 PDT 2004
+	fixed bug in ns.c that prevented 127.xx.xx.xx response TXT strings
+	inserted by rc.dnsbls from being reported
+
+	added zonefile.c and zonedump.c so that dnsbls can
+	dump a zonefile to the dbhome directory on receipt
+	of a SIG_USR2
+
+	add script 'sc_zoneload' to load a BIND or 'dig' zone file
+	into the database.
+
+0.25  Tue Jun  8 16:29:39 PDT 2004
+	updated rc.dnsbls v0.10 to fix bug for perl v5.8.3 
+	where unshift does not work properly for default @_
+
 0.24  Mon May 10 18:39:31 PDT 2004
 	modified rc.dnsbls so that tarpit records forceably added from the
 	config file (such at 127.0.0.2, 127.0.0.3, etc...) are tested first

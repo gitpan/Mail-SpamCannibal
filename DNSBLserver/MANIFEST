@@ -22,8 +22,12 @@ ns.c
 ns.h
 ns_func.h
 rc.dnsbls
+sc_zoneload
 util_pid.c
 util_pid_func.h
+zonedump.c
+zonefile.h
+zonefile.c
 WHATARE.c.files
 config/dnsbls.conf.sample
 extra_docs/draft-ietf-dnsext-axfr-clarify-05.txt
@@ -46,3 +50,6 @@ t/ns_name_skip.t
 t/options.t
 t/siglog.t
 t/util_pid.t
+t/zone_basics.t
+t/zoneiprint.t
+t/zoneoflush.t

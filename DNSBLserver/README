@@ -92,10 +92,18 @@ INSTALLATION
     repetitive read-by-record-number operations to gain sequential access to
     the data.
 
+  sc_zoneload
+
+    The script sc_zoneload can be used to load a BIND zone file or a file
+    created by the BIND 'dig' utility or the Net::DNS::ToolKit - dig.pl
+    utility into the dnsbls database. Please note that ALL 127.0.0.2
+    RESPONSES ARE CONVERTED TO 127.0.0.3 unless the -e switch is used with
+    this utility. See "DNS query format" above.
+
 DEPENDENCIES
       Berkeley DB 2.6.4 http://www.sleepycat.com/
 
-            for testing
+            for testing and sc_zoneload support
 
       Net::DNS::Codes, version 0.06
 
@@ -312,6 +320,14 @@ OPTIONS - long version
         Undocumented option used during development and testing. If your
         curiosity is just killing you then read the comments about is_tcp
         and tcpmode in ns.c, t/ns.t, and CTest.pm -- function t_mode.
+
+SIGNALS
+      HUP   logged if logging enabled, no action
+      TERM  daemon exits
+      QUIT  daemon exits
+      INT   daemon exits
+      USR1  toggle logging
+      USR2  dump a zonfile to database home directory
 
 DATABASE CONFIGURATION FILE [optional]
     Usually used to increase database cache size.

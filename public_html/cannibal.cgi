@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 1.19, 5-1-04
+# version 1.20, 6-21-04
 #
 # Copyright 2003, 2004, Michael Robinton <michael@bizsystems.com>
 #   
@@ -55,8 +55,6 @@ use Mail::SpamCannibal::BDBclient qw(
         dataquery
         retrieve
         INADDR_NONE
-        inet_ntoa
-	inet_aton
 );
 
 #########################################################################
@@ -824,7 +822,7 @@ $html .= q|
 document.SpamAdd.host.value = '|. $query{host} .q|';
 document.SpamAdd.spam.value = "|. $query{spam} .q|";
 </script>
-| if $query{page} =~ spamlst &&
+| if $query{page} =~ /^spamlst/ &&
 	validIP($query{host});
 
 # if this is an admin session, insert page timer

@@ -94,7 +94,7 @@ closedir D;
 my $efile = $path .'/'. $_[0];
 my($mode,$ctime) = (stat($efile))[2,10];
 $mode &= 0777;
-$mode ^= 06;			# flip the world RW mode bits
+#$mode ^= 06;			# flip the world RW mode bits
 foreach(@_) {
   chmod $mode, $path .'/'. $_;
 }

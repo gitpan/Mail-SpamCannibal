@@ -94,6 +94,7 @@ port		=> 53 port number
 Tflag		=> 1 test mode
 promiscuous	=> 0 reporting enabled
 zone		=> foo.bar.com
+Zflag		=> 0 Zap zone file TXT records
 contact		=> root.foo.bar.com
 uflag		=>	43200	SOA update/refresh
 yflag		=>	3600	SOA retry
@@ -102,6 +103,8 @@ tflag		=>	10800	SOA ttl/minimum
 local records:
 NS =>	xx.yy.com
 	11.22.33.44
+NS =>	ns2.zz.net
+	65.43.21.9
 |;
 
 my @x = ('-o', '-T',

@@ -35,7 +35,10 @@
 /* for util_pid.c		*/
 #include "util_pid_func.h"
 
-/* for t_cmdline.c		*/
+/* for zonefile.c		*/
+#include "zonefile.h"
+
+/* for t_cmdline		*/
 #include "host_info_func.h"
 
 /* for size of string buffer below	*/
@@ -46,14 +49,19 @@
 
 /* Global Variables from main.c */
   extern DBTPD dbtp;
-  extern int oflag, logopen, bflag, zflag, qflag;
+  extern int oflag, logopen, bflag, zflag, qflag, Zflag;
   extern pid_t pidrun, parent;
-  extern char * zone_name, * local_name, * contact, * errormsg;
+  extern char * zone_name, * local_name, * contact, * errormsg, mybuffer[], * dbhome;
   extern int zone_name_len, zoneEQlocal;
   extern int h_name_ctr;        /* name service buffer ring pointer     */
   extern u_int32_t * Astart, * Aptr, localip[];
   extern int mxmark[];
   extern struct in_addr stdResp, stdRespBeg, serial_rec;
+
+/* Globals from zonefile.c	*/
+  extern u_char ah,am,al,az,bh,bm,bl,bz,ch,cm,cl,cz,dh,dm,dl,dz,org;
+  extern char txa[], txb[], txc[], txd[];
+  extern u_int32_t aa, ab, ac, ad;
 
 /* Globals from ns.c		*/
   extern unsigned char ns_msgbuf[];
@@ -61,9 +69,9 @@
 
 /* Globals used within CTest	*/
 
-char strbuf[MAXDNAME];
-char c, * nsname = NULL;
+char strbuf[MAXDNAME], c, * nsname = NULL, tmpdbhome[512];
 int nstore = 0, Mptr = 0, mxsave = 0, aflag = 0;
+struct in_addr in;
 
 /* ****************************	*
  * 	dump database		*
@@ -86,12 +94,13 @@ my_helpinit(DBTPD * dbtp, int ai, char * addr)
 int
 mydb_dump(int secondary)
 {
+  extern struct in_addr in;
+
   DB * dbp;
   DBT key, data;
   int status;
   u_int32_t cursor = 1;
   DBC * dbcp;
-  struct in_addr inadr;
   int i, c; 
   char * cp;
 
@@ -105,9 +114,9 @@ mydb_dump(int secondary)
   key.data = &cursor;
   key.size = sizeof(cursor);
   while((status = dbp->get(dbp, NULL, &key, &data, DB_SET_RECNO)) == 0) {
-    inadr.s_addr = *(in_addr_t *)(key.data);
+    in.s_addr = *(in_addr_t *)(key.data);
     if (secondary) {
-      printf("%16s => ", inet_ntoa(inadr));
+      printf("%16s => ", inet_ntoa(in));
       cp = (char *)data.data;
       for(i=0;i<data.size;i++) {
 	putchar((int)(*cp++));
@@ -115,7 +124,7 @@ mydb_dump(int secondary)
       printf("\n");
     }
     else
-      printf("%16s => %10ld\n", inet_ntoa(inadr), *(u_int32_t *)data.data);
+      printf("%16s => %10ld\n", inet_ntoa(in), *(u_int32_t *)data.data);
     key.data = &cursor;
     key.size = sizeof(cursor);
     cursor++;
@@ -125,6 +134,36 @@ mydb_dump(int secondary)
   return status;   
 }
 
+char *
+my_inet_ntoa(void * addr)
+{
+  extern struct in_addr in;
+
+  in.s_addr = *(u_int32_t *)addr;
+  return inet_ntoa(in);
+}
+
+u_int32_t
+my_inet_aton(char * ipaddr)
+{
+  extern struct in_addr in;
+
+  inet_aton(ipaddr,&in);
+  return in.s_addr;
+}
+
+char *
+my_nib_ntoa(u_char h, u_char m, u_char l, u_char z)
+{
+  extern struct in_addr in;
+  u_char * np = (u_char *)&in.s_addr;
+
+  *np++ = h;
+  *np++ = m;
+  *np++ = l;
+  *np   = z;
+  return inet_ntoa(in);
+}
 
 void *
 myct_getsec(void * addr, size_t size)
@@ -156,7 +195,7 @@ myct_getpri(void * addr, size_t size)
 int
 my_cmdline(char c,char * stuff)
 {
-    struct in_addr in;
+    extern struct in_addr in;
   /* parse the command line */
     switch(c) {
 	case 'n':
@@ -239,6 +278,9 @@ my_cmdline(char c,char * stuff)
 	    zflag = atoi(stuff);
 	    break;
 
+	case 'Z':
+	    Zflag = atoi(stuff);
+	    break;
 	default:
 	    return(0);
     } /* end case */
@@ -255,6 +297,33 @@ int
 my_cmp_serial(u_long s1, u_long s2)
 {
   return(cmp_serial((u_int32_t)s1, (u_int32_t)s2));
+}
+
+void
+my_add_A_rec(char * name, char * ipp)
+{
+  extern char mybuffer[];
+
+  char * rtn = mybuffer;
+  u_int32_t nip = my_inet_aton(ipp);
+
+  add_A_rec(rtn,name,&nip);
+}
+
+void
+my_precrd(FILE * fd, char * name, char * resp, char * txt)
+{
+  extern char mybuffer[];
+  
+  u_int32_t nip = my_inet_aton(resp);
+
+  precrd(fd,mybuffer,name,nip,txt);
+}
+
+void
+my_iload(u_char * iptr, u_long resp, char * txt)
+{
+  iload(iptr,(u_int32_t *)&resp,txt);
 }
 
 MODULE = Mail::SpamCannibal::DNSBLserver::CTest	PACKAGE = Mail::SpamCannibal::DNSBLserver::CTest
@@ -516,3 +585,151 @@ t_set_qflag(val)
 	qflag = val;
     OUTPUT:
 	RETVAL
+
+void
+t_set_dbhome(path)
+	char * path
+    CODE:
+	strcpy(tmpdbhome,path);
+	dbhome = tmpdbhome;
+
+void
+t_ret_resp()
+    PPCODE:
+	XPUSHs(sv_2mortal(newSVpv(my_inet_ntoa(&aa),0)));
+	if(GIMME != G_ARRAY) {
+	    XSRETURN(1);
+	}
+	XPUSHs(sv_2mortal(newSVpv(my_inet_ntoa(&ab),0)));
+	XPUSHs(sv_2mortal(newSVpv(my_inet_ntoa(&ac),0)));
+	XPUSHs(sv_2mortal(newSVpv(my_inet_ntoa(&ad),0)));
+	XSRETURN(4);
+
+void
+t_ret_a_nibls()
+    PPCODE:
+	XPUSHs(sv_2mortal(newSVpv(my_nib_ntoa(ah,am,al,az),0)));
+	if(GIMME != G_ARRAY) {
+	    XSRETURN(1);
+	}
+	XPUSHs(sv_2mortal(newSVpv(my_nib_ntoa(bh,bm,bl,bz),0)));
+	XPUSHs(sv_2mortal(newSVpv(my_nib_ntoa(ch,cm,cl,cz),0)));
+	XPUSHs(sv_2mortal(newSVpv(my_nib_ntoa(dh,dm,dl,dz),0)));
+	XSRETURN(4);
+
+void
+t_mybuffer(which)
+	int which
+    PREINIT:
+	char * bp;
+    PPCODE:
+	switch(which) {
+	    case 0 :
+		bp = mybuffer;
+		break;
+	    case 1 :
+		bp = txa;
+		break;
+	    case 2 :
+		bp = txb;
+		break;
+	    case 3 :
+		bp = txc;
+		break;
+	    case 4 :
+		bp = txd;
+		break;
+	    default :
+		bp = "unknown selector\n";
+	}
+	XPUSHs(sv_2mortal(newSVpv(bp,0)));
+	XSRETURN(1);
+
+void
+t_initlb()
+    CODE:
+	initlb();
+
+int
+t_set_org(i)
+	unsigned char i
+    CODE:
+	RETVAL = (int)org;
+	org = i;
+    OUTPUT:
+	RETVAL
+
+void
+t_tabout(name,type)
+	char * name
+	char * type
+    CODE:
+	tabout(mybuffer,name,type);
+
+void
+t_add_A_rec(name,ipp)
+	char * name
+	char * ipp
+    CODE:
+	my_add_A_rec(name,ipp);
+
+void
+t_ishift()
+    CODE:
+	ishift();
+
+void
+t_precrd(fd,name,resp,txt)
+	FILE * fd
+	char * name
+	char * resp
+	char * txt
+    CODE:
+	my_precrd(fd,name,resp,txt);
+
+void
+t_oflush(fd)
+	FILE * fd
+    PREINIT:
+	char * bp;
+    CODE:
+	bp = mybuffer;
+	oflush(fd,bp);
+
+void
+t_iload(iptr,A_resp,txt)
+	unsigned char * iptr
+	unsigned long * A_resp
+	char * txt
+    CODE:
+	my_iload(iptr,*A_resp,txt);
+
+void
+t_iprint(fd)
+	FILE * fd
+    PREINIT:
+	char * bp;
+    CODE:
+	bp = mybuffer;
+	iprint(fd,bp);
+
+void
+t_zone_name()
+    PREINIT:
+	SV * out;
+    PPCODE:
+	if (zone_name == NULL) {
+	  ST(0) = &PL_sv_undef;
+	}
+	else {
+	  out = sv_newmortal();
+	  out = newSVpv(zone_name,0);
+	  ST(0) = out;
+	  XSRETURN(1);
+	}
+
+int
+t_zonefile(fd)
+	FILE * fd
+    CODE:
+	RETVAL = zonefile(fd);

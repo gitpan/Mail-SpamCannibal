@@ -3,7 +3,7 @@
 # sc_BlackList.conf, multi_dnsbl.conf
 # Configuration for sc_BLcheck.pl, sc_BLpreen.pl, and Net::DNSBL::MultiDaemon
 #
-# version 1.11, 2-2-04
+# version 1.12, 6-18-04
 #
 my $DNSBL = {
 
@@ -110,8 +110,18 @@ my $DNSBL = {
 # A multi-formatted array of addresses that will ALWAYS be tarpitted
 # formats are the same as above
 #
-#  'BLOCK'	=> [
-#],
+# Block known spammers
+  'BLOCK'	=> [
+# Webair Internet Development Inc
+# WEBAIRINTERNET2
+	'69.42.64.0/19',
+# Webair Internet Development Inc
+# WEBAIRINTERNET
+	'216.130.160.0/19',
+# Media Dream Land Inc.
+# MDL23-BLK1 (NET-69-42-96-0-1) 69.42.96.0 - 69.42.111.255
+	'69.42.96.0/20',
+],
 
 # A list of COUNTRIES to block entirely
 # BBC == Block By Country
@@ -173,6 +183,22 @@ my $DNSBL = {
 #
 #	timeout	    => 30,	# default seconds to wait for dnsbl query to timeout
 
+# WARNING!!     The default timeout in sendmail for DNS queries is "5 seconds"
+#		If this configuration is used with Net::DNSBL::MultiDaemon it is
+#		recommended that the timeouts here be set to 5 seconds and that the
+#		timeout parameter in the SENDMAIL m4 configuration build file for lookups be
+#		extended to at least 15 seconds -- particularly if you invoke reverse lookups
+#		with the in-addr.arpa parameter below.
+#
+#	define(`confTO_RESOLVER_RETRANS_FIRST', `15s')dnl
+#	  or
+#	define(`confTO_RESOLVER_RETRANS', `15s')dnl
+#
+#	see: http://www.sendmail.org/m4/tweaking_config.html
+#
+#	Similar precautions must be taken for other MTA's
+#
+ 
 # To check that ip addresses have some kind of reverse DNS entry, add a zone
 # for in-addr.arpa as shown below. You must have reverse DNS entries for    
 # ip blocks 127, 10, 172, 192 or use the IGNORE blocks above to prevent     
@@ -181,7 +207,7 @@ my $DNSBL = {
   'in-addr.arpa'        => {    # check for lack of reverse DNS
   # accept is not needed for reverse DNS checking
 	error	    => 'no reverse DNS, see http://www.myhostname.com/?page=lookup&lookup=',
-        timeout     => 15,
+        timeout     => 5,
   },
 
 # working, sample file entries
@@ -283,25 +309,25 @@ my $DNSBL = {
 #	expire		=> '30d',
 #	timeout		=> '15',
 #  },
-
-  'bogons.dnsiplists.completewhois.com' => { # see http://completewhois.com/bogons/
-	accept	=> {
-		'127.0.0.2' => 'bogus IP address',
-	},
-	error		=> 'see: http://completewhois.com/bogons/',
-	expire		=> '30d',
-	timeout		=> '15',
-  },
-
-  'hijacked.dnsiplists.completewhois.com' => { # see http://completewhois.com/bogons/bogons_usage.html
-	accept	=> {
-		'127.0.0.2' => 'hijacked IP address',
-	},
-	error		=> 'see: http://completewhois.com/bogons/bogons_usage.html',
-	expire		=> '30d',
-	timeout		=> '15',
-  },
-
+#
+#  'bogons.dnsiplists.completewhois.com' => { # see http://completewhois.com/bogons/
+#	accept	=> {
+#		'127.0.0.2' => 'bogus IP address',
+#	},
+#	error		=> 'see: http://completewhois.com/bogons/',
+#	expire		=> '30d',
+#	timeout		=> '15',
+#  },
+#
+#  'hijacked.dnsiplists.completewhois.com' => { # see http://completewhois.com/bogons/bogons_usage.html
+#	accept	=> {
+#		'127.0.0.2' => 'hijacked IP address',
+#	},
+#	error		=> 'see: http://completewhois.com/bogons/bogons_usage.html#dns',
+#	expire		=> '30d',
+#	timeout		=> '15',
+#  },
+#
 # higher risk
 #  'blackholes.five-ten-sg.com' => { # see http://www.five-ten-sg.com/blackhole.php
 #	accept => {

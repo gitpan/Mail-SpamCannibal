@@ -1,12 +1,12 @@
 #!/usr/bin/perl
 package Mail::SpamCannibal::ParseMessage;
 use strict;
-#use diagnostics;
+use diagnostics;
 use Socket;
 use NetAddr::IP;
 use vars qw($VERSION @ISA @EXPORT_OK);
 
-$VERSION = do { my @r = (q$Revision: 0.05 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.06 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 require Exporter;
@@ -389,8 +389,12 @@ sub _host2ip {
       next;
     }
     my ($name,$aliases,$addrtype,$length,@addrs) = gethostbyname($_);
-    foreach(@addrs) {
-      push @$lp, inet_ntoa($_);
+    if (@addrs) {
+      foreach(@addrs) {
+        push @$lp, inet_ntoa($_);
+      }
+    } else {
+      push @$lp, '255.255.255.255';	# dummy address that will never exist
     }
   }
 }
@@ -402,8 +406,13 @@ sub firstremote {
 # put all 'named' ip addresses + net addresses in 'local'
   _host2ip($myhosts,\@local);
 # convert each ip description to a net object
-  foreach(0..$#local) {
-    $local[$_] = new NetAddr::IP($local[$_]);
+  @_ = sort @local;
+  undef @local;
+  my $last = '';
+  foreach(@_) {				# remove duplicates and non-existent hosts [255.255.255.255]
+    next if $_ eq $last || $_ eq '255.255.255.255';
+    $last = $_;
+    push @local, new NetAddr::IP($_);
   }
   my @private;
   unless ($no) {

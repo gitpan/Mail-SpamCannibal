@@ -68,7 +68,7 @@ $c_version
 close H;
 
 my $BDBTARPIT_CONF = new IPTables::IPv4::DBTarpit::SiteConfig;
-my $objects	= 'host_info.o main.o netio.o ns.o util_pid.o';
+my $objects	= 'host_info.o main.o netio.o ns.o util_pid.o zonefile.o';
 my $daemon	= 'dnsbls';
 my $rcfile	= 'rc.'.$daemon;
 
@@ -113,8 +113,13 @@ README  : DNSBLserver.pm
 
 install_daemon : |. $daemon .q| $(SPMCNBL_DAEMON_DIR)/|. $daemon .q| \
 		$(SPMCNBL_CONFIG_DIR)/|. $daemon .q|.conf.sample \
-		$(SPMCNBL_SCRIPT_DIR)/|. $rcfile .q|
+		$(SPMCNBL_SCRIPT_DIR)/|. $rcfile .q| \
+		$(SPMCNBL_SCRIPT_DIR)/sc_zoneload
 	@$(NOOP)
+
+$(SPMCNBL_SCRIPT_DIR)/sc_zoneload     :
+	@$(MKPATH) $(SPMCNBL_SCRIPT_DIR)
+	$(CP) -p sc_zoneload $(SPMCNBL_SCRIPT_DIR)/
 
 $(SPMCNBL_SCRIPT_DIR)/|. $rcfile .q|  :
 	@$(MKPATH) $(SPMCNBL_SCRIPT_DIR)
@@ -152,7 +157,7 @@ $daemon|.q|		: |. $objects .q|
 host_info.o	: host_info.c
 	$(CC) -c $(INC) $(CCFLAGS) $(OPTIMIZE) host_info.c
 
-main.o		: main.c data.c godaemon.c misc.c defines.h host_info_func.h util_pid_func.h netio_func.h ns_func.h c_version.h
+main.o		: main.c data.c godaemon.c misc.c zonedump.c defines.h host_info_func.h util_pid_func.h netio_func.h ns_func.h c_version.h
 	$(CC) -c $(INC) $(CCFLAGS) $(OPTIMIZE) main.c
 
 netio.o		: netio.c ns.h
@@ -163,6 +168,9 @@ ns.o		: ns.c munge_macros.c ns.h netio_func.h host_info_func.h bswap32.h
 
 util_pid.o	: util_pid.c
 	$(CC) -c $(INC) $(CCFLAGS) $(OPTIMIZE) util_pid.c
+
+zonefile.o	: zonefile.c ns_func.h host_info_func.h
+	$(CC) -c $(INC) $(CCFLAGS) $(OPTIMIZE) zonefile.c
 
 |. $daemon .q|.pod : DNSBLserver.pm
 	$(CP) DNSBLserver.pm |. $daemon .q|.pod

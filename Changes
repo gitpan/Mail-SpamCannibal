@@ -1,5 +1,57 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.36  Wed Jun 23 13:10:52 PDT 2004
+	updated the documentation in ./config/sc_Blacklist.conf
+	to clarify problems with the timeouts in sendmail when using
+	Net::DNSBL::MultiDaemon
+
+	removed duplicate use [module] qw(inet_aton inet_ntoa);
+	in cannibal.cgi. Also, line 826
+			=~ spamlst...
+	should be	=~ /^spamlst/...
+	Thanks to "Jonathan Baker-Bates" <jonathan@bakerbates.com>
+	for spotting those two mistakes.
+
+    Changes to DNSBLserver 0.26
+	fixed bug in ns.c that prevented 127.xx.xx.xx response TXT strings
+	inserted by rc.dnsbls from being reported
+
+	added zonefile.c and zonedump.c so that dnsbls can
+	dump a zonefile to the dbhome directory on receipt
+	of a SIG_USR2
+
+	add script 'sc_zoneload' to load a BIND or 'dig' zone file
+	into the database.
+
+0.35  NOT RELEASED -- distributed for testing, changes included above
+
+0.34  Tue Jun  8 16:29:39 PDT 2004
+	updated rc.bdbaccess v0.06 and rc.dnsbls v0.10 to fix bug for
+	perl v5.8.3 where unshift does not work properly for default @_
+
+	update sc_recoverdb.pl v1.01 to remove environment on an update
+
+0.33  NOT RELEASED
+	updated SMTPsend.pm v0.03 to properly include To: and From: headers
+	instead of depending on the MTA to provide them. This is necessary
+	so that spamassassian does not flag messages as spam. and... I
+	overlooked it.
+
+	updated ScriptSupport.pm v0.22 to check mode, uid, gid of one of 
+	the db files to use for restoring db environment files.
+
+	added utility sc_recoverdb.pl + documentation
+
+0.32  Wed May 26 12:21:37 PDT 2004
+	corrected a code typo in ScriptSupport.pm v0.21 that returned an undef 
+	instead of the value expected -- not noticed because the expected 
+	return was "false"
+
+	updated internal call in ParseMessage.pm v0.06 sub _host2ip, to return
+	255.255.255.255 for hosts where the gethostbyname lookup fails.
+	This allows this forces all unknown hosts to fail certain test
+	instead of matching a ''.
+
 0.31  Sat May 22 10:45:37 PDT 2004
 	updated DNSBLserver and BDBaccess packages to remove
 	compiler dependent bug when extracting the C version 
@@ -153,8 +205,8 @@ Revision history for Perl extension Mail::SpamCannibal
       update DNSBLserver 0.21
 	correct logic in ns.c to report 127.x.x.x codes in zone transfers.
 	add logic to main.c and ns.c to append the text of the IP address
-        to standard TXT responses if the error message is default and 
-        contains the character ? as in http://xxx.com?abc=
+	to standard TXT responses if the error message is default and 
+	contains the character ? as in http://xxx.com?abc=
 
 0.17  Sat Oct 11 08:28:02 PDT 2003
 	squash a test bug in DNSBLserver

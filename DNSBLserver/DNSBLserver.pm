@@ -1,6 +1,6 @@
 package Mail::SpamCannibal::DNSBLserver;
 use vars qw($VERSION);
-$VERSION = do { q|char version[] = "dnsbls 0.25, 5-21-04";| =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
+$VERSION = do { q|char version[] = "dnsbls 0.26, 6-23-04";| =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
 # returns $VERSION which is non-zero
 __END__
 
@@ -107,11 +107,19 @@ operations these can block dameon access for normal put and sync operations.
 Instead, use repetitive read-by-record-number operations to gain sequential access
 to the data.
 
+=head2 sc_zoneload
+
+The script sc_zoneload can be used to load a BIND zone file or a file
+created by the BIND 'dig' utility or the Net::DNS::ToolKit - dig.pl utility
+into the B<dnsbls> database. Please note that 
+B<ALL 127.0.0.2 RESPONSES ARE CONVERTED TO 127.0.0.3> unless the -e
+switch is used with this utility. See "DNS query format" above. 
+
 =head1 DEPENDENCIES
 
   Berkeley DB 2.6.4 http://www.sleepycat.com/
 
-	for testing
+	for testing and sc_zoneload support
 
   Net::DNS::Codes, version 0.06
 
@@ -358,6 +366,18 @@ is just killing you then read the comments about is_tcp and tcpmode in ns.c,
 t/ns.t, and CTest.pm -- function t_mode.
 
 =back
+
+=head1 SIGNALS
+
+  HUP	logged if logging enabled, no action
+  TERM	daemon exits
+  QUIT	daemon exits
+  INT	daemon exits
+  USR1	toggle logging
+  USR2	dump a zonfile to database home directory
+	with the name "[zonename].in". During
+	the dump, a temporary file named
+	"[zonename].in.tmp" is created
 
 =head1 DATABASE CONFIGURATION FILE [optional]
 

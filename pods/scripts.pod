@@ -153,6 +153,41 @@ records here and there, sc_cleanup.pl will remove them.
   the scripts actions to the screen. 
   The -d switch implies a -v.
 
+=head2 sc_recoverdb.pl
+
+This scripts verifies and/or recovers and writes a new DB file. You must
+move/copy the new DB file over the old one.
+
+  Syntax: ./sc_recoverdb.pl [-v] [-p path] [-t] db_file
+
+        -d      debug, print trace info
+        -p      optional non-standard path
+                (default /var/run/dbtarpit)
+        -t      db_file has text mode data
+                (needed only for non-standard
+                file names not in siteconfig)
+        -v      optional verify only switch
+                (do not write db_file.new)
+
+  All DB jobs must be stopped to run recovery
+  on a DB file. NOT applicable to 'verify mode'.
+
+  Verify example
+
+	./sc_recoverdb.pl -v evidence
+	verifying       157229 records...
+	bad record 5907  Successful return: 0
+	bad record 5908  Successful return: 0
+	verified        157229 records
+
+  New DB file example
+
+	./sc_recoverdb.pl evidence
+	checking        157229 records...
+	bad record 5907  Successful return: 0
+	bad record 5908  Successful return: 0
+	evidence 157229 -> evidence.new 157227
+
 =head2 sc_remote.pl
 
 This script is the alias for a suid wrapper (user spam) and provides secure access to a remote

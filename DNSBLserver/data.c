@@ -27,6 +27,7 @@ char format2[] = "%s: %s %i -> %s %i";
 char format5[] = "%s\n";
 char format8[] = "%lu %s\n";
 char format9[] = "%s %s\n";
+char str1[]    = "Zone request";
 char str2[]    = "Re-initialized...";
 char str3[]    = "Exiting...";
 char str4[]    = "Received HUP, ignoring";
@@ -80,6 +81,7 @@ char helpstring[] =
 "  -V	: Print version information and exit\n"
 "  -T	: Test mode - Print out debug info and exit\n"
 "  -P	: Enable promiscious reporting of contributed entries (Note 5)\n"
+"  -Z	: Zap TXT records in zonefile dump, A records ONLY\n"
 "  -g	: Internal test flag - tcpmode, see ns.c, t/ns.t, CTest.pm::t_mode\n"
 "  -h	: Print this help information\n"
 "  -?	: Print this help information\n"

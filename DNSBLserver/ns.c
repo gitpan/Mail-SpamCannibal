@@ -426,7 +426,7 @@ u_char validchars[] = {
 /*	append an IP address to end of text string if qflag is present	*/
 
 struct in_addr in;
-
+char * stdErr_response;
 char *
 errIP()
 {
@@ -507,6 +507,55 @@ cmp_serial(u_int32_t s1, u_int32_t s2)
   return(2);
 }
 
+/* return message reponse A_response if response is needed, else NULL
+ * sets stdErr_response
+ */
+
+u_int32_t *
+ns_response()
+{
+  extern DBTPD dbtp;
+  extern struct in_addr stdResp, stdRespBeg, stdRespEnd;
+  extern int zflag;
+  extern char * stdErr_response, * errormsg;
+
+  u_int32_t * A_resp;
+
+  stdErr_response = errormsg;
+  
+  if (*(u_char *)dbtp.keydbt.data == 0x7F) {
+    if ((dbtp_get(&dbtp, DBcontrib, (void *)(dbtp.keydbt.data),sizeof(in.s_addr))) == 0) {
+	A_resp = (u_int32_t *)dbtp.mgdbt.data;
+	stdErr_response = dbtp.mgdbt.data + INADDRSZ + 1;
+    }
+    else {
+	A_resp = &stdResp.s_addr;
+	stdErr_response = errIP();
+    }
+  }
+  else if (dbtp_get(&dbtp,DBevidence,(void *)(dbtp.keydbt.data),sizeof(in.s_addr)) == 0) {
+    A_resp = &stdResp.s_addr;
+    stdErr_response = errIP();
+  }
+  else if (zflag == 0)
+    return(NULL);			/* do not report promiscious contributions	*/
+  else if ((dbtp_get(&dbtp, DBcontrib, (void *)(dbtp.keydbt.data),sizeof(in.s_addr))) == 0) {
+    A_resp = (u_int32_t *)dbtp.mgdbt.data;
+    if (*A_resp < stdRespBeg.s_addr || *A_resp > stdRespEnd.s_addr) {
+	A_resp = &stdRespBeg.s_addr;
+	stdErr_response = errIP();
+    }
+    else {
+	stdErr_response = dbtp.mgdbt.data + INADDRSZ + 1;
+    }
+  }
+  else {
+/*	should not reach this, but will if used without data in either evidence or contrib	*/
+    A_resp = &stdRespBeg.s_addr;
+    stdErr_response = errIP();
+  }
+  return(A_resp);
+}
 /*	verify the message integrity, 
  *	prep message for sending
  *	return -1 on error
@@ -541,25 +590,24 @@ munge_msg(int fd, size_t msglen, int is_tcp)
   extern int zoneEQlocal;
   extern DBTPD dbtp;
   extern struct in_addr stdResp, stdRespBeg, stdRespEnd, serial_rec;
-  extern u_int32_t refresh, retry, expire, minimum, localip[];
+  extern u_int32_t refresh, retry, expire, minimum, soa_ttl, localip[];
   extern int h_name_ctr, mxmark[], visibleMAXeth;
   extern int bflag, datalog, zflag, run, dflag;
   extern struct sockaddr_in client;
   extern struct sockaddr * cin_ptr;
   extern char mybuffer[], * rtn;
   extern int fdUDP, fdTCPlisten, fdTCP;
-  extern char str30[];
+  extern char str30[], * stdErr_response;
   extern pid_t parent;
   
   register HEADER * hp = (HEADER *) ns_msgbuf;
   register u_char * cp;
   u_char * dnptrs[20], * rdlptr;		/* for dn_expand-comp	*/
   u_char **lastdnptr, **dpp;
-  u_char dnbuf[MAXDNAME];		/* maximum expanded sz	*/
+  u_char dnbuf[MAXDNAME];			/* maximum expanded sz	*/
   int rcode;
   u_char * eom, * Txt_resp;
   int type, class, n, i, qnlen, AA = 0, TC = 0, ci;
-  char * stdErr_response = errormsg;
   char * notThisA, * Hptr, hostpart[MAXDNAME], * cHptr;
   u_int32_t serial, ixfr_ser, axfrc = 0, * Aptr, * Astart, * A_resp;
   u_short len;
@@ -865,27 +913,8 @@ NS_errorExit:
 	/*	rev.s_addr = bswap_32(*(u_int32_t *)dbtp.keydbt.data); */
 		sprintf(dnbuf,"%s.%s",inet_ntoa(rev),zone_name);
 
-		if (*(u_char *)dbtp.keydbt.data == 0x7F ||	/* it's a 127 code	*/
-		    (dbtp_get(&dbtp,DBevidence,(void *)(dbtp.keydbt.data),sizeof(in.s_addr))) == 0) {
-		    A_resp = &stdResp.s_addr;
-		    stdErr_response = errIP();
-		}
-		else if (zflag == 0)
-		    goto NS_AXFR_next;				/* do not report promiscious contributions	*/
-		else if ((dbtp_get(&dbtp, DBcontrib, (void *)(dbtp.keydbt.data),sizeof(in.s_addr))) == 0) {
-		    A_resp = (u_int32_t *)dbtp.mgdbt.data;
-		    if (A_resp < &stdRespBeg.s_addr || A_resp > &stdRespEnd.s_addr)
-			stdErr_response = dbtp.mgdbt.data + INADDRSZ + 1;
-		    else {
-			A_resp = &stdRespBeg.s_addr;
-			stdErr_response = errIP();
-		    }
-		}
-		else {
-/*	should not reach this, but will if used without data in either evidence or contrib	*/
-		    A_resp = &stdRespBeg.s_addr;
-		    stdErr_response = errIP();
-		}
+		if ((A_resp = ns_response()) == NULL)
+			goto NS_AXFR_next;		/* do not report promiscious contributions      */
 		RR_A(dnbuf,A_resp,ancount);
 		RR_TXT(dnbuf,stdErr_response,ancount);
 	    } while (is_tcp < 3 && cp - ns_msgbuf < MSGsize);
@@ -963,26 +992,9 @@ NS_errorExit:
   if (dbtp_get(&dbtp, DBtarpit, (void *)(&in.s_addr), sizeof(in.s_addr)))	/* check if in tarpit		*/
   	goto NS_AuthOnly;
 
-  if ((zflag || *(u_char *)(&in.s_addr) == 0x7F) &&		/* if promiscious or 127.x.x.x			*/
-      (dbtp_get(&dbtp, DBcontrib, (void *)(dbtp.keydbt.data),sizeof(in.s_addr))) == 0) {
-    A_resp = (u_int32_t *)dbtp.mgdbt.data;
-    if (A_resp < &stdRespBeg.s_addr || A_resp > &stdRespEnd.s_addr)
-      stdErr_response = dbtp.mgdbt.data + INADDRSZ + 1;
-    else {
-      A_resp = &stdRespBeg.s_addr;
-      stdErr_response = errIP();
-    }
-  }
-  else if ((dbtp_get(&dbtp,DBevidence,(void *)(dbtp.keydbt.data),sizeof(in.s_addr))) == 0) {
-    A_resp = &stdResp.s_addr;
-    stdErr_response = errIP();
-  }
-  else {				/* default answer .3, should not reach	*/
-    A_resp = &stdRespBeg.s_addr;
-    stdErr_response = errIP();
-  }
+  if ((A_resp = ns_response()) == NULL)
+  	goto NS_AuthOnly;			/* do not report promiscious contributions      */
 
-NS_checktype:
   switch(type)
   {
     case T_ANY:

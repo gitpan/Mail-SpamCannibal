@@ -196,12 +196,12 @@ the the 'C' pieces for F<dnsbls>
 
 =item * $rv = t_cmdline(cmd,stuff);
 
-  input:	one of z,n,m,a,b,c,e,L,I,Z,
+  input:	one of n a b e m L I z c P Z
 		parameter
   output:	true on success else false
 
   SEE:		command line parameters for
-		rblns -z -n -m -a -b -c -e -Z
+		dnsbls -n -a -b -e -m -L -I -z -c -P -Z
 
 B<L> sets the name of the local host. If the zone name has been
 set already then the zoneEQlocal flag is set appropriately. If local host
@@ -210,10 +210,13 @@ appropriately.
 
 B<I> sets the IP address of the local host
 		
-=item * $rv = t_set_resp(zero,stdResp);
+=item * $rv = t_set_resp(seria_rec,stdResp,stdRespBeg);
 
-  input:	ipaddr for zero,
+Set various internal address registers
+
+  input:	ipaddr for serial record
 		ipaddr for stdResp
+		ipaddr for stdRespBeg
   output:	true on success,
 		else undef
 
@@ -232,6 +235,134 @@ B<I> sets the IP address of the local host
   input:	buffer of characters/numbers
   returns:	integer offset from begining
 		of buffer past dn names
+
+
+=item * $rv = t_set_parent(val);
+
+Set parent pid value
+
+  input:	new value
+  returns:	old value
+
+=item * $rv = t_set_qflag(val);
+
+Set qflag value
+
+  input:	new value
+  returns:	old value
+
+=item * @rv or $rv = t_ret_resp();
+
+  returns:	one or more of zonefile
+		response values aa,ab,ac,ad
+		as returned by inet_ntoa
+
+=item * t_initlb();
+
+Initialize ip address nibbles, text responses, A responses, origin level
+ah..dz txa..txd aa..ad org to zero
+
+=item * $rv = t_set_org(val);
+
+Set org value
+
+  input:	new value
+  returns:	old value
+
+=item * @rv or $rv = t_ret_a_nibls();
+
+  returns:	one or more of zonefile
+		nibble groups
+		ah.am.al.az
+		bh.bm.bl.bz
+		ch.cm.cl.cz
+		dh.dm.dl.dz
+		as returned by inet_ntoa
+
+=item * $rv = t_mybuffer(which)
+
+Returns one of mybuffer, txa, txb, txc, txd as selected by which (0,1,2,3,4)
+respectively.
+		
+=item * t_set_dbhome(path);
+
+Set dbhome to 'path'
+
+  input:	/some/path
+
+=item * t_tabout(name,type);
+
+Tab justify to 3 tabs, the name and type => 'mybuffer' which can be
+retrieved with B<t_mybuffer(0)>
+
+ mybuffer = 'name			A	'
+
+=item * t_add_A_rec(name,ip_response);
+
+Use 'tabout' to the name, 'A' type plus ip_response code (text)
+and put it in 'mybuffer' which can be retrieved with B<t_mybuffer(0)>
+
+The text ip_response code is converted by inet_aton internally for testing.
+
+=item * t_ishift();
+
+Perform shift operation:
+
+	ip address nibbles
+    ch->dh cm->dm cl->dl cz->dz
+    bh->ch bm->cm bl->cl bz->cz
+    ah->bh am->bm al->bl az->bz
+	response codes
+    ac->ad ab->ac aa->ab
+	txt responses
+    txc->txd txb->txc txa->txb
+
+=item * t_precrd(F,name,resp,text);
+
+Print A record line and conditionally TXT line depending on the Zflag
+
+  input:  File handle,
+	  name fragment,
+	  response code (ascii)
+	  text string
+
+=item * t_oflush(F);
+
+Flush the adress nibbles and related codes and text to the output stream 'F'
+
+  input:	file handle
+
+=item * t_iload(netaddr,resp,text);
+
+Load the address, response, text record into process stack.
+
+  input:	netaddr	=> ah, am, al, az
+		resp	=> aa
+		text	=> txa
+
+=item * t_iprint(F);
+
+Conditionally print process stack based on the zonefile host address
+nibbles.
+
+  input:	file handle
+
+=item * $rv = t_zone_name();
+
+Return the zone name
+
+  input:	none
+  returns:	zone name or undef
+
+=item * $rv = t_zonefile(fd);
+
+Dump a zonefile named 'zonename.tmp' to the db home directory then rename it
+to 'zonename.in'
+
+  input:     file handle
+  returns:   0 on success
+	     1 no serial number found
+	    -1 start/end serial mismatch
 
 =back
 

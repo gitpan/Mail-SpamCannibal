@@ -5,7 +5,7 @@ use strict;
 #use diagnostics;
 use vars qw($VERSION);
 
-$VERSION = do { my @r = (q$Revision: 0.31 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.36 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 sub DESTROY {};
 
@@ -118,6 +118,14 @@ directory and database files.
 
 Run with the '-R' switch to recover the Berkeley DB environment. All other
 threads must be stopped prior to using this switch. 
+See the document 'pods/recover.pod' or '/docs/recover.html' for more information.
+
+=item * sc_recoverdb.pl
+
+This script verifies and/or recovers and writes a new DB file. You must
+move/copy the new DB file over the old one. An existing database file can be
+verified for integrity and/or a new one can be created from the old one to
+recover good records from a corrupted file.
 See the document 'pods/recover.pod' or '/docs/recover.html' for more information.
 
 =item * sc_remote.pl

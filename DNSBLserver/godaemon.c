@@ -23,7 +23,7 @@
 #include <fcntl.h>
 #include <signal.h>
 
-/* detach this process */
+/* detach this process	*/
 static __inline void godaemon(void) {
   extern char devnull[];
   pid_t pid;

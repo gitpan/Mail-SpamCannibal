@@ -23,6 +23,7 @@ keyrings/pubring.pkr
 keyrings/secring.gpg
 keyrings/secring.pgp
 keyrings/secring.skr
+contrib/zone_cron.sh
 lib/Mail/SpamCannibal/GoodPrivacy.pm
 lib/Mail/SpamCannibal/LaBreaDaemon.pm
 lib/Mail/SpamCannibal/ParseMessage.pm
@@ -91,6 +92,7 @@ scripts/sc_cleanup.pl
 scripts/sc_country_origin.pl
 scripts/sc_initdb.pl
 scripts/sc_mailfilter.pl
+scripts/sc_recoverdb.pl
 scripts/sc_remote.pl
 scripts/sc_session.pl
 spam.lib/spam1
@@ -195,6 +197,12 @@ DNSBLserver/ns.c
 DNSBLserver/ns.h
 DNSBLserver/ns_func.h
 DNSBLserver/rc.dnsbls
+DNSBLserver/sc_zoneload
+DNSBLserver/util_pid.c
+DNSBLserver/util_pid_func.h
+DNSBLserver/zonedump.c
+DNSBLserver/zonefile.c
+DNSBLserver/zonefile.h
 DNSBLserver/t/bdb_P2C_2P.t
 DNSBLserver/t/bdb_P2C_2P_text.t
 DNSBLserver/t/cmp_serial.t
@@ -207,5 +215,6 @@ DNSBLserver/t/ns_name_skip.t
 DNSBLserver/t/options.t
 DNSBLserver/t/siglog.t
 DNSBLserver/t/util_pid.t
-DNSBLserver/util_pid.c
-DNSBLserver/util_pid_func.h
+DNSBLserver/t/zone_basics.t
+DNSBLserver/t/zoneiprint.t
+DNSBLserver/t/zoneoflush.t

@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.20 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.22 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -950,11 +950,21 @@ DO NOT call this job for a DB environment that has not been initialized.
 sub dbjob_recover {
   my($default) = @_;
 # all jobs should be dead
-# get the UID and GID of the environment files
-  opendir(ENVF,$default->{dbhome}) || die "could not open DB $default->{dbhome} directory\n";
-  my @env = grep(/^__/,readdir(ENVF));
-  closedir ENVF;
-  my($mode,$uid,$gid) = (stat($default->{dbhome} .'/'. $env[0]))[2,4,5];
+# get the UID and GID for environment files
+  die "directory $default->{dbhome} does not exist\n"
+	unless -e $default->{dbhome} && -d $default->{dbhome};
+  my $test = $default->{dbhome};
+  if (exists $default->{dbfile} && 
+	$default->{dbfile}->[0] &&
+	-e $test .'/'. $default->{dbfile}->[0]) {
+    $test .= '/'. $default->{dbfile}->[0];
+  }
+  elsif (exists $default->{txtfile} &&
+	$default->{txtfile}->[0] &&
+	-e $test .'/'. $default->{txtfile}->[0]) {
+    $test .= '/'. $default->{txtfile}->[0];
+  }
+  my($mode,$uid,$gid) = (stat($test))[2,4,5];
   $mode &= 0777;
     
   my %local_default = %$default;
@@ -965,7 +975,7 @@ sub dbjob_recover {
 
 # restore permissions
   opendir(ENVF,$default->{dbhome}) || die "could not open DB $default->{dbhome} directory\n";
-  @env = grep(/^__/,readdir(ENVF));
+  my @env = grep(/^__/,readdir(ENVF));
   closedir ENVF;
   foreach(@env) {
     chmod $mode, $default->{dbhome} .'/'. $_;
@@ -1479,7 +1489,7 @@ sub BLpreen {
 
   my $cursor = 1;		# carefull!! bdb starts with a cursor of 1, not zero
 
-  my $now = time;
+  $now = time;
   my ($key,$validate,$zapped);
   Record:
   while ($run && (@_ = $tool->getrecno($contrib,$cursor))) {
@@ -1833,6 +1843,8 @@ sub mailcheck {
 
 # decrypt if Good Privacy
   my $err;
+
+if (0){
   while ($MAILFILTER->{PGP} && ref $MAILFILTER->{PGP} eq 'HASH') {
     my ($beg,$end) = is_pgp(\@lines,\$err);
     last if $err;
@@ -1859,7 +1871,7 @@ sub mailcheck {
       return(1,$err);
     }
   }
-
+}
   undef @discard;
 
 # extract headers
@@ -1894,7 +1906,7 @@ sub mailcheck {
 	unless ($spam = array2string(\@lines));	# punt if no message
 
   $spam = substr($spam,0,$savlim)
-	if length($spam > $savlim);
+	if length($spam) > $savlim;
 # tarpit this host address
   if ($default->{DEBUG}) {
     return (2,"Subject: $spamsource would add to $tarpit\n\n$spam");

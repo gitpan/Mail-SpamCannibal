@@ -27,7 +27,7 @@ require Exporter;
 
 @ISA = qw(Exporter);
 
-$VERSION = do { my @r = (q$Revision: 0.02 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.03 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 @EXPORT_OK = qw(
 	getMXhosts
@@ -149,6 +149,7 @@ sub sendmessage {
   } elsif( $from !~ /\@/) {
     $from .= '@' . fqdn();
   }
+  my $head = 'To: '. $to ."\nFrom: ". $from ."\n";
   my @mxhosts = getMXhosts($to);
   return 0 unless @mxhosts;
 
@@ -160,7 +161,7 @@ sub sendmessage {
   return 0 unless $smtp;
   $smtp->mail($from);
   my $rv = ($smtp->to($to) &&
-	    $smtp->data($message))
+	    $smtp->data($head.$message))
 	? 1 : 0;
   $smtp->quit();
   return $rv;

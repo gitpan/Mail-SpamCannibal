@@ -74,6 +74,22 @@ database and run db_recover.
   cd /var/run/dbtarpit
   db_recover -v
 
+If that still does not work then use the B<sc_recoverdb.pl> script to
+verify/copy the records from the existing database files to new files, then
+replace the old files with the new. su - root and type FOR EACH DB FILE
+(typically tarpit, archive, blcontrib, evidence):
+
+  cd /usr/local/spamcannibal/scripts
+  ./sc_recoverdb.pl -v tarpit
+
+
+If the DB fails to verify, then type:
+
+  ./sc_recoverdb.pl tarpit
+  cd /var/run/dbtarpit
+  mv tarpit.new tarpit
+
+
 =head2 Reinitializing the database environment
 
 To reinitialize the database environment su - root and type:

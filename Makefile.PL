@@ -39,6 +39,8 @@ before running this installation procedure.
 
 # pull in pod pages for external support modules
 my %xmodules = (
+  'Geo::IP::PurePerl'			=> 'Geo-IP-PurePerl',
+  'Geo::CountryFlags'			=> 'Geo-CountryFlags',
   'IPTables::IPv4::DBTarpit'		=> 'dbtarpit',
   'IPTables::IPv4::DBTarpit::Tools'	=> 'IPTables-IPv4-DBTarpit-Tools',
   'IPTables::IPv4::DBTarpit::Inst'	=> 'IPTables-IPv4-DBTarpit-Tools-Inst',
@@ -103,6 +105,8 @@ my %makeparms = (
 				=> '$(INST_LIB)/Mail/SpamCannibal/PidUtil.pm',
 			'lib/Mail/SpamCannibal/LaBreaDaemon.pm'
 				=> '$(INST_LIB)/Mail/SpamCannibal/LaBreaDaemon.pm',
+			'lib/Mail/SpamCannibal/IP2ccFlag.pm'
+				=> '$(INST_LIB)/Mail/SpamCannibal/IP2ccFlag.pm',
 		  },
    'MAN3PODS'	  => {	'SpamCannibal.pm' => '$(INST_MAN3DIR)/Mail::SpamCannibal.$(MAN3EXT)',
 			'SiteConfig.pm' => '$(INST_MAN3DIR)/Mail::SpamCannibal::SiteConfig.$(MAN3EXT)',
@@ -126,6 +130,8 @@ my %makeparms = (
 				=> '$(INST_MAN3DIR)/Mail::SpamCannibal::PidUtil.$(MAN3EXT)',
 			'lib/Mail/SpamCannibal/LaBreaDaemon.pm'
 				=> '$(INST_MAN3DIR)/Mail::SpamCannibal::LaBreaDaemon.$(MAN3EXT)',
+			'lib/Mail/SpamCannibal/IP2ccFlag.pm'
+				=> '$(INST_MAN3DIR)/Mail::SpamCannibal::IP2ccFlag.$(MAN3EXT)',
 		  },
    'INST_HTMLLIBDIR'		=> 'docs',
    'INSTALLHTMLSITELIBDIR'	=> $CONFIG->{SPAMCANNIBAL_HOME} .'/public_html/docs',
@@ -151,6 +157,7 @@ my %makeparms = (
 			'lib/Mail/SpamCannibal/Session.pm'	 => 'docs/Session.html',
 			'lib/Mail/SpamCannibal/PidUtil.pm'	 => 'docs/PidUtil.html',
 			'lib/Mail/SpamCannibal/LaBreaDaemon.pm'	 => 'docs/LaBreaDaemon.html',
+			'lib/Mail/SpamCannibal/IP2ccFlag.pm'	 => 'docs/IP2ccFlag.html',
 		),},
    'HTMLSCRIPTPODS'	=> {	'rc.sc_dbwatch'		=> 'docs/rc.sc_dbwatch.html',
 				'rc.sc_lbdaemon.sample'	=> 'docs/rc.sc_lbdaemon.html',
@@ -232,6 +239,14 @@ install_sc_permissions	:
 	    chown -R $(SPAMUID) $(SPAMCANNIBAL_HOME)/public_html/tmp; \
 	    chgrp -R $(SPAMGID) $(SPAMCANNIBAL_HOME)/public_html/tmp; \
 	    chmod 0777 $(SPAMCANNIBAL_HOME)/public_html/tmp; \
+	fi
+	if [ -d $(SPAMCANNIBAL_HOME)/public_html/flags ]; then \
+	    echo "$(SPAMCANNIBAL_HOME)/public_html/flags exists, skipping..."; \
+	else \
+	    $(MKPATH) $(SPAMCANNIBAL_HOME)/public_html/flags; \
+	    chown -R $(SPAMUID) $(SPAMCANNIBAL_HOME)/public_html/flags; \
+	    chgrp -R $(SPAMGID) $(SPAMCANNIBAL_HOME)/public_html/flags; \
+	    chmod 0777 $(SPAMCANNIBAL_HOME)/public_html/flags; \
 	fi
 
 install_daemon	:

@@ -1,4 +1,4 @@
-<!-- last updated 11-7-03 -->
+<!-- last updated 11-8-03 -->
 <font size=+1>SpamCannibal Required Modules and Dependencies</font>
 <p>
 <a href="http://search.cpan.org/search?query=IPTables::IPv4::DBTarpit">IPTables::IPv4::DBTarpit</a>
@@ -66,6 +66,16 @@ using common SpamCannibal configuration files:
 <ul>
 <li><a href="http://search.cpan.org/search?query=Net::DNSBL::MultiDaemon">Net::DNSBL::MultiDaemon</a>
     available on <a href="http://CPAN.org/">CPAN.org</a><br>
+</ul>
+
+For Optional country code and flag display on WHOIS and LOOKUP pages:
+<ul>
+<li><a
+href="http://search.cpan.org/search?query=Geo::IP::PurePerl">Geo::IP::PurePerl</a>
+   available on <a href="http://CPAN.org/">CPAN.org</a><br>
+<li><a
+href="http://search.cpan.org/search?query=Geo::CountryFlags">Geo::CountryFlagsl</a>
+   available on <a href="http://CPAN.org/">CPAN.org</a><br>
 </ul>
 
 </blockquote>

@@ -5,7 +5,7 @@ All - SpamCannibal Documentation
 
 =for html <font size=+2>Documentation for the SpamCannibal Package</font>
 <br>&nbsp;
-<br><!-- version 1.08, 11-7-03 -->
+<br><!-- version 1.09, 11-8-03 -->
 <font size=+1><a href="install.html#support">Support and Project Participation</a></font><br>
 <font size=+1><a href=howtouse.html>HOWTO use SpamCannibal</a></font> with your mail system<br>
 <font size=+1><a href=howitworks.html>HOW SpamCannibal Works</a></font><br>
@@ -45,6 +45,7 @@ Detailed installation instructions for all packages<br>
 <tr><td><a href=SiteConfig.html>SiteConfig</a></td><td>configuration of this site</td></tr>
 <tr><td><a href=BDBclient.html>BDBclient</a></td><td>module to provide access to 'bdbaccess' daemon</td></tr>
 <tr><td><a href=GoodPrivacy.html>GoodPrivacy</a></td><td>PGP encode/decode wrapper for system pgp executable</td></tr>
+<tr><td><a href=IP2ccFlag.html>IP2ccFlag</a></td><td>country code and flag display for WhoisIP and LookupIP</td></tr>
 <tr><td><a href=LaBreaDaemon.html>LaBreaDaemon</a></td><td>interface to LaBrea::Tarpit data collection daemon
 <tr><td><a href=ParseMessage.html>ParseMessage</a></td><td>module to parse mail headers for originating MTA</td></tr>
 <tr><td><a href=Password.html>Password</a></td><td>generate and check 'crypt' style passwords</td></tr>
@@ -59,6 +60,8 @@ Detailed installation instructions for all packages<br>
 <font size=+1><b>Supporting Modules</b></font> <i>developers</i>
 <blockquote>
 <table cellpadding=4 border=0>
+<tr><td><a href=Geo-CountryFlags.html>Geo::CountryFlags</a></td><td>module to find flag image for country code</td></tr>
+<tr><td><a href=Geo-IP-PurePerl.html>Geo::IP::PurePerl</a></td><td>module to find country code for IPv4 blocks</td></tr>
 <tr><td><a href=IPTables-IPv4-DBTarpit-Tools.html>IPTables::IPv4::DBTarpit::Tools</a></td><td>tool kit for manipulating SpamCannibal databases</td></tr>
 <tr><td><a href=IPTables-IPv4-DBTarpit-Inst.html>IPTables::IPv4::DBTarpit::Inst</a></td><td>script user dialog interface</td></tr>
 <tr><td><a href=LaBrea-Tarpit.html>LaBrea::Tarpit</a></td><td>package to collect data from tarpit daemon stream or log file</td></tr>

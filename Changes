@@ -1,5 +1,13 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.19  Sat Nov  8 18:45:03 PST 2003
+	update public_html/cannibal.cgi so that javascript will
+	insert the IP address into automated attempts for whois 
+	and lookup page request actions.
+
+	Add support to Whois and Lookup for country code and flag 
+	display if the optional Geo::xxx modules are installed
+
 0.18  Mon Oct 30 11:21:40 PDT 2003
 
 	changed syslog call in rc.sc_dbwatch to match prototype

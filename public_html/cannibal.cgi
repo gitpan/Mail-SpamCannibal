@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 1.10, 10-11-03
+# version 1.11, 11-8-03
 #
 # Copyright 2003, Michael Robinton <michael@bizsystems.com>
 #   
@@ -27,6 +27,7 @@ use strict;
 #use diagnostics;
 use vars qw(%ftxt);
 
+use Mail::SpamCannibal::IP2ccFlag;
 use Mail::SpamCannibal::ScriptSupport qw(
 	DO
 	query
@@ -197,12 +198,14 @@ Due to the excessive load placed on our system, we have disabled the ability
 for third party sites to query the Whois Proxy through the web
 interface. Please enter your request manually.
 <script language=javascript1.1>
-whois.whois.value = '$IP';
+document.whois.whois.value = '$IP';
 </script>
 |;
       } else {
+	my $cc = (@_ = Mail::SpamCannibal::IP2ccFlag::get($IP))
+		? qq|&nbsp;&nbsp;$_[0]</td><td><img src="$_[1]" alt="$_[0]" height=22 border=1>| : '';
 	require Mail::SpamCannibal::WhoisIP;
-	$html .= "Whois response for: <b>$IP</b><br><pre>\n";
+	$html .= "<table cellspacing=5 cellpadding=0 border=0><tr valign=middle><td>Whois response for: <b>$IP</b>$cc</td></tr></table>\n<pre>";
 	$html .= &Mail::SpamCannibal::WhoisIP::whoisIP($IP);
 	$html .= "</pre>\n";
       }
@@ -295,7 +298,7 @@ IP address:	$query{IP}
 	$html .= qq|
 Automated lookups not allowed.
 <script language=javascript1.1>
-lookup.lookup.value = '$IP';
+document.lookup.lookup.value = '$IP';
 </script>
 |;
       } else {
@@ -308,6 +311,8 @@ lookup.lookup.value = '$IP';
 	  $CONFIG->{bdbDAEMON} = $sc->{SPMCNBL_ENVIRONMENT} .'/bdbread';
 	}
 
+	my $cc = (@_ = Mail::SpamCannibal::IP2ccFlag::get($IP))
+		? qq|&nbsp;&nbsp;$_[0]</td><td><img src="$_[1]" alt="$_[0]" height=22 border=1>| : '';
 	my $substr = qq|<a href="#top" onClick="return(wIP('$IP'));" onMouseover="return(show('whois $IP'));" onMouseOut="return(off());">$IP</a>|;
 	$html .= q|<script language=javascript1.1>
 function wIP(ip) {
@@ -320,11 +325,11 @@ function wIP(ip) {
 <form name="LookUP" action="" method=POST>
 <input type=hidden name=whois value="">
 <input type=hidden name=page value=whois>
-<table border=0><tr><td>Click for WhoisIP: |. $substr;
+<table border=0><tr valign=middle><td>Click for WhoisIP: |. $substr . $cc;
 
 	if ($admin) {
-	  $html .= q|
-</td><td width=20>&nbsp;</td><td><table cellspacing=0 cellpadding=2 border=1>
+	  $html .= q
+|</td><td width=10>&nbsp;</td><td><table cellspacing=0 cellpadding=2 border=1>
 <tr><td class=hot><a href="#top" class=hot onMouseOver="return(show('delete |. $IP .q|'));" onMouseOut="return(off());"
   onClick="self.location = location.pathname + '?page=delete&remove=' + '|. 
 	  $IP .q|'; return false;">X</a></td></tr></table></td><td>delete</td>

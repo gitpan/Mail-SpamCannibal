@@ -32,6 +32,7 @@ lib/Mail/SpamCannibal/SMTPsend.pm
 lib/Mail/SpamCannibal/WebService.pm
 lib/Mail/SpamCannibal/WhoisIP.pm
 lib/Mail/SpamCannibal/PidUtil.pm
+lib/Mail/SpamCannibal/IP2ccFlag.pm
 pods/INSTALL.pod
 pods/index.pod
 pods/recover.pod

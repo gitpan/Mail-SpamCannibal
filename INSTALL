@@ -975,6 +975,25 @@ SpamCannibal setup
         Every process that registers its pid file should remove it when it
         finishes using the databases.
 
+  * Installing optional Country Code and Flags display.
+
+    Download and install the two Geo::xxx modules from CPAN
+
+    SpamCannibal will automatically detect the presence of the modules and
+    display a country code and flag if Whois and Lookup IP address's are
+    found in the GeoIp database.
+
+    The SpamCannibal installation script sets the permissions for the
+
+      /usr/local/spamcannibal/public_html/flags
+
+    directory to 0777 if the directory is not already present so that the
+    web process can retrieve and write new flag images as needed from the
+    CIA web site. If you wish to set this directory with more restrictive
+    permissions, use the utilities that come with Geo::CountryFlags to
+    download ALL the country flags so that global write permissions are not
+    necessary.
+
 SpamCannibal mail robot script sc_mailfilter.pl
     SpamCannibal provides a mail header parsing script, sc_mailfilter.pl,
     that examines a mail header and after eliminating known local MTA's,

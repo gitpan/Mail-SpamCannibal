@@ -1079,6 +1079,38 @@ Every process that registers its pid file should remove it when it finishes usin
 
 =back
 
+=head2 * Installing optional Country Code and Flags display.
+
+Download and install the two Geo::xxx modules from CPAN
+
+=for html <blockquote>
+<a href="Geo-Country-Flags.html">Geo::CountryFlags</a><br>
+<a href="Geo-IP-PurePerl.html">Geo::IP::PurePerl</a>
+</blockquote>
+<br>
+Unless it is already installed, 
+you must also download and install the GeoIP database in your system's
+<i>datadir</i>, typically <i>/usr/local/share/GeoIP/GeoIP.dat</i>
+<p>
+The database is free and updated monthly:
+<p>
+<a
+href="http://www.maxmind.com/download/geoip/database/">http://www.maxmind.com/download/geoip/database</a>
+
+SpamCannibal will automatically detect the presence of the modules and
+display a country code and flag if Whois and Lookup IP address's are found in the
+GeoIp database.
+
+The SpamCannibal installation script sets the permissions for the
+
+  /usr/local/spamcannibal/public_html/flags
+
+directory to 0777 if the directory is not already present so that the web process can 
+retrieve and write new flag images as needed from the CIA web site. If you
+wish to set this directory with more restrictive permissions, use the
+utilities that come with Geo::CountryFlags to download ALL the country flags
+so that global write permissions are not necessary.
+
 =head1 SpamCannibal mail robot script sc_mailfilter.pl
 
 SpamCannibal provides a mail header parsing script, B<sc_mailfilter.pl>, that examines a mail

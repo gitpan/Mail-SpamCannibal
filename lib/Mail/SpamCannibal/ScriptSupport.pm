@@ -14,7 +14,7 @@ BEGIN {
 
 $VERSION = do { my @r = (q$Revision: 0.14 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
-#use AutoLoader 'AUTOLOAD';
+use AutoLoader 'AUTOLOAD';
 
 use Config;
 use IPTables::IPv4::DBTarpit::Tools;
@@ -27,6 +27,7 @@ use Net::DNS::Codes qw(
 	T_MX
 	T_NS
 	T_SOA
+	T_PTR
 	C_IN
 	NS_PACKETSZ
 	QUERY
@@ -73,6 +74,23 @@ use constant DNSBL_Entry => $_ccode;
 
 require Exporter;
 @ISA = qw(Exporter);
+
+use Net::DNSBL::Utilities qw(
+	list2NetAddr
+	matchNetAddr
+	list2hash
+	DO
+	write_stats
+	statinit
+	cntinit
+	A1274
+	A1275
+	A1276
+	list_countries
+);
+*list2NetAddr = \&Net::DNSBL::Utilities::list2NetAddr;
+*matchNetAddr = \&Net::DNSBL::Utilities::matchNetAddr;
+*DO = \&Net::DNSBL::Utilities::DO;
 
 @EXPORT_OK = qw(
 	DO
@@ -181,6 +199,8 @@ cannibal.cgi.
 
 =item * $rv = DO($file);
 
+Imported from Net::DNSBL::Utilities for legacy applications.
+
 This is a fancy 'do file'. It first checks that the file exists and is
 readable, then does a 'do file' to pull the variables and subroutines into
 the current name space.
@@ -189,20 +209,6 @@ the current name space.
   returns:	last value in file
 	    or	undef on error
 	    prints warning
-
-=cut
-
-sub DO($) {
-  my $file = shift;
-  return undef unless
-	$file &&
-	-e $file &&
-	-f $file &&
-	-r $file;
-  $_ = $Config{perlpath};		# bring perl into scope
-  return undef if eval q|system($_, '-w', $file)|;
-  do $file;
-}
 
 =item * $packedIPaddr = SerialEntry();
 
@@ -221,8 +227,8 @@ Make sure and use the parens at the end of the function.
 
 =cut
 
-#1;
-#__END__
+1;
+__END__
 
 ############################################
 ############################################
@@ -257,7 +263,7 @@ Create a C_IN DNS query of $type about $name.
 		query type
   returns:	query buffer
 
-Supports types T_A, T_TXT, T_ANY, T_MX, T_NS
+Supports types T_A, T_TXT, T_ANY, T_MX, T_NS, T_PTR  
 
 =cut
 
@@ -268,6 +274,7 @@ sub question {
 	$type == T_MX ||
 	$type == T_ANY ||
 	$type == T_TXT ||
+	$type == T_PTR ||
 	$type == T_A;
 
   my $buffer;
@@ -551,8 +558,9 @@ address is outside that range.
 
 sub valid127 {
   my ($IP) = @_;
+  return '127.0.0.3' unless $IP;
   $IP =~ s/\s//g;
-  return '127.0.0.3' unless $IP && inet_aton($IP);
+  return '127.0.0.3' unless inet_aton($IP);
 
   unless ($rblkbegin) {	# fill object cache if empty
     $rblkbegin	= NetAddr::IP->new('127.0.0.3')->numeric();
@@ -575,6 +583,7 @@ This function inspects an IP address and returns it if is valid.
 
 sub validIP {
   my ($IP) = @_;
+  return undef unless $IP;
   $IP =~ s/\s//g;
   return undef unless $IP =~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/;
   eval {return inet_ntoa(inet_aton($IP))};
@@ -897,6 +906,8 @@ sub lookupIP {
 
 =item * $rv=list2NetAddr(\@inlist,\@NAobject);
 
+Imported from Net::DNSBL::Utilities for legacy applications
+
 Build of NetAddr object structure from a list of IPv4 addresses or address
 ranges. This object is passed to B<matchNetAddr> to check if a given IP
 address is contained in the list.
@@ -915,66 +926,15 @@ address is contained in the list.
 
 The NAobject array is filled with NetAddr::IP object references.
 
-=cut
-
-sub list2NetAddr {
-  my($inref,$outref) = @_;
-  return undef 
-	unless ref $inref eq 'ARRAY'
-	&& ref $outref eq 'ARRAY';
-  @$outref = ();
-  my $IP;
-  no strict;
-  foreach $IP (@$inref) {
-    $IP =~ s/\s//g;
-	# 11.22.33.44
-    if ($IP =~ /^\d+\.\d+\.\d+\.\d+$/o) {
-      push @$outref, NetAddr::IP->new($IP), 0;
-    }
-	# 11.22.33.44 - 11.22.33.49
-    elsif ($IP =~ /^(\d+\.\d+\.\d+\.\d+)\s*\-\s*(\d+\.\d+\.\d+\.\d+)$/o) {
-      push @$outref, NetAddr::IP->new($1), NetAddr::IP->new($2);
-    }
-	# 11.22.33.44/63
-    elsif ($IP =~ m|^\d+\.\d+\.\d+\.\d+/\d+$|) {
-      push @$outref, NetAddr::IP->new($IP), 0;
-    }
-	# 11.22.33.44/255.255.255.224
-    elsif ($IP =~ m|^\d+\.\d+\.\d+\.\d+/\d+\.\d+\.\d+\.\d+$|o) {
-      push @$outref, NetAddr::IP->new($IP), 0;
-    }
-# ignore un-matched IP patterns
-  }
-  return (scalar @$outref)/2;
-}
-
 =item * $rv = matchNetAddr($ip,\@NAobject);
+
+Imported from Net::DNSBL::Utilities for legacy applications
 
 Check if an IP address appears in a list of NetAddr objects.
 
   input:	dot quad IP address,
 		reference to NetAddr objects
   output:	true if match else false
-
-=cut
-
-sub matchNetAddr { 
-  my($ip,$naref) = @_;
-  $ip =~ s/\s//g;
-  return 0 unless $ip && $ip =~ /\d+\.\d+\.\d+\.\d+/;
-  $ip = new NetAddr::IP($ip);
-  my $i;
-  for($i=0; $i <= $#{$naref}; $i += 2) {
-    my $beg = $naref->[$i];
-    my $end = $naref->[$i+1];
-    if ($end) {
-      return 1  if $ip >= $beg && $ip <= $end;
-    } else {
-      return 1 if $ip->within($beg);
-    }
-  }  
-  return 0;
-}
 
 =item * $rv = BLcheck(\%DNSBL,\%default);
 
@@ -1013,6 +973,9 @@ sub BLcheck {
   list2NetAddr($DNSBL->{IGNORE},\@NAignor)
 	or return('missing IGNORE array in config file');
 
+  my @NAblock;
+  list2NetAddr($DNSBL->{BLOCK},\@NAblock);
+
   my $run = 1;
   local $SIG{TERM} = sub { $run = 0 };	# graceful exit;
 	
@@ -1021,33 +984,19 @@ sub BLcheck {
 
   my $numberoftries = 6;
 
+  cntinit($DNSBL,\%count);
   my %deadDNSBL;
-  foreach(keys %$DNSBL) {
-    next unless $_ =~ /.+\..+/;	# skip non-dnsbl entries
-    $deadDNSBL{"$_"} = 1;
-    $count{"$_"} = 0;		# set up statistics counters for preferential sort
+  foreach(keys %count) {
+    $deadDNSBL{$_} = $count{$_};
   }
+  list2hash($DNSBL->{BBC},\%count);
+
+  my($BBC,$cc2name) = _bbc($DNSBL);
 
 # set up statistics file for DNSBL's if configured
+  my $statinit = statinit($DNSBL->{STATS},\%count);
   my $stats = '';
-  my $statinit = '# stats since '. localtime(time) ."\n";
-
-  if ($DNSBL->{STATS}) {				# stats entry??
-    if ( -e $DNSBL->{STATS}) {				# old file exists
-      if (open(S,$DNSBL->{STATS})) {			# skip if bad open
-	foreach(<S>) {
-	  $statinit = $_ if $_ =~ /# stats since/;	# use old init time if present
-	  next unless $_ =~ /^(\d+)\s+(.+)/;
-	  $count{"$2"} = $1 if exists $count{"$2"}	# add only existing dnsbls
-	}
-	close S;
-      }
-      $stats = $DNSBL->{STATS};
-    }
-    elsif ($DNSBL->{STATS} =~ m|[^/]+$| && -d $`) {	# directory exists, no file yet
-      $stats = $DNSBL->{STATS};				# ok to proceed
-    }
-  }
+  $stats = $DNSBL->{STATS} if $statinit;
 
   my $cursor = 1;		# carefull!! bdb starts with a cursor of 1, not zero
   my $key;
@@ -1057,21 +1006,68 @@ sub BLcheck {
     my $IP = inet_ntoa($key);
     print "Checking $IP " if $VERBOSE;
     if (matchNetAddr($IP,\@NAignor)) {		# skip if ignored
-      print "ignored" if $VERBOSE;
+      print "ignored " if $VERBOSE;
       next Record;
     }
     if ($tool->get($tarpit,$key)) {		# skip if it's already in tarpit
-      print "in $tarpit" if $VERBOSE;
+      print "in $tarpit " if $VERBOSE;
       next Record;
     }
     my $dnsblIP = revIP($IP);			# get the reversed IP address
+
+    if (matchNetAddr($IP,\@NAblock)) {		# block if listed in reject list
+      print 'BLOCK net-range ' if $VERBOSE;
+      my $reason = 'blocked';
+      my $error = $DNSBL->{REJECT} || 'in my bad address list';
+      my $expire = 2592000;			# 30 day expiration
+      my $zone = 'BLOCK';
+      my $ipA = '127.0.0.5';
+      my $netA = A1275;
+      my $dnresp = $netA;
+      _addTPentry($tool,$reason,$error,$IP,$expire,\%count,$zone,$ipA,$dnresp,$tarpit,$netA,$key,$contrib,$DEBUG,$VERBOSE);
+      next Record;
+    }      
+
+    my $cc;
+    if ($BBC && 
+	($cc = $BBC->country_code_by_addr($IP)) &&
+	grep($cc eq $_,@{$DNSBL->{BBC}})
+	) { # block if Country not allowed
+      my $reason = "$cc ($cc2name->{$cc}) rejected";
+      print "blocked - $reason " if $VERBOSE;
+      my $error = $DNSBL->{REJECT} || 'in my bad country list';
+      my $expire = 2592000;			# 30 day expiration
+      my $zone = $cc;
+      my $ipA = '127.0.0.6';
+      my $netA = A1276;
+      my $dnresp = $netA;
+      _addTPentry($tool,$reason,$error,$IP,$expire,\%count,$zone,$ipA,$dnresp,$tarpit,$netA,$key,$contrib,$DEBUG,$VERBOSE);
+      next Record;
+    }
+
 # check in each available DNSBL until exhausted or entry is found
    CheckZone:
-    foreach my $zone (sort {$count{"$b"} <=> $count{"$a"}} keys %count) {
+    foreach my $zone (sort {$count{"$b"} <=> $count{"$a"}} keys %deadDNSBL) {
       last Record unless $run;			# SIGTERM ?
       next CheckZone if $deadDNSBL{"$zone"} > $numberoftries;
       my ($expire,$error,$dnresp,$timeout) = zone_def($zone,$DNSBL);
       print $zone,' ' if $VERBOSE;
+
+      if ($zone eq 'in-addr.arpa') {
+	my $qbuf = question($dnsblIP.'.in-addr.arpa',T_PTR());
+	my $response = query(\$qbuf,$timeout);
+	$deadDNSBL{"$zone"} = 0;		# unconditional
+	next CheckZone
+		if $response && scalar get16(\$response,6);	# check for good response and any ANSWER
+# block for any response failure
+	$dnresp = A1274;			# unconditional
+	my $reason = ($response) ? 'no reverse DNS' : 'reverse DNS timeout';
+	print "blocked - $reason " if $VERBOSE;
+	my $ipA = '127.0.0.4';
+	my $netA = $dnresp;
+	_addTPentry($tool,$reason,$error,$IP,$expire,\%count,$zone,$ipA,$dnresp,$tarpit,$netA,$key,$contrib,$DEBUG,$VERBOSE);
+	next Record;
+      }
       my $qbuf = question($dnsblIP.'.'.$zone,T_ANY());
       my $response = query(\$qbuf,$timeout);
       if ($response && (@_ = dns_ans(\$response))) {
@@ -1112,6 +1108,84 @@ sub BLcheck {
 	    }
 	    last CheckTxt;
 	  }
+	  _addTPentry($tool,$reason,$error,$IP,$expire,\%count,$zone,$ipA,$dnresp,$tarpit,$netA,$key,$contrib,$DEBUG,$VERBOSE);
+	  last CheckZone;
+	}
+      }
+    } # CheckZone
+  } continue {
+    print "\n" if $VERBOSE;
+    if ($DEBUG) {
+      $cursor++;
+    } else {
+# this will force renumbering of the cursor
+      unless ($tool->remove($archive,$key)) {
+	$tool->sync($archive);
+      }
+    }
+  }
+
+  if ($VERBOSE) {
+    foreach(sort {
+	if ($a =~ /\./ && $b !~ /\./) {
+		-1;
+	}
+	elsif ($a !~ /\./ && $b =~ /\./) {
+		1;
+	}
+	else {
+		$count{$b} <=> $count{$a};
+	}
+
+	} keys %count) {
+      print $count{"$_"}, "\t$_\n";
+    }
+  }
+
+  write_stats($stats,\%count,$statinit);
+  $tool->closedb;
+  return '';
+}
+
+# return pointer to Geo::IP object and pointer to array of CC => names
+#
+# input:	$DNSBL
+# returns:	BBC, \%cc2names
+
+sub _bbc {
+  my($DNSBL) = @_;
+  return () unless ($DNSBL->{BBC} && ref $DNSBL->{BBC} eq 'ARRAY' && @{$DNSBL->{BBC}});
+  require Geo::IP::PurePerl;
+  my $BBC = new Geo::IP::PurePerl;
+  my $cp = {};
+  my($countries,$code3s,$names) = list_countries;
+  no warnings;
+  @{$cp}{@$countries} = @$names;
+  my $caller = caller;
+  bless $cp, $caller;
+  return ($BBC,$cp);
+}
+
+# add a tarpit entry
+#
+# returns:	nothing
+#
+# $tool		pointer to db object
+# $reason	something like 'rejected, China'
+# $error	something like 'in my bad country list' or 'see: http://whatsit.com?ip='
+# $IP		lookup 12.34.56.78
+# $expire	time in seconds, typically 30 days or less
+# $cp		\%count		statistics
+# $zone		BBC, BLOCK, some.rbl.com
+# $ipA		response from remote DNS in text
+# $dnresp	our packed netaddr response
+# $tarpit	DB pointer
+# $netA		response from remote DNS - netaddr [inet_aton($ipA)]
+# $key		netaddr $IP - address of interest  [inet_aton($IP)]
+# $contrib	DB pointer
+
+sub _addTPentry {
+  my($tool,$reason,$error,$IP,$expire,$cp,$zone,$ipA,$dnresp,$tarpit,$netA,$key,$contrib,$DEBUG,$VERBOSE) = @_;
 	  if ($reason =~ m|http://.+\..+| or $reason =~ /www\..+\..+/) {
 	    $error = $reason;
 	  } else {
@@ -1121,7 +1195,8 @@ sub BLcheck {
 	  }
 
 	  $expire += time;		# absolute expiration time
-	  ++$count{"$zone"};
+	  $cp->{"$zone"} += 1 if exists $cp->{"$zone"};
+
 # create a text record of the form:
 # response_code."\0".error_message."\0".dnsbl_code."\0".expire."\0".zone."\0".host
 
@@ -1153,41 +1228,6 @@ zone => $zone response => $ipA
 	      }
 	    }
 	  }
-	  last CheckZone;
-	}
-      }
-    } # CheckZone
-  } continue {
-    print "\n" if $VERBOSE;
-    if ($DEBUG) {
-      $cursor++;
-    } else {
-# this will force renumbering of the cursor
-      unless ($tool->remove($archive,$key)) {
-	$tool->sync($archive);
-      }
-    }
-  }
-
-  if ($VERBOSE) {
-    foreach(sort {$count{"$b"} <=> $count{"$a"}} keys %count) {
-      print $count{"$_"}, "\t$_\n";
-    }
-  }
-
-  if ($stats) {		# record stats on DNSBL lookups
-    if (open(S,'>'. $stats .'.tmp')) {
-      print S '# last update '. localtime(time) ."\n";
-      print S $statinit;
-      foreach(sort {$count{"$b"} <=> $count{"$a"}} keys %count) {
-	print S $count{"$_"}, "\t$_\n";
-      }
-      close S;
-    }
-    rename $stats .'.tmp', $stats;
-  }
-  $tool->closedb;
-  return '';
 }
 
 =item * $rv = BLpreen(\%DNSBL,\%default);
@@ -1230,6 +1270,11 @@ sub BLpreen {
   list2NetAddr($DNSBL->{IGNORE},\@NAignor)
 	or return('missing IGNORE array in config file');
 
+  my @NAblock;
+  list2NetAddr($DNSBL->{BLOCK},\@NAblock);
+
+  my($BBC,$cc2name) = _bbc($DNSBL);
+
   my $run = 1;
   local $SIG{TERM} = sub { $run = 0 };  # graceful exit;
 
@@ -1244,6 +1289,11 @@ sub BLpreen {
 	? 1
 	: $numberoftries + 1	# big... to force skip
   }
+
+  list2hash($DNSBL->{BBC},\%deadDNSBL,1);	# set countries to count of one
+  $deadDNSBL{BLOCK} = 1;
+  $deadDNSBL{BBC} = 1;
+
   my $cursor = 1;		# carefull!! bdb starts with a cursor of 1, not zero
 
   my $now = time;
@@ -1278,12 +1328,16 @@ sub BLpreen {
     my $dnsblIP = revIP($IP);			# get the reversed IP address
     my($orsp,$err,$trsp,$exp,$zon)=unpack_contrib($data);
     print $zon, ' ' if $VERBOSE;
-    unless ($DNSBL->{"$zon"}) {			# zone has been removed from config
+    if (! ($orsp eq A1276 && $zon =~ /^[A-Z0-9]{2}$/) &&	# not a country
+	! exists $DNSBL->{"$zon"}				# zone has been removed from config
+	) {		
+
+#    unless (exists $DNSBL->{"$zon"}) {			# zone has been removed from config
       zap_pair($tool,$key,$tarpit,$contrib,$DEBUG,$VERBOSE,'zone not in config');
       $zapped = 4;
       next Record
     }
-    if ($deadDNSBL{"$zon"} > $numberoftries) {
+    if (exists $deadDNSBL{"$zon"} && $deadDNSBL{"$zon"} > $numberoftries) {
       if ($exp < $now) {
 	zap_pair($tool,$key,$tarpit,$contrib,$DEBUG,$VERBOSE,'expired (4)');
 	$zapped = 5;
@@ -1291,71 +1345,171 @@ sub BLpreen {
       next Record;
     }
 # get current zone info from config file
-    my ($expire,$error,$dnresp,$timeout) = zone_def($zon,$DNSBL);
-    my $qbuf = question($dnsblIP.'.'.$zon,T_ANY);
-    my $response = query(\$qbuf,$timeout);
-    my ($aptr,$tptr,$auth_zone) = dns_ans(\$response);
-
-    if ($@) {				# catastrophic failure
-      $deadDNSBL{"$zon"} += 1;		# bump the retry count
-      if ($exp < $now) {		# and zap record if expired
-	zap_pair($tool,$key,$tarpit,$contrib,$DEBUG,$VERBOSE,'expired (5)');
-	$zapped = 6;
-      }
-      next Record;
+    my ($expire,$error,$dnresp,$timeout);
+    if ($zon =~ /.+\..+/) {
+      ($expire,$error,$dnresp,$timeout) = zone_def($zon,$DNSBL);
     }
-    if ($response) {			# process exclusions
-      $deadDNSBL{"$zon"} = 0 		# reset retry count
-	if $aptr && (@$aptr || $auth_zone eq $zon);
+
+# BLOCKED?
+    if ($zon eq 'BLOCK') {			# check unconditional block
+      if (matchNetAddr($IP,\@NAblock)) {
+	$validate = 1;
+	my $reason = 'blocked';
+	my $error = $DNSBL->{REJECT} || 'in my bad address list';
+	my $expire = 2592000;			# 30 day expiration
+	my $ipA = '127.0.0.5';
+	my $netA = A1275;
+	my $dnresp = $netA;
+	_updateTpentry($tool,$reason,$error,$IP,$expire,$ipA,$dnresp,$netA,$zon,$contrib,$key,$tarpit,$DEBUG,$VERBOSE);
+      } else {
+	$zapped = 'no longer BLOCKed';
+      }
+    }
+
+# Country Code is two characters and response of 127.0.0.6
+    elsif ($orsp eq A1276 && $zon =~ /^[A-Z0-9]{2}$/) {	# check Country Code Block
+      if ($BBC &&
+	  $zon eq $BBC->country_code_by_addr($IP) &&
+	  grep($zon eq $_,@{$DNSBL->{BBC}})) {
+	$validate = 1;
+       	my $reason = "$zon ($cc2name->{$zon}) rejected";
+	my $error = $DNSBL->{REJECT} || 'in my bad country list';
+	my $expire = 2592000;			# 30 day expiration
+	my $ipA = '127.0.0.6';
+	my $netA = A1276;
+	my $dnresp = $netA;
+	_updateTpentry($tool,$reason,$error,$IP,$expire,$ipA,$dnresp,$netA,$zon,$contrib,$key,$tarpit,$DEBUG,$VERBOSE);
+      } else {
+	$zapped = "unblocked $zon ($cc2name->{$zon})";
+      }
+    }
+
+# Reverse DNS
+    elsif ($zon eq 'in-addr.arpa') {
+      my $qbuf = question($dnsblIP.'.in-addr.arpa',T_PTR());
+      my $response = query(\$qbuf,$timeout);
+      $deadDNSBL{"$zon"} = 0;		# unconditional
+      if ($response && scalar get16(\$response,6)) {	# good response and any ANSWER
+	$zapped = 'reverse DNS OK';
+      } else {
+# block for any response failure
+	$validate = 1;
+	$dnresp = A1274;			# unconditional
+	my $reason = ($response) ? 'no reverse DNS' : 'reverse DNS timeout';
+	my $ipA = '127.0.0.4';
+	my $netA = $dnresp;
+	_updateTpentry($tool,$reason,$error,$IP,$expire,$ipA,$dnresp,$netA,$zon,$contrib,$key,$tarpit,$DEBUG,$VERBOSE);
+      }
+    }
+# Regular DNSBL
+    else {					# check DNSBL zone
+
+      $zapped = 'unacceptable A record';	# trial value, cleared if validated below
+      my $qbuf = question($dnsblIP.'.'.$zon,T_ANY);
+      my $response = query(\$qbuf,$timeout);
+      my ($aptr,$tptr,$auth_zone) = dns_ans(\$response);
+
+      if ($@) {				# catastrophic failure
+        $deadDNSBL{"$zon"} += 1;		# bump the retry count
+        if ($exp < $now) {		# and zap record if expired
+	  zap_pair($tool,$key,$tarpit,$contrib,$DEBUG,$VERBOSE,'expired (5)');
+	  $zapped = 6;
+        }
+        next Record;
+      }
+      if ($response) {			# process exclusions
+        $deadDNSBL{"$zon"} = 0 		# reset retry count
+	  if $aptr && (@$aptr || $auth_zone eq $zon);
 
 # if no A records and the zone is authoriatitive or 
 # it answers and no SOA is present i.e. the zone exists -- like spamcop
-      if (!($aptr && @$aptr) && ($auth_zone eq $zon || ! $auth_zone)) {
-	zap_pair($tool,$key,$tarpit,$contrib,$DEBUG,$VERBOSE,'cleared');
-	$zapped = 7;
-	next Record;
+        if (!($aptr && @$aptr) && ($auth_zone eq $zon || ! $auth_zone)) {
+	  zap_pair($tool,$key,$tarpit,$contrib,$DEBUG,$VERBOSE,'cleared');
+	  $zapped = 7;
+	  next Record;
+        }
+      } else {		# no response
+        if ($exp < $now) {
+	  zap_pair($tool,$key,$tarpit,$contrib,$DEBUG,$VERBOSE,'expired (7)');
+	  $zapped = 8;
+        }
+        next Record;
       }
-    } else {		# no response
-      if ($exp < $now) {
-	zap_pair($tool,$key,$tarpit,$contrib,$DEBUG,$VERBOSE,'expired (7)');
-	$zapped = 8;
-      }
-      next Record;
-    }
 # found an entry
-    next Record unless @$aptr;			# skip if no 'A' records
+      next Record unless @$aptr;			# skip if no 'A' records
 # check the A records for acceptable codes until one is found
-    my $netA;
-  CheckZone:
-    foreach $netA (@$aptr) {
-      my $ipA = inet_ntoa($netA);
-      foreach(keys %{$DNSBL->{"$zon"}->{accept}}) {
-	next unless ($_ eq $ipA);
+      my $netA;
+    CheckZone:
+      foreach $netA (@$aptr) {
+        my $ipA = inet_ntoa($netA);
+        foreach(keys %{$DNSBL->{"$zon"}->{accept}}) {
+	  next unless ($_ eq $ipA);
   # found one, enter it in the tarpit
   # $netA contains the accepted code
   # find or create the TXT entry
-	$validate = 1;
-	my $reason = $DNSBL->{"$zon"}->{accept}->{"$_"};
-      CheckTxt:
-	while(1) {
-	  last CheckTxt unless @$tptr;
-	  if (grep($_ =~ /spam/i,@$tptr)) {
-	    foreach (@$tptr) {
-	      next unless $_ =~ /spam/i;
-	      $reason = $_;
-	      last CheckTxt;
+	  $validate = 1;
+	  my $reason = $DNSBL->{"$zon"}->{accept}->{"$_"};
+        CheckTxt:
+	  while(1) {
+	    last CheckTxt unless @$tptr;
+	    if (grep($_ =~ /spam/i,@$tptr)) {
+	      foreach (@$tptr) {
+	        next unless $_ =~ /spam/i;
+	        $reason = $_;
+	        last CheckTxt;
+	      }
+	    } elsif (grep($_ =~ /smtp/i,@$tptr)) {
+	      foreach (@$tptr) {
+	        next unless $_ =~ /smtp/i;
+	        $reason = $_;
+	        last CheckTxt;
+	      }
+	    } else {
+	      $reason = $tptr->[0];
 	    }
-	  } elsif (grep($_ =~ /smtp/i,@$tptr)) {
-	    foreach (@$tptr) {
-	      next unless $_ =~ /smtp/i;
-	      $reason = $_;
-	      last CheckTxt;
-	    }
-	  } else {
-	    $reason = $tptr->[0];
+	    last CheckTxt;
 	  }
-	  last CheckTxt;
-	}
+	  last CheckZone
+	    if _updateTpentry($tool,$reason,$error,$IP,$expire,$ipA,$dnresp,$netA,$zon,$contrib,$key,$tarpit,$DEBUG,$VERBOSE);
+        }
+      }
+    }
+    if ($validate) {
+      $zapped = 0;
+    } else {
+      zap_pair($tool,$key,$tarpit,$contrib,$DEBUG,$VERBOSE,$zapped);
+    }
+  } continue {
+    print "\n" if $VERBOSE;
+    if ($DEBUG) {
+      $cursor++;
+    } elsif ( ! $zapped) {
+      $cursor++;
+    }
+  }
+  $tool->closedb;
+  return '';
+}
+
+# update a tarpit entry time tag
+#
+# returns:	true if last CheckZone required, else false
+#
+# $tool		pointer to db object
+# $reason	something like 'rejected, China'
+# $error	something like 'in my bad country list' or 'see: http://whatsit.com?ip='
+# $IP		lookup 12.34.56.78
+# $expire	time in seconds, typically 30 days or less
+# $ipA		response from remote DNS in text
+# $dnresp	our packed netaddr response
+# $netA		response from remote DNS - netaddr [inet_aton($ipA)]
+# $zon		BBC, BLOCK, some.rbl.com
+# $contrib	DB pointer
+# $key		netaddr $IP - address of interest  [inet_aton($IP)]
+# $tarpit	DB pointer
+
+sub _updateTpentry {
+  my($tool,$reason,$error,$IP,$expire,$ipA,$dnresp,$netA,$zon,$contrib,$key,$tarpit,$DEBUG,$VERBOSE) = @_;
 	if ($reason =~ m|http://.+\..+| or $reason =~ /www\..+\..+/) {
 	  $error = $reason;
 	} else {
@@ -1380,12 +1534,13 @@ zone response => $ipA
 	}
 	elsif ($VERBOSE) {
 	  if ($DEBUG) {
-	    print "would validate";
+	    print "would validate ";
 	  } else {
-	    print "validated";
+	    print "validated ";
 	  }
 	}
 
+	my $cz = 0;
 	unless ($DEBUG) {
 	  $_ = pack("a4 x A* x a4 x N x A*",$dnresp,$error,$netA,$expire,$zon);
 	  unless ($tool->put($contrib,$key,$_)) {
@@ -1394,24 +1549,9 @@ zone response => $ipA
 	      $tool->sync($tarpit);
 	    }
 	  }
-	  last CheckZone;
+	  $cz = 1;	# last CheckZone;
 	}
-      }
-    }
-    unless ($validate) {
-      zap_pair($tool,$key,$tarpit,$contrib,$DEBUG,$VERBOSE,'unacceptable A record');
-      $zapped = 6;
-    }
-  } continue {
-    print "\n" if $VERBOSE;
-    if ($DEBUG) {
-      $cursor++;
-    } elsif ( ! $zapped) {
-      $cursor++;
-    }
-  }
-  $tool->closedb;
-  return '';
+	return $cz;
 }
 
 =item * @err=mailcheck($fh,\%MAILFILTER,\%DNSBL,\%default,\@NAignor)
@@ -1493,7 +1633,7 @@ sub mailcheck {
   if ($err) {
     if ($MAILFILTER->{PGP}->{Exceptions}) {
       @_ = (@discard, @lines);
-      $err = 'Subject: '. $err ."\n\n". array2string(\@_);               
+      $err = 'Subject: '. $err ."\n\n". array2string(\@_);
       return(2,$err);
     } else {
       return(1,$err);

@@ -3,9 +3,53 @@
 # sc_BlackList.conf
 # Configuration for sc_BLcheck.pl and sc_BLpreen.pl
 #
-# version 1.06, 10-16-03
+# version 1.09, 12-6-03
 #
 my $DNSBL = {
+
+## Net::DNSBL::MultiDaemon parameters
+#
+# the OPTIONAL name of a file that will contain 'hit' statistics for DNSBLS
+# this file will be used to seed the sort order of DNSBL checking if it is
+# present and will be updated with the 'added' counts of each run. If it
+# is deleted, it will be recreated with a new time tag at the beginning.
+#
+  MDstatfile      => '/usr/local/spamcannibal/mdstats.txt',
+
+# The path for the directory where the pid file will live
+#
+  MDpidpath       => '/var/run',
+
+# The zone name for this PSEUDO DNSBL
+#
+  MDzone          => 'pseudo.dnsbl',
+
+###### The following optional configuration parameters
+###### are shown with their default values
+#
+# Update frequency for the "stats" file, no
+# update occurs if there is no new information
+#
+#  MDstatrefresh => 300,        # seconds
+# The IPaddress that the daemon will listen on.
+# The default will listen on ALL interfaces,   
+# this is probably not what you want. A more   
+# suitable value for co-installation with bind 
+# on the same host would be 127.0.0.1
+#
+  MDipaddr        => '127.0.0.1',
+
+# The port that the daemon will listen on
+#
+#  MDport         => 9953,
+
+# Syslog facility. Specify one of:
+# LOG_EMERG LOG_ALERT LOG_CRIT LOG_ERR LOG_WARNING LOG_NOTICE LOG_INFO LOG_DEBU
+#
+  MDsyslog        => 'LOG_ERR',
+
+
+## SpamCannibal parms follow:
 
 # the OPTIONAL name of a file that will contain 'hit' statistics for DNSBLS
 # this file will be used to seed the sort order of DNSBL checking if it is
@@ -21,33 +65,63 @@ my $DNSBL = {
 # find your DMZ or internal mail servers blocked since many DNSBLS list the
 # private network addresses as BLACKLISTED
 #
-#	127./8, 10./8, 172.16/12, 192.168/16
+#       127./8, 10./8, 172.16/12, 192.168/16
 #
-#	class A		xxx.0.0.0/8
-#	class B		xxx.xxx.0.0/16
-# 	class C		xxx.xxx.xxx.0/24
-#	128 subnet	xxx.xxx.xxx.xxx/25
-#	 64 subnet	xxx.xxx.xxx.xxx/26
-#	 32 subnet	xxx.xxx.xxx.xxx/27
-#	 16 subnet	xxx.xxx.xxx.xxx/28
-#	  8 subnet	xxx.xxx.xxx.xxx/29
-#	  4 subnet	xxx.xxx.xxx.xxx/30
-#	  2 subnet	xxx.xxx.xxx.xxx/31
-#	single address	xxx.xxx.xxx.xxx/32
+#       class A         xxx.0.0.0/8		255.0.0.0
+#       class B         xxx.xxx.0.0/16		255.255.0.0
+#       class C         xxx.xxx.xxx.0/24	255.255.255.0
+#       128 subnet      xxx.xxx.xxx.xxx/25	255.255.255.128
+#        64 subnet      xxx.xxx.xxx.xxx/26	255.255.255.192
+#        32 subnet      xxx.xxx.xxx.xxx/27	255.255.255.224
+#        16 subnet      xxx.xxx.xxx.xxx/28	255.255.255.240
+#         8 subnet      xxx.xxx.xxx.xxx/29	255.255.255.248
+#         4 subnet      xxx.xxx.xxx.xxx/30	255.255.255.252
+#         2 subnet      xxx.xxx.xxx.xxx/31	255.255.255.254
+#       single address  xxx.xxx.xxx.xxx/32	255.255.255.255
 #
-  'IGNORE'	=> [
-#	    # a single address
-#	'11.22.33.44',
-#	    # a range of ip's, ONLY VALID WITHIN THE SAME CLASS 'C'
-#	'22.33.44.55 - 22.33.44.65',
-#	    # a CIDR range
-#	'5.6.7.16/28',
-#	    # a range specified with a netmask
-#	'7.8.9.128/255.255.255.240',
-
-	    # this should ALWAYS be here
-	'127.0.0.0/8',	# ignore all test entries and localhost
+  'IGNORE'      => [
+#           # a single address
+#       '11.22.33.44',
+#           # a range of ip's, ONLY VALID WITHIN THE SAME CLASS 'C'
+#       '22.33.44.55 - 22.33.44.65',
+#           # a CIDR range
+#       '5.6.7.16/28',
+#           # a range specified with a netmask
+#       '7.8.9.128/255.255.255.240',
+# 
+#	    # you may want these
+#	'10.0.0.0/8',
+#	'172.16.0.0/12',
+#	'192.168.0.0/16',
+            # this should ALWAYS be here
+        '127.0.0.0/8',  # ignore all test entries and localhost
   ],
+
+# A multi-formatted array of addresses that will ALWAYS be tarpitted
+# formats are the same as above
+#
+#  'BLOCK'	=> [
+#],
+
+# A list of COUNTRIES to block entirely
+# BBC == Block By Country
+#
+# To print a complete list of countries and country codes, 
+# use the utilty script 'list_countries.pl' in the
+# Net::DNSBL::MultiDaemon distribution
+#
+# Use the 2 letter country codes in the array below
+# 
+# i.e. US MX CN TW etc...
+#
+#  'BBC' => [qw(
+#	CN
+#)],
+
+# Text to append to BLOCK and BBC T_TXT record
+# see "errors" below for syntax
+#
+  'REJECT'	=> 'See: http://www.somehost.com?ip=',
 
 # all dnsbl servers must have a record a config entry as follows:
 #
@@ -85,8 +159,18 @@ my $DNSBL = {
 #
 #	timeout	    => 30,	# default seconds to wait for dnsbl query to timeout
 
-# These dnsbls should be configured in your mail transport agent
-# as well as in this file.
+# To check that ip addresses have some kind of reverse DNS entry, add a zone
+# for in-addr.arpa as shown below. You must have reverse DNS entries for    
+# ip blocks 127, 10, 172, 192 or use the IGNORE blocks above to prevent     
+# rejects for these address blocks as they DO NOT HAVE worldwide RDNS       
+
+  'in-addr.arpa'        => {    # check for lack of reverse DNS
+  # accept is not needed for reverse DNS checking
+	error	    => 'no reverse DNS, see http://myhost.com/',
+        timeout     => 15,
+  },
+
+# working, sample file entries
 
   'dnsbl.sorbs.net'	=> {	# see http://www.dnsbl.sorbs.net/using.html
 	accept	=> {	# list of codes for which we tarpit
@@ -94,7 +178,7 @@ my $DNSBL = {
 		'127.0.0.3'  =>	'open socks proxie',
 		'127.0.0.4'  =>	'open proxy server',
 		'127.0.0.5'  =>	'open smtp relay',
-		'127.0.0.6'  =>	'spam supporting ISP',
+#		'127.0.0.6'  =>	'spam supporting ISP',
 		'127.0.0.7'  =>	'open web - form mail servers',
 		'127.0.0.8'  =>	'blocked hosts',
 		'127.0.0.9'  =>	'zombie - hijacked netblock',
@@ -105,6 +189,7 @@ my $DNSBL = {
 	confirm		=> 1,
 	error		=> 'for removal see: http://www.dnsbl.sorbs.net/cgi-bin/lookup?js&IP=',
 	expire		=> '30d',
+	timeout		=> '15',
   },
 
   'dnsbl.njabl.org'	=> {	# see http://dnsbl.njabl.org/use.html
@@ -119,6 +204,7 @@ my $DNSBL = {
 	confirm		=> 1,
 	error		=> 'for removal see: http://www.dnsbl.njabl.org/cgi-bin/lookup.cgi?query=',
 	expire		=> '30d',
+	timeout		=> '15',
   },
 
   'relays.ordb.org'	=> {	# see http://www.ordb.org/faq/#usage_dns
@@ -127,31 +213,8 @@ my $DNSBL = {
 	},
 	error		=> 'for removal see: http://www.ordb.org/submit',
 	expire		=> '30d',
+	timeout		=> '15',
   },
-
-## commented out per notice on osirusoft server - out of commission for now
-#  'relays.osirusoft.com' => {	# see http://relays.osirusoft.com/faq.html#_Toc533558164
-#	accept	=> {
-#		'127.0.0.2' => 'Verified Open Relay',
-#		'127.0.0.3' => 'Dialup Spam Source',
-#		'127.0.0.4' => 'Confirmed Spam Source',
-##		'127.0.0.5' => 'Smart Host', # (In progress)
-#			# A Smart host is a site determined to be secure, 
-#			# but relays for those who are not, defeating one 
-#			# level of security. When this is ready, it will be
-#			# labeled outputs.osirusoft.com. 
-#			# NOTE: I strongly discourage using of outputs
-#			# due to it being way too effective to be useful.
-#		'127.0.0.6' => 'A Spamware software developer', # or spamvertized site. This
-#			# information is maintained by spamsites.org and spamhaus.org.
-#		'127.0.0.7' => 'Opt in listserv, no confirmation',
-##		'127.0.0.8' => 'An insecure formmail.cgi script',
-#		'127.0.0.9' => 'Open proxy server',
-#	},
-#	confirm		=> 1,
-#	error		=> 'for removal see: http://www.osirusoft.com/cgi-bin/rbcheck.cgi?addr=',		
-#	expire		=> '30d',
-#  },
 
   'dsbl.org'	=>	{	# see http://dsbl.org/usage
 	accept	=> {
@@ -159,6 +222,7 @@ my $DNSBL = {
 	},
 	error		=> 'for removal see: http://dnsbl.org/listing?',
 	expire		=> '30d',
+	timeout		=> '15',
   },
 
   'bl.spamcop.net'	=> {	# see http://spamcop.net/fom-serve/cache/291.html
@@ -167,6 +231,7 @@ my $DNSBL = {
 	},
 	error		=> 'for removal see: http://www.spamcop.net/w3m?action=checkblock&ip=',
 	expire		=> '30d',
+	timeout		=> '15',
   },
 
   'cbl.abuseat.org'	=> {	# see http://cbl.abuseat.org
@@ -175,6 +240,7 @@ my $DNSBL = {
 	},
 	error		=> 'for removal see: http://cbl.abuseat.org/lookup.cgi?.submit=lookup&ip=',
 	expire		=> '30d',
+	timeout		=> '15',
   },
 
   'sbl.spamhaus.org'	=> {	# see http://www.spamhaus.org
@@ -183,6 +249,7 @@ my $DNSBL = {
 	},
 	error		=> 'for removal see http://abuse.net/sbl.phtml?IP=',
 	expire		=> '30d',
+	timeout		=> '15',
   },
 
   'dynablock.easynet.nl' => {	# see http://abuse.easynet.nl/dynablocker.html
@@ -191,6 +258,7 @@ my $DNSBL = {
 	},
 	error		=> 'for removal see http://informatie.easynet.nl/error/errors.html',
 	expire		=> '30d',
+	timeout		=> '15',
   },
 
   'blackholes.easynet.nl' => {	# see http://abuse.easynet.nl/dynablocker.html
@@ -199,6 +267,7 @@ my $DNSBL = {
 	},
 	error		=> 'for removal see http://blackholes.easynet.nl/error/errors.html',
 	expire		=> '30d',
+	timeout		=> '15',
   },
 
   'proxies.blackholes.easynet.nl' => {	# see http://abuse.easynet.nl/dynablocker.html
@@ -207,6 +276,7 @@ my $DNSBL = {
 	},
 	error		=> 'for removal see http://blackholes.easynet.nl/error/errors.html',
 	expire		=> '30d',
+	timeout		=> '15',
   },
 
   'list.dsbl.org'       => {    # see http://dsbl.org
@@ -215,6 +285,7 @@ my $DNSBL = {
 	},
 	error		=> 'for removal see http://dsbl.org/listing?',
 	expire		=> '30d',
+	timeout		=> '15',
   },
 
   'spews.dnsbl.net.au'	=> {	# see http://www.spews.org/
@@ -223,6 +294,7 @@ my $DNSBL = {
 	},
 	error		=> 'blocked see: http://www.spews.org/ask.cgi?x=',
 	expire		=> '30d',
+	timeout		=> '15',
   },
 
 # higher risk
@@ -242,5 +314,6 @@ my $DNSBL = {
 #	confirm		=> 1,
 #	error		=> 'for removal see http://www.five-ten-sg.com/blackhole.php?ip=',
 #	expire		=> '30d',
+#	timeout		=> '15',
 #  },
 };

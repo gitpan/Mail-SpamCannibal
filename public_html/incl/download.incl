@@ -1,4 +1,4 @@
-<!-- last updated 11-8-03 -->
+<!-- last updated 12-5-03 -->
 <font size=+1>SpamCannibal Required Modules and Dependencies</font>
 <p>
 <a href="http://search.cpan.org/search?query=IPTables::IPv4::DBTarpit">IPTables::IPv4::DBTarpit</a>
@@ -26,6 +26,8 @@
     available on <a href="http://CPAN.org/">CPAN.org</a><br>
   <a href="http://search.cpan.org/search?query=Unix::Syslog">Unix::Syslog</a>
     available on <a href="http://CPAN.org/">CPAN.org</a><br>
+  <a href="http://search.cpan.org/search?query=Geo::IP::PurePerl">Geo::IP::PurePerl</a>
+    available on <a href="http://CPAN.org/">CPAN.org</a><br>
   <a href="http://search.cpan.org/search?query=NetAddr::IP">NetAddr::IP</a> version 3.14 or better
     available on <a href="http://CPAN.org/">CPAN.org</a><br>
   <a href="http://search.cpan.org/search?query=Net::Whois::IP">Net::Whois::IP</a> version 0.35 or better
@@ -33,6 +35,8 @@
   <a href="http://search.cpan.org/search?query=Net::DNS::Codes">Net::DNS::Codes</a>
     available on <a href="http://CPAN.org/">CPAN.org</a><br>
   <a href="http://search.cpan.org/search?query=Net::DNS::ToolKit">Net::DNS::ToolKit</a>
+    available on <a href="http://CPAN.org/">CPAN.org</a><br>
+  <a href="http://search.cpan.org/search?query=Net::DNSBL::MultiDaemon">Net::DNSBL::MultiDaemon</a>
     available on <a href="http://CPAN.org/">CPAN.org</a><br>
   <a href="http://search.cpan.org/search?query=Sys::Hostname::FQDN">Sys::Hostname::FQDN</a>
     available on <a href="http://CPAN.org/">CPAN.org</a><br>
@@ -70,9 +74,6 @@ using common SpamCannibal configuration files:
 
 For Optional country code and flag display on WHOIS and LOOKUP pages:
 <ul>
-<li><a
-href="http://search.cpan.org/search?query=Geo::IP::PurePerl">Geo::IP::PurePerl</a>
-   available on <a href="http://CPAN.org/">CPAN.org</a><br>
 <li><a
 href="http://search.cpan.org/search?query=Geo::CountryFlags">Geo::CountryFlagsl</a>
    available on <a href="http://CPAN.org/">CPAN.org</a><br>

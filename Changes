@@ -1,5 +1,20 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.20  Fri Dec  5 17:12:31 PST 2003
+	Require version 0.23 if IPTables::IPv4::DBtarpit which has
+	the workaround in tarpit.c for the memory leak in libnet.
+
+	Add 'tests' for NetAddr operation to ScriptSupport, update missing
+	variable test in ScriptSupport::matchNetAddr
+
+	Move NetAddr and config file routines to 
+	Net::DNSBL::Utilities
+	
+	Add BLOCK, BlockByCountry, and no reverse DNS checking
+	to ScriptSupport.pm for sc_BLcheck.pl and sc_BLpreen.pl
+
+	Update sc_BlackList.conf.sample to support above
+
 0.19  Sat Nov  8 18:45:03 PST 2003
 	update public_html/cannibal.cgi so that javascript will
 	insert the IP address into automated attempts for whois 

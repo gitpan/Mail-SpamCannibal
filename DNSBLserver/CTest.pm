@@ -373,7 +373,7 @@ to 'zonename.in'
 	     1 no serial number found
 	    -1 start/end serial mismatch
 
-=item * ($delta,$partsum,$partmax) = t_ratelimit(
+=item * ($delta,$partsum,$partmax,$charsum) = t_ratelimit(
 	$run,
 	$new_tv_sec,
 	$new_tv_usec,
@@ -393,6 +393,7 @@ to 'zonename.in'
   returns:	timeval delta,
 		partsum,	new average
 		partmax		initial value
+		charsum		total so far or cleared
 
   If either element of 'then' is undefined then the 
   remaining internal value is used rather than

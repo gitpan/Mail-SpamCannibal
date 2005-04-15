@@ -326,12 +326,6 @@ my_iload(u_char * iptr, u_long resp, char * txt)
   iload(iptr,(u_int32_t *)&resp,txt);
 }
 
-u_long
-my_div667()
-{
-  return(diskmax/6.67);
-}
-
 MODULE = Mail::SpamCannibal::DNSBLserver::CTest	PACKAGE = Mail::SpamCannibal::DNSBLserver::CTest
 
 PROTOTYPES: DISABLE
@@ -769,8 +763,9 @@ t_ratelimit(run,nsec,nusec,tsec,tusec,dmax,csum,psum)
 	diskmax = dmax;
 	charsum = csum;
 	partsum = psum;
-	partmax = my_div667();
+	partmax = dmax/4;
 	XPUSHs(sv_2mortal(newSViv(ratelimit(run))));
 	XPUSHs(sv_2mortal(newSViv(partsum)));
 	XPUSHs(sv_2mortal(newSViv(partmax)));
-	XSRETURN(3);
+	XPUSHs(sv_2mortal(newSViv(charsum)));
+	XSRETURN(4);

@@ -49,9 +49,10 @@ my $diskmax	 = 200000;
 my $charsum	 = 50000;
 my $partsum	 = $diskmax;
 
+my($delta,$psumret,$partmax,$charet);
 
 sub ratelimit {
-  ($delta,$psumret,$partmax) = &{"${TCTEST}::t_ratelimit"}(
+  ($delta,$psumret,$partmax,$charet) = &{"${TCTEST}::t_ratelimit"}(
 	0,
 	$new_tv_sec,
 	$new_tv_usec,
@@ -64,13 +65,21 @@ sub ratelimit {
 #print "d=$delta, ps=$psumret, px=$partmax\n";
 }
 
+sub cdelt {
+  my $dlt = 0;
+  $dlt = 1000000 if $new_tv_sec != $then_tv_sec;
+  $dlt += $new_tv_usec - $then_tv_usec;
+  $dlt = 200000 if $dlt < 0 || $dlt > 500000;
+  return $dlt;
+}
+
 sub psum {
  return int ((((900000 - $delta)/1000000) * $partsum) + $charsum);
 }
 
 ## test 2	check $delta
 ratelimit();
-my $exp = $new_tv_usec - $then_tv_usec;
+my $exp = &cdelt;
 print "got: $delta, exp: $exp\nnot "
 	unless $delta == $exp;
 &ok;
@@ -82,7 +91,7 @@ print "got: $psumret, exp: $exp\nnot "
 &ok;
 
 ## test 4	check partmax
-$exp = int ($diskmax/6.67);
+$exp = int ($diskmax/4);
 print "got: $partmax, exp: $exp\nnot "
 	unless $partmax == $exp;
 &ok;
@@ -90,7 +99,7 @@ print "got: $partmax, exp: $exp\nnot "
 ## test 5	delta
 $then_tv_usec = 99999;
 ratelimit();
-$exp = $new_tv_usec - $then_tv_usec;
+$exp = &cdelt;
 print "got: $delta, exp: $exp\nnot "
 	unless $delta == $exp;
 &ok;
@@ -102,7 +111,7 @@ print "got: $psumret, exp: $exp\nnot "
 &ok;
 
 ## test 7	check partmax
-$exp = int ($diskmax/6.67);
+$exp = int ($diskmax/4);
 print "got: $partmax, exp: $exp\nnot "
 	unless $partmax == $exp;
 &ok;
@@ -112,7 +121,7 @@ $new_tv_sec++;
 $new_tv_usec	= 50000;
 $then_tv_usec	= 950001;
 ratelimit();
-$exp = 1000000 + $new_tv_usec - $then_tv_usec;
+$exp = &cdelt;
 print "got: $delta, exp: $exp\nnot "
 	unless $delta == $exp;
 &ok;
@@ -124,7 +133,7 @@ print "got: $psumret, exp: $exp\nnot "
 &ok;
 
 ## test 10	check partmax
-$exp = int ($diskmax/6.67);
+$exp = int ($diskmax/4);
 print "got: $partmax, exp: $exp\nnot "
 	unless $partmax == $exp;
 &ok;
@@ -132,7 +141,7 @@ print "got: $partmax, exp: $exp\nnot "
 ## test 11	delta
 $then_tv_usec = 949999;
 ratelimit();
-$exp = 1000000 + $new_tv_usec - $then_tv_usec;
+$exp = &cdelt;
 print "got: $delta, exp: $exp\nnot "
 	unless $delta == $exp;
 &ok;
@@ -144,7 +153,7 @@ print "got: $psumret, exp: $exp\nnot "
 &ok;
 
 ## test 13	check partmax
-$exp = int ($diskmax/6.67);
+$exp = int ($diskmax/4);
 print "got: $partmax, exp: $exp\nnot "
 	unless $partmax == $exp;
 &ok;

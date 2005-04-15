@@ -44,12 +44,14 @@ struct in_addr in;
 u_int32_t charsum = 0, delta, partsum, partmax;
 struct timeval now, then;
 
+struct timeval rtv;
+
 /*
  * Routine to rate limit characters written to disk.
  * Initialization:
  *	charsum = 0;
  *	partsum = diskmax	the maximum rate in chars/sec
- *	partmax = diskmax/6.67	150% of an intervals average
+ *	partmax = diskmax/4	250% of an intervals average
  *	then	<= set with gettimeofday or preset for debug/test
  * Run/Normal:
  *	enter with run = 1
@@ -59,7 +61,8 @@ struct timeval now, then;
  *	charsum = test value
  #	preset the values in 'now'
  * Returns:
- *	calculated value of delta (used by test)
+ *	run  = 0, calculated value of delta (used by test)
+ *	run != 0, incremental average
  */
 	
 u_int32_t
@@ -68,10 +71,11 @@ ratelimit(int run)
   extern u_int32_t charsum, diskmax, partmax, partsum;
   extern struct timeval now, then;
   struct timeval ms100;
-  u_int32_t delta;
+  u_int32_t delta, rv = 0;
+
   do {
-    if (run)
-      gettimeofday(now,NULL);
+    if (run != 0)
+      gettimeofday(&now,NULL);
     delta = 0;
     if (now.tv_sec != then.tv_sec)
       delta = 1000000;
@@ -86,11 +90,14 @@ ratelimit(int run)
     }
     if (charsum < partmax && partsum + charsum < diskmax)
 	break;
+    rv = partsum + charsum;
     ms100.tv_sec = 0;
     ms100.tv_usec = 100000;
     select(0,0,0,0,&ms100);
   } while(run);
-  return(delta);
+  if (run == 0)
+    rv = delta;
+  return(rv);
 }
 
 void
@@ -406,15 +413,16 @@ zonefile(FILE * fd)
   gettimeofday(&then,NULL);
   charsum = 0;
   partsum = diskmax;
-  partmax = diskmax/6.67;
+  partmax = diskmax/4;
   
   while (1) {
   NEXT_RECORD:
     if (dbtp_getrecno(&dbtp,DBtarpit, recno++))
 	break;
 
-/*    (void) ratelimit(1);
-  */  
+    if (diskmax != 0)
+      (void) ratelimit(1);
+  
 /*	suppress numeric record for 127.0.0.0, it is used internally	*/
     if (*(u_char *)dbtp.keydbt.data == 0x7F &&
       *(u_char *)(dbtp.keydbt.data +1) == 0 &&

@@ -1,5 +1,10 @@
 Revision history for Perl extension Mail::SpamCannibal::DNSBLserver.
 
+0.39  Fri Apr 15 15:57:36 PDT 2005
+	left pointer indicator '&' out of statement and 
+	inadvertently commented out -L switch code in 0.38 release
+	duh!!!
+
 0.38  Thu Apr 14 13:02:58 PDT 2005
 	add -L switch to limit the zonefile build transfer rate
 	during a dnsbls zone dump. default 200,000 chars/sec

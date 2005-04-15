@@ -1,6 +1,6 @@
 package Mail::SpamCannibal::DNSBLserver;
 use vars qw($VERSION);
-$VERSION = do { q|char version[] = "dnsbls 0.38, 4-14-05";| =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
+$VERSION = do { q|char version[] = "dnsbls 0.39, 4-15-05";| =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
 # returns $VERSION which is non-zero
 __END__
 
@@ -149,6 +149,7 @@ switch is used with this utility. See "DNS query format" above.
 
   -e    : ERROR: this RBL's error message  "http://....."
   -b    : Block AXFR transfers
+  -L    : Limit zonefile build transfer rate (default 200,000 cps)
 
   -r    : Alternate DB root directory   [default: /var/run/dbtarpit]
   -i    : Alternate tarpit DB file      [default: tarpit]
@@ -293,6 +294,17 @@ Block AXFR transfers. Prevents C<dnsbls> from answering AXFR requests. If you
 wish to allow zone transfers or zone transfers to approved domains, it is
 recommended that you run C<dnsbls> behind a firewall and use a standard DNS
 server as a secondary to provide service to the internet.
+
+=item * -L
+
+Limit the rate at which zonefile generation occurs to prevent
+over-utilization of the host system by the B<dnsbls> daemon. 
+
+	default 200,000 characters per second
+
+This feature may be disabled by setting it to '0'
+
+  i.e.   ... -L 0
 
 =item * -r /path
 

@@ -69,6 +69,7 @@
 
   -e   : ERROR: this RBL's error message  "http://....."
   -b   : Block AXFR transfers
+  -L   : Limit zonefile build transfer rate (default 200,000 cps)
 
   -r   : Alternate DB root directory   [default: /var/run/dbtarpit]
   -i   : Alternate tarpit DB file      [default: tarpit]
@@ -100,6 +101,7 @@ int run, zone_name_len, zoneEQlocal, port = 53, zone_request = 0;
 int dflag = 0, oflag = 0, bflag = 0, zflag = 0, qflag = 0, Zflag = 0, stop = 0;
 int fdUDP = 0, fdTCPlisten = 0, fdTCP = 0;
 u_int32_t refresh = 43200, retry = 3600, expire = 86400, minimum = 10800, soa_ttl = 0;
+u_int32_t diskmax = 200000;
 pid_t pidrun, parent = 1;
 struct sigaction sa;
 struct in_addr stdResp, stdRespBeg, stdRespEnd, serial_rec;
@@ -207,16 +209,16 @@ int realMain(int argc, char **argv)
 	break;
 
       case 'u':
-      	refresh = atol(optarg);
+      	refresh = strtoul(optarg,NULL,0);
       	break;
       case 'y':
-      	retry = atol(optarg);
+      	retry = strtoul(optarg,NULL,0);
 	break;
       case 'x':
-	expire = atol(optarg);
+	expire = strtoul(optarg,NULL,0);
 	break;
       case 't':
-      	minimum = atol(optarg);
+      	minimum = strtoul(optarg,NULL,0);
 	break;
       case 'c':
       	contact = optarg;
@@ -227,6 +229,8 @@ int realMain(int argc, char **argv)
       case 'b':
       	bflag = 1;
       	break;
+      case 'L':
+        diskmax = strtoul(optarg,NULL,0);
       case 'g':
       	gflag = atoi(optarg);
       	break;
@@ -330,6 +334,7 @@ Error_nsname:
     printf("contrib     -j	=> %s\n", dbtp.dbfile[DBcontrib]);
     printf("evidence    -k	=> %s\n", dbtp.dbfile[DBevidence]);
     printf("block		=> %d AXFR transfers blocked\n", bflag);
+    printf("Limit       -L	=> %dcps, maximum zonefile build rate\n",diskmax);
     printf("eflag		=> %s\n",errormsg);
     printf("dflag		=> %d no daemon\n", dflag);
     printf("oflag		=> %d log to stdout\n",oflag);

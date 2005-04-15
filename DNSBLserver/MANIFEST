@@ -54,3 +54,4 @@ t/util_pid.t
 t/zone_basics.t
 t/zoneiprint.t
 t/zoneoflush.t
+t/zoneratelimit.t

@@ -67,6 +67,7 @@ char helpstring[] =
 "\n"
 "  -e	: ERROR: this RBL's error message  \"http://.....\"\n"
 "  -b	: Block AXFR transfers\n"
+"  -L	: Limit zonefile build transfer rate (default 200,000 cps)\n"
 "\n"
 "  -r	: Alternate DB root directory	[default: /var/run/dbtarpit]\n"
 "  -i	: Alternate tarpit DB file	[default: tarpit]\n"

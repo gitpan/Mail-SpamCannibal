@@ -228,3 +228,4 @@ DNSBLserver/t/util_pid.t
 DNSBLserver/t/zone_basics.t
 DNSBLserver/t/zoneiprint.t
 DNSBLserver/t/zoneoflush.t
+DNSBLserver/t/zoneratelimit.t

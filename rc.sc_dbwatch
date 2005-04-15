@@ -2,7 +2,7 @@
 #
 # rc.sc_dbwatch
 #
-# version 1.02, 11-5-03
+# version 1.03, 4-13-05
 #
 #################################################################
 # WARNING! do not modify this script, make one with a new name. #
@@ -120,7 +120,7 @@ my $run = is_running($pidfile);
 if ($action eq 'stop' || $action eq 'restart') {
   kill 15, $run if $run;
   sleep 1;
-  kill 9, $run if kill 0, $run;
+  kill 9, $run if $run && kill 0, $run;
   $run = 0;
   openlog($me, LOG_PID(), LOG_MAIL()) if $watchconfig->{SYSLOG};
   do_common('STOP');

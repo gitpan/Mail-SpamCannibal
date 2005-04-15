@@ -373,6 +373,31 @@ to 'zonename.in'
 	     1 no serial number found
 	    -1 start/end serial mismatch
 
+=item * ($delta,$partsum,$partmax) = t_ratelimit(
+	$run,
+	$new_tv_sec,
+	$new_tv_usec,
+	$then_tv_sec,
+	$then_tv_usec,
+	$diskmax,
+	$charsum,
+	$partsum
+);
+
+  input:	run,	true=normal, false=debug/test
+		struct timeval 'new' sec, usec
+		struct timeval 'then' sec, usec
+		diskmax,	rate limit chars/sec
+		charsum,	characters so far
+		partsum,	partial sum
+  returns:	timeval delta,
+		partsum,	new average
+		partmax		initial value
+
+  If either element of 'then' is undefined then the 
+  remaining internal value is used rather than
+  being set from the input data
+
 =back
 
 =head1 EXPORT

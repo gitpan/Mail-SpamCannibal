@@ -54,7 +54,7 @@
   extern char * zone_name, * local_name, * contact, * errormsg, mybuffer[], * dbhome;
   extern int zone_name_len, zoneEQlocal;
   extern int h_name_ctr;        /* name service buffer ring pointer     */
-  extern u_int32_t * Astart, * Aptr, localip[];
+  extern u_int32_t * Astart, * Aptr, localip[], diskmax;
   extern int mxmark[];
   extern struct in_addr stdResp, stdRespBeg, serial_rec;
 
@@ -62,6 +62,8 @@
   extern u_char ah,am,al,az,bh,bm,bl,bz,ch,cm,cl,cz,dh,dm,dl,dz,org;
   extern char txa[], txb[], txc[], txd[];
   extern u_int32_t aa, ab, ac, ad;
+  extern u_int32_t charsum, delta, partsum, partmax;
+  extern struct timeval now, then;
 
 /* Globals from ns.c		*/
   extern unsigned char ns_msgbuf[];
@@ -322,6 +324,12 @@ void
 my_iload(u_char * iptr, u_long resp, char * txt)
 {
   iload(iptr,(u_int32_t *)&resp,txt);
+}
+
+u_long
+my_div667()
+{
+  return(diskmax/6.67);
 }
 
 MODULE = Mail::SpamCannibal::DNSBLserver::CTest	PACKAGE = Mail::SpamCannibal::DNSBLserver::CTest
@@ -740,3 +748,29 @@ t_zonefile(fd)
 	FILE * fd
     CODE:
 	RETVAL = zonefile(fd);
+
+void
+t_ratelimit(run,nsec,nusec,tsec,tusec,dmax,csum,psum)
+	int run
+	U32 nsec
+	U32 nusec
+	SV* tsec
+	SV* tusec
+	U32 dmax
+	U32 csum
+	U32 psum
+    PPCODE:
+	now.tv_sec = nsec;
+	now.tv_usec = nusec;
+	if (SvOK(tsec) && SvOK(tusec)) {
+	    then.tv_sec = SvIV(tsec);
+	    then.tv_usec = SvIV(tusec);
+	}
+	diskmax = dmax;
+	charsum = csum;
+	partsum = psum;
+	partmax = my_div667();
+	XPUSHs(sv_2mortal(newSViv(ratelimit(run))));
+	XPUSHs(sv_2mortal(newSViv(partsum)));
+	XPUSHs(sv_2mortal(newSViv(partmax)));
+	XSRETURN(3);

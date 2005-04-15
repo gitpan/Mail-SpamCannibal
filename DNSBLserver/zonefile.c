@@ -34,10 +34,64 @@
 #include "defines.h"
 #include "host_info_func.h"
 
+extern u_int32_t diskmax;
+
 u_char ah,am,al,az,bh,bm,bl,bz,ch,cm,cl,cz,dh,dm,dl,dz,org;
 char txa[512], txb[512], txc[512], txd[512], pbuf[24], fbuf[24];
 u_int32_t aa, ab, ac, ad, A_rec;
 struct in_addr in;
+
+u_int32_t charsum = 0, delta, partsum, partmax;
+struct timeval now, then;
+
+/*
+ * Routine to rate limit characters written to disk.
+ * Initialization:
+ *	charsum = 0;
+ *	partsum = diskmax	the maximum rate in chars/sec
+ *	partmax = diskmax/6.67	150% of an intervals average
+ *	then	<= set with gettimeofday or preset for debug/test
+ * Run/Normal:
+ *	enter with run = 1
+ *	charsum = accumulation of character count
+ * Debug/Test:
+ *	enter with run = 0
+ *	charsum = test value
+ #	preset the values in 'now'
+ * Returns:
+ *	calculated value of delta (used by test)
+ */
+	
+u_int32_t
+ratelimit(int run)
+{
+  extern u_int32_t charsum, diskmax, partmax, partsum;
+  extern struct timeval now, then;
+  struct timeval ms100;
+  u_int32_t delta;
+  do {
+    if (run)
+      gettimeofday(now,NULL);
+    delta = 0;
+    if (now.tv_sec != then.tv_sec)
+      delta = 1000000;
+    delta += now.tv_usec - then.tv_usec;
+    if (delta < 0 || delta > 500000)		/* should never happen	*/
+      delta = 200000;
+    if (delta >= 100000) {
+      partsum = (((float)(900000 - delta)/1000000) * partsum) + charsum;
+      charsum = 0;
+      then.tv_sec = now.tv_sec;
+      then.tv_usec = now.tv_usec;
+    }
+    if (charsum < partmax && partsum + charsum < diskmax)
+	break;
+    ms100.tv_sec = 0;
+    ms100.tv_usec = 100000;
+    select(0,0,0,0,&ms100);
+  } while(run);
+  return(delta);
+}
 
 void
 initlb()
@@ -102,8 +156,11 @@ precrd(FILE * fd, char * bp, char * name, u_int32_t resp, char * txt)
   tabout(bp,name,"A");
   in.s_addr = resp;
   fprintf(fd,"%s%s\n",bp,inet_ntoa(in));
-  if (Zflag == 0)
+  charsum += strlen(bp) + 13;
+  if (Zflag == 0) {
     fprintf(fd,"\t\t\tTXT\t\"%s\"\n",txt);
+    charsum += strlen(txt) + 8;
+  }
 }
 
 void
@@ -171,9 +228,10 @@ oprint(FILE * fd, char * bp, u_char new, char * pre)
 
   if (new <= org)
 	oflush(fd,bp);
-  if (new != org)
+  if (new != org) {
     fprintf(fd,"$ORIGIN %s%s.\n",pre,zone_name);
-
+    charsum += strlen(pre) + strlen(zone_name) + 10;
+  }
   org = new;
 }
 
@@ -252,12 +310,13 @@ zonefile(FILE * fd)
   extern int zoneEQlocal;
   extern DBTPD dbtp;
   extern struct in_addr stdResp, stdRespBeg, stdRespEnd, serial_rec, in;
-  extern u_int32_t refresh, retry, expire, minimum, soa_ttl, localip[], A_rec;
+  extern u_int32_t refresh, retry, expire, minimum, soa_ttl, localip[], A_rec, diskmax;
   extern int h_name_ctr, mxmark[], visibleMAXeth;
   extern int zflag, run, dflag;
   extern char mybuffer[], * stdErr_response, version[];
   extern pid_t parent;
   extern u_char ah,am,al,az,bh,bm,bl,bz,ch,cm,cl,cz,dh,dm,dl,dz,org;
+  extern struct timeval now, then;
   
   int type, class, n, i;
   char * Hptr, * bp;
@@ -342,11 +401,20 @@ zonefile(FILE * fd)
  * ****************************************************	*
  */
 
+/* initialization for ratelimit	*/
+
+  gettimeofday(&then,NULL);
+  charsum = 0;
+  partsum = diskmax;
+  partmax = diskmax/6.67;
+  
   while (1) {
   NEXT_RECORD:
     if (dbtp_getrecno(&dbtp,DBtarpit, recno++))
 	break;
 
+/*    (void) ratelimit(1);
+  */  
 /*	suppress numeric record for 127.0.0.0, it is used internally	*/
     if (*(u_char *)dbtp.keydbt.data == 0x7F &&
       *(u_char *)(dbtp.keydbt.data +1) == 0 &&

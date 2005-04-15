@@ -1,4 +1,5 @@
 /* zonefile.h	*/
+u_int32_t ratelimit(int run);
 void initlb();
 void tabout(char * bp, char * name, char * type);
 void add_A_rec(char * bp, char * name, u_int32_t * ip);

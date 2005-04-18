@@ -5,7 +5,7 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..385\n"; }
+BEGIN { $| = 1; print "1..402\n"; }
 END {print "not ok 1\n" unless $loaded;}
 
 use Cwd;
@@ -117,7 +117,7 @@ sub checkextra {
   &ok;
 }
 
-## test 2-22 T flag only
+## test 2-23 T flag only
 my @x = qw(-T);
 %expect = (
 -r      => '/var/run/dbtarpit',
@@ -126,6 +126,7 @@ my @x = qw(-T);
 -k      => 'evidence',
 block   => '0',
 -L	=> '200000cps,',
+-C	=> '0',
 eflag   => 'undefined',
 dflag   => '0',
 oflag   => '0',
@@ -143,23 +144,23 @@ tflag   => '10800',
 );
 dumpnchk(@x);
 
-## test 23 - check extra text
+## test 24 - check extra text
 checkextra('local records');
 
-## test 24-44 T d
+## test 25-46 T d
 $expect{dflag} = 1;
 @x = qw(-T -d);
 dumpnchk(@x);
 
-## test 45 - check extra text
+## test 47 - check extra text
 checkextra('local records');
 
-## test 46-66 - dflag is active with oflag
+## test 48-69 - dflag is active with oflag
 $expect{oflag} = 1;
 @x = qw(-T -o);
 dumpnchk(@x);
 
-## test 67 - check extra text
+## test 70 - check extra text
 print "got:\n$extra\nit should contain:\nlocal records:\n\nnot "
 	unless $extra =~ /local records:\n/;
 &ok;
@@ -167,65 +168,65 @@ print "got:\n$extra\nit should contain:\nlocal records:\n\nnot "
 # clear previous test flags to initial state
 $expect{dflag} = $expect{oflag} = 0;
 
-## test 68-88 lflag
+## test 71-92 lflag
 $expect{loglvl} = 1;
 @x = qw(-T -l);
 dumpnchk(@x);
 
-## test 89 - check extra text
+## test 93 - check extra text
 checkextra('local records:');
 
-## test 90-110 vflag, same as lflag
+## test 94-115 vflag, same as lflag
 $expect{loglvl} = 2;
 @x = qw(-T -v);
 dumpnchk(@x);
 
-## test 111 - check extra text
+## test 116 - check extra text
 checkextra('local records:');
 
-## test 112-132 both v & l is verbose
+## test 117-138 both v & l is verbose
 $expect{loglvl} = 3;
 @x = qw(-T -v -l);
 dumpnchk(@x);
 
-## test 133 - check extra text
+## test 139 - check extra text
 checkextra('local records:');
 
 # clear previous test flags to initial state
 $expect{loglvl} = 0;
 
-## test 134 get help string
+## test 140 get help string
 @x = qw(-T -?);
 dumpargs(@x);    
 checkextra('Usage: dnsbls <options>');
 
-## test 135 version ID
+## test 141 version ID
 @x = qw(-T -V);  
 dumpargs(@x);    
 checkextra('dnsbls');
 
-## test 136-156 db home dir
+## test 142-163 db home dir
 $expect{'-r'} = '/somewhere/else';
 @x = qw(-T -r /somewhere/else);
 dumpnchk(@x);
 
-## test 157 - check extra text
+## test 164 - check extra text
 checkextra('local records:'); 
 
-## test 158-178 db primary file
+## test 165-186 db primary file
 $expect{'-i'} = 'primary';
 @x = qw(-T -r /somewhere/else -i primary);
 dumpnchk(@x);
 
-## test 179 - check extra text
+## test 187 - check extra text
 checkextra('local records:'); 
 
-## test 180-200 db secondary file
+## test 188-209 db secondary file
 $expect{'-j'} = 'secondary';        
 @x = qw(-T -r /somewhere/else -i primary -j secondary);
 dumpnchk(@x);
 
-## test 201 - check extra text
+## test 210 - check extra text
 checkextra('local records:'); 
 
 # clear previous test flags to initial state
@@ -233,92 +234,92 @@ $expect{'-r'} = '/var/run/dbtarpit';
 $expect{'-i'} = 'tarpit';
 $expect{'-j'} = 'blcontrib';
 
-## test 202-222 final check should be same as beginning
+## test 211-232 final check should be same as beginning
 @x = qw(-T);
 dumpnchk(@x);
 
-## test 223 - check extra text
+## test 233 - check extra text
 checkextra('local records:');     
 
-## test 224 - check failed directory, not there
+## test 244 - check failed directory, not there
 @x = ('-r', "${localdir}/xxx", '-d', '-o');
 dumpargs(@x);
 checkextra("${localdir}/xxx");
 
-## test 225 - check failed directory, not a directory
+## test 235 - check failed directory, not a directory
 @x = ('-r', "${localdir}/MANIFEST", '-d', '-o');
 dumpargs(@x);
 checkextra("${localdir}/MANIFEST");
 
-## test 226 get help string using -h
+## test 236 get help string using -h
 @x = qw(-T -h);
 dumpargs(@x);
 checkextra('Usage: dnsbls <options>');
 
-## test 227 check error name server missing
+## test 237 check error name server missing
 @x = ('-r', $testdir);
 dumpargs(@x);
 checkextra('Error: -n');
 
-## test 228 add only address
+## test 238 add only address
 @x = qw( -a 12.34.56.78);
 dumpargs(@x);
 checkextra('Error: 0,');
 
-## test 229-250 add nameserver and address
+## test 239-261 add nameserver and address
 $expect{NS} = 'ns.xx.yy.zz.com';
 @x = qw( -T -n ns.xx.yy.zz.com -a 11.22.33.44 );
 dumpnchk(@x);
 
-## test 251 check name server info
+## test 262 check name server info
 checkextra('local records:
 	11.22.33.44');
 
 delete $expect{NS};
-## test 252 add only mx priority
+## test 263 add only mx priority
 @x = qw( -m 50);   
 dumpargs(@x);
 checkextra('Error: -n');
 
-## test 253-274 add mail server and address with -a addition
+## test 264-286 add mail server and address with -a addition
 $expect{MX} = 50;
 @x = qw( -T -n mx.yy.zz.com -m 50 -a 44.33.22.11 );
 dumpnchk(@x);
 
-## test 275 check mx server info
+## test 287 check mx server info
 checkextra('local records:
 	44.33.22.11');
 
-## test 276-297 add mail server and address with -m addition (after ns record is stored)
+## test 288-310 add mail server and address with -m addition (after ns record is stored)
 $expect{MX} = 555;
 @x = qw( -T -n mx.yy.zz.com -a 44.33.22.11 -m 555);
 dumpnchk(@x);
 
-## test 298 check mx server info
+## test 311 check mx server info
 checkextra('local records:
 	44.33.22.11');
 
-## test 299-321 add mail server with dangling pickup, don't check unknown IP address
+## test 312-334 add mail server with dangling pickup, don't check unknown IP address
 $expect{NS} = 'ns.aa.bb.net';
 $expect{MX} = 66;
 @x = (qw( -T -n ns.aa.bb.net -a 55.11.33.22 -n ), fqdn(), qw( -m 66 ));
 dumpnchk(@x);
 
-## test 322 check ns server info only
+## test 335 check ns server info only
 checkextra('local records:
 	55.11.33.22');
 
-## test 323-343	revert to start
+## test 336-358	revert to start
 delete $expect{NS};
 delete $expect{MX};
 dumpnchk('-T');
 
-## test 344-364	new evidence file
+## test 359-380	new evidence file
 $expect{'-k'} = 'stuff';
 @x = qw( -T -k stuff );
 dumpnchk(@x);
 
-## test 365-385 revert to start with Z = 1
+## test 382-402 revert to start with Z = 1
 $expect{'-k'} = 'evidence';
 $expect{Zflag} = 1;
 @x = qw( -T -Z );

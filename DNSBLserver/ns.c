@@ -512,25 +512,27 @@ cmp_serial(u_int32_t s1, u_int32_t s2)
  */
 
 u_int32_t *
-ns_response()
+ns_response(u_char * keydbt_data)
 {
   extern DBTPD dbtp;
   extern struct in_addr stdResp, stdRespBeg, stdRespEnd;
   extern int zflag;
   extern char * stdErr_response, * errormsg;
-
+  
   u_int32_t * A_resp;
 
   stdErr_response = errormsg;
   
-  if (*(u_char *)dbtp.keydbt.data == 0x7F) {
+  if (*keydbt_data == 0x7F) {
 /*	suppress numeric record for 127.0.0.0, it is used internally
-	127.0.0.1 should never be reported, it is the localhost         */
-    if ((*(u_char *)(dbtp.keydbt.data +3) & 0xFE) == 0 &&
-	*(u_char *)(dbtp.keydbt.data +2) == 0 &&
-	*(u_char *)(dbtp.keydbt.data +1) == 0)
-	    return(NULL);			/* skip serial number and localhost	*/
-    else if ((dbtp_get(&dbtp, DBcontrib, (void *)(dbtp.keydbt.data),sizeof(in.s_addr))) == 0) {
+ *	127.0.0.1 should never be reported, it is the localhost
+ */
+    if ((*(keydbt_data +3) & 0xFE) == 0 &&
+	*(keydbt_data +2) == 0 &&
+	*(keydbt_data +1) == 0)
+	    return(NULL);
+
+    else if ((dbtp_get(&dbtp, DBcontrib, (void *)keydbt_data,sizeof(in.s_addr))) == 0) {
 	A_resp = (u_int32_t *)dbtp.mgdbt.data;
 	stdErr_response = dbtp.mgdbt.data + INADDRSZ + 1;
     }
@@ -539,13 +541,13 @@ ns_response()
 	stdErr_response = errIP();
     }
   }
-  else if (dbtp_get(&dbtp,DBevidence,(void *)(dbtp.keydbt.data),sizeof(in.s_addr)) == 0) {
+  else if (dbtp_get(&dbtp,DBevidence,(void *)keydbt_data,sizeof(in.s_addr)) == 0) {
     A_resp = &stdResp.s_addr;
     stdErr_response = errIP();
   }
   else if (zflag == 0)
     return(NULL);			/* do not report promiscious contributions	*/
-  else if ((dbtp_get(&dbtp, DBcontrib, (void *)(dbtp.keydbt.data),sizeof(in.s_addr))) == 0) {
+  else if ((dbtp_get(&dbtp, DBcontrib, (void *)keydbt_data,sizeof(in.s_addr))) == 0) {
     A_resp = (u_int32_t *)dbtp.mgdbt.data;
     if (*A_resp < stdRespBeg.s_addr || *A_resp > stdRespEnd.s_addr) {
 	A_resp = &stdRespBeg.s_addr;
@@ -909,19 +911,13 @@ NS_errorExit:
 
 /*	suppress numeric record for 127.0.0.0, it is used internally
 	127.0.0.1 should never be reported, it is the localhost		*/
-		if (*(u_char *)dbtp.keydbt.data == 0x7F &&
-		   (*(u_char *)(dbtp.keydbt.data +3) & 0xFE) == 0 &&
-		    *(u_char *)(dbtp.keydbt.data +2) == 0 &&
-		    *(u_char *)(dbtp.keydbt.data +1) == 0)
-			goto NS_AXFR_next;			/* skip serial number & localhost	*/
+
+		if ((A_resp = ns_response((u_char *)dbtp.keydbt.data)) == NULL)
+			goto NS_AXFR_next;		/* do not report promiscious contributions      */
 
 		in.s_addr = *(u_int32_t *)dbtp.keydbt.data;
 		bswap32((u_char *)&rev.s_addr,(u_char *)dbtp.keydbt.data);
-	/*	rev.s_addr = bswap_32(*(u_int32_t *)dbtp.keydbt.data); */
 		sprintf(dnbuf,"%s.%s",inet_ntoa(rev),zone_name);
-
-		if ((A_resp = ns_response()) == NULL)
-			goto NS_AXFR_next;		/* do not report promiscious contributions      */
 		RR_A(dnbuf,A_resp,ancount);
 		RR_TXT(dnbuf,stdErr_response,ancount);
 	    } while (is_tcp < 3 && cp - ns_msgbuf < MSGsize);
@@ -1000,7 +996,7 @@ NS_errorExit:
   if (dbtp_get(&dbtp, DBtarpit, (void *)(&in.s_addr), sizeof(in.s_addr)))	/* check if in tarpit		*/
   	goto NS_AuthOnly;
 
-  if ((A_resp = ns_response()) == NULL)
+  if ((A_resp = ns_response((u_char *)(dbtp.keydbt.data))) == NULL)
   	goto NS_AuthOnly;			/* do not report promiscious contributions      */
 
   switch(type)

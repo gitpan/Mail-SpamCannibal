@@ -29,8 +29,7 @@ contrib/nav.incl
 contrib/robots.txt
 contrib/mimedefang-filter
 contrib/rc_debian_spamcannibal
-contrib/zone_cron.pl
-contrib/zone_cron.sh
+contrib/zonedump.pl
 lib/Mail/SpamCannibal/GoodPrivacy.pm
 lib/Mail/SpamCannibal/LaBreaDaemon.pm
 lib/Mail/SpamCannibal/ParseMessage.pm

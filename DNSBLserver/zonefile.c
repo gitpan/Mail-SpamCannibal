@@ -35,16 +35,16 @@
 #include "host_info_func.h"
 
 extern u_int32_t diskmax;
+extern int continuity;
 
 u_char ah,am,al,az,bh,bm,bl,bz,ch,cm,cl,cz,dh,dm,dl,dz,org;
 char txa[512], txb[512], txc[512], txd[512], pbuf[24], fbuf[24];
-u_int32_t aa, ab, ac, ad, A_rec;
+u_int32_t aa, ab, ac, ad;
 struct in_addr in;
 
 u_int32_t charsum = 0, delta, partsum, partmax;
 struct timeval now, then;
-
-struct timeval rtv;
+u_char currArec[4];
 
 /*
  * Routine to rate limit characters written to disk.
@@ -300,7 +300,7 @@ iprint(FILE * fd, char * bp)
   }
 }
 
-/*  re	turns 0 on success
+/*  returns 0 on success
  *  1 if serial number missing
  * -1 if start/end serial numbers do not match
  */
@@ -317,19 +317,20 @@ zonefile(FILE * fd)
   extern int zoneEQlocal;
   extern DBTPD dbtp;
   extern struct in_addr stdResp, stdRespBeg, stdRespEnd, serial_rec, in;
-  extern u_int32_t refresh, retry, expire, minimum, soa_ttl, localip[], A_rec, diskmax;
+  extern u_int32_t refresh, retry, expire, minimum, soa_ttl, localip[], diskmax;
   extern int h_name_ctr, mxmark[], visibleMAXeth;
   extern int zflag, run, dflag;
   extern char mybuffer[], * stdErr_response, version[];
   extern pid_t parent;
-  extern u_char ah,am,al,az,bh,bm,bl,bz,ch,cm,cl,cz,dh,dm,dl,dz,org;
+  extern u_char ah,am,al,az,bh,bm,bl,bz,ch,cm,cl,cz,dh,dm,dl,dz,org, currArec[];
   extern struct timeval now, then;
+  extern int continuity;
   
   int type, class, n, i;
   char * Hptr, * bp;
   u_int32_t serial, lserial, * Aptr, * Astart, * A_resp, numrecs;
   u_short len;
-  u_int32_t recno = 1;
+  u_int32_t recno = 1, lastaddr = 0, A_rec, prevrec;
   int serial_missing = 1;
   time_t current = time(NULL);
 
@@ -417,26 +418,49 @@ zonefile(FILE * fd)
   
   while (1) {
   NEXT_RECORD:
+    if (diskmax)
+      (void) ratelimit(1);
+  
     if (dbtp_getrecno(&dbtp,DBtarpit, recno++))
 	break;
 
-    if (diskmax != 0)
-      (void) ratelimit(1);
-  
-/*	suppress numeric record for 127.0.0.0, it is used internally	*/
-    if (*(u_char *)dbtp.keydbt.data == 0x7F &&
-      *(u_char *)(dbtp.keydbt.data +1) == 0 &&
-      *(u_char *)(dbtp.keydbt.data +2) == 0 &&
-      *(u_char *)(dbtp.keydbt.data +3) == 0)
-	goto NEXT_RECORD;					/* skip serial number	*/
+/*	cheap save of network address	*/
+    *(u_int32_t *)currArec = *(u_int32_t *)dbtp.keydbt.data;	/* cheap save of network address	*/
+    A_rec = ntohl(*(u_int32_t *)currArec);			/* save current record value		*/
 
-    A_rec = *(u_int32_t *)dbtp.keydbt.data;
-    in.s_addr = A_rec;						/* propagate IP for errIP() use	*/
+/*	if there have been insertions or deletions to the records already
+ *	covered that has moved our cursor, re-sync to the current record
+ */
+    if (A_rec <= lastaddr) {			/* if there was an insert	*/
+      if (continuity)				/* error exit, zonedump will retry 3x	*/
+	return -1;
+      else
+    	goto NEXT_RECORD;			/* move cursor forward ONE	*/
+    }
+    if (recno > 2) {				/* if not a beginning record	*/
+      if (dbtp_getrecno(&dbtp,DBtarpit, recno -2))
+    	return -1;				/* return on error, should not get here
 
-    if ((A_resp = ns_response()) == NULL)
+/* walk back cursor to find 'lastaddr' if the previous record has changed	*/
+      prevrec =  ntohl(*(u_int32_t *)dbtp.keydbt.data);
+      if ( prevrec > lastaddr) {		/* if there was a delete	*/
+        recno -= 2;
+        goto NEXT_RECORD;			/* move cursor back ONE		*/
+      }
+    }
+/*	cursor is in sync	*/
+
+    lastaddr = A_rec;				/* remember current record value next loop	*/
+    
+/*	suppress numeric records for 127.0.0.0, it is used internally
+ *	127.0.0.1 is localhost and should never be reported	
+ */
+
+    if ((A_resp = ns_response(currArec)) == NULL)
 	goto NEXT_RECORD;				/* do not report promiscious contributions	*/
 
-    iload((u_char *)&A_rec,A_resp,stdErr_response);
+    in.s_addr = *(u_int32_t *)currArec;			/* propagate IP for errIP() use	*/
+    iload(currArec,A_resp,stdErr_response);
     iprint(fd,bp);
 
   }	/* end while(1)		*/
@@ -449,11 +473,21 @@ zonefile(FILE * fd)
   if (serial_missing)
 	return 1;
 
-/* check if serial numbers match, and return result. 
-   a change means the record has been modified and no record update will occur
+  /*	4-17-05
+   *	skip the code below, it nice and perfect, etc..
+   *	the reality is that it is hard to achieve
+   *	because of constant additions and deletions to
+   *	the database
+   */
+
+/* if continuity is required, check if serial numbers match, and return result. 
+   a change means the zone has been modified and may not contain all records
  */
+  if (continuity == 0)
+  	return 0;		/* continuity ignored, signal SUCCESS	*/
+
   dbtp_get(&dbtp,DBtarpit,(void *)&serial_rec.s_addr,sizeof(serial_rec.s_addr));
   if (serial == *(u_int32_t *)(dbtp.mgdbt.data))
 	return 0;		/* SUCCESS, return 0			*/
   return -1;			/* :-( serial numbers do not match	*/
-}  
+}

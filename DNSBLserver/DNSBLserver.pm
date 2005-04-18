@@ -1,6 +1,6 @@
 package Mail::SpamCannibal::DNSBLserver;
 use vars qw($VERSION);
-$VERSION = do { q|char version[] = "dnsbls 0.39, 4-15-05";| =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
+$VERSION = do { q|char version[] = "dnsbls 0.40, 4-18-05";| =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
 # returns $VERSION which is non-zero
 __END__
 
@@ -150,7 +150,7 @@ switch is used with this utility. See "DNS query format" above.
   -e    : ERROR: this RBL's error message  "http://....."
   -b    : Block AXFR transfers
   -L    : Limit zonefile build transfer rate (default 200,000 cps)
-
+  -C    : Continuity (default allow zonefile discontinuity)
   -r    : Alternate DB root directory   [default: /var/run/dbtarpit]
   -i    : Alternate tarpit DB file      [default: tarpit]
   -j    : Alternate contrib DB file     [default: blcontrib]
@@ -305,6 +305,32 @@ over-utilization of the host system by the B<dnsbls> daemon.
 This feature may be disabled by setting it to '0'
 
   i.e.   ... -L 0
+
+=item * -C (new but deprecated)
+
+For very large zones and multiple daemons constantly adding
+and removing records, it is very difficult to get a contiguous
+zone dump where the starting and ending serial number is constant.
+Instead, re-sync the cursor to ignore BerkeleyDB's behavior of
+renumbering the records after an insert or delete. This allows
+a zone dump to proceed when record values that have already
+been read are deleted or inserts are made to the area the cursor
+has already transversed. More specifically, records ahead of the
+cursor will appear in the zone file as they are transversed, records
+altered behind the cursor are not seen so effectively the zone is
+frozen for dump purposes at the instant the cursor transverse it.
+With "Continuity" set true, a single unperterbed snapshot of the
+database is dumped to the zone file. However, this method will fail
+if records are added or removed during the dump. The dump will
+automatically retry 3 times. The practical aspect of this change
+is that it is as if the zone was read a minute or two earlier in
+the case of similtaneous database updates.
+
+The old -C behavior is not desirable for large zones because it is not
+practical for the database to remain static long enough for a
+complete zone dump. The behavior is deprecated, the -C flag is
+provided to retain the old behavior if for some strange reason
+you find it desirable.
 
 =item * -r /path
 

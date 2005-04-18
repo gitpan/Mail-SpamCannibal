@@ -87,6 +87,7 @@ contrib     -j	=> blcontrib
 evidence    -k	=> evidence
 block		=> 0 AXFR transfers blocked
 Limit       -L	=> 200000cps, maximum zonefile build rate
+Continuity  -C	=> 0 continuity
 eflag		=> no message
 dflag		=> 1 no daemon
 oflag		=> 1 log to stdout

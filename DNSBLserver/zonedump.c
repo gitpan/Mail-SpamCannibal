@@ -29,7 +29,8 @@ zonedump()
   
   FILE * fd;
   char zonepath[512];
-  int retry = 3, zresult = 0;
+  int retry = 3, zresult = -8;
+  struct stat fs;
   
   rtn = mybuffer;
   if (zonechild) {				/* punt if dump already in progress	*/
@@ -84,9 +85,13 @@ zonedump()
 	zresult = zonefile(fd);
 
   fclose(fd);
-  if (zresult < 0 && retry-- > 0) {
-    LogPrint("retry zone dump");
-    goto Retry;
+  if (zresult < 0) {
+    if (retry-- > 0) {
+      LogPrint("retry zone dump");
+      goto Retry;
+    }
+    else
+	goto ZoneExit;	
   }
   
   rtn = mybuffer;
@@ -94,6 +99,8 @@ zonedump()
   rename(zonepath,rtn);
 
  ZoneExit:
+  if (! stat(zonepath,&fs) && (fs.st_mode & S_IFMT == S_IFREG))
+    unlink(zonepath);				/* remove lingering tmp file	*/
   sprintf(rtn,"zone dump done, status=%d",zresult);
   LogPrint(rtn);
   if (zone_request)				/* if not testing		*/

@@ -70,6 +70,7 @@
   -e   : ERROR: this RBL's error message  "http://....."
   -b   : Block AXFR transfers
   -L   : Limit zonefile build transfer rate (default 200,000 cps)
+  -C   : Continuity (default allow zonefile discontinuity)
 
   -r   : Alternate DB root directory   [default: /var/run/dbtarpit]
   -i   : Alternate tarpit DB file      [default: tarpit]
@@ -98,7 +99,7 @@ u_int32_t * Astart, * Aptr;
 char mybuffer[1024], * rtn;
 int logopen = 0, datalog = 0, savedatalog = 0;
 int run, zone_name_len, zoneEQlocal, port = 53, zone_request = 0;
-int dflag = 0, oflag = 0, bflag = 0, zflag = 0, qflag = 0, Zflag = 0, stop = 0;
+int dflag = 0, oflag = 0, bflag = 0, zflag = 0, qflag = 0, Zflag = 0, stop = 0, continuity = 0;
 int fdUDP = 0, fdTCPlisten = 0, fdTCP = 0;
 u_int32_t refresh = 43200, retry = 3600, expire = 86400, minimum = 10800, soa_ttl = 0;
 u_int32_t diskmax = 200000;
@@ -231,6 +232,8 @@ int realMain(int argc, char **argv)
       	break;
       case 'L':
         diskmax = strtoul(optarg,NULL,0);
+      case 'C':
+        continuity = 1;
       case 'g':
       	gflag = atoi(optarg);
       	break;
@@ -334,21 +337,22 @@ Error_nsname:
     printf("contrib     -j	=> %s\n", dbtp.dbfile[DBcontrib]);
     printf("evidence    -k	=> %s\n", dbtp.dbfile[DBevidence]);
     printf("block		=> %d AXFR transfers blocked\n", bflag);
-    printf("Limit       -L	=> %dcps, maximum zonefile build rate\n",diskmax);
+    printf("Limit       -L	=> %dcps, maximum zonefile build rate\n", diskmax);
+    printf("Continuity  -C	=> %d continuity\n", continuity);
     printf("eflag		=> %s\n",errormsg);
     printf("dflag		=> %d no daemon\n", dflag);
-    printf("oflag		=> %d log to stdout\n",oflag);
+    printf("oflag		=> %d log to stdout\n", oflag);
     printf("loglvl		=> %d log enabled > 0\n", datalog);
-    printf("port		=> %d port number\n",port);
+    printf("port		=> %d port number\n", port);
     printf("Tflag		=> %d test mode\n", testflag);
     printf("promiscuous	=> %d reporting enabled\n", zflag);
     printf("zone		=> %s\n", zone_name);
     printf("Zflag		=> %d Zap zone file TXT records\n", Zflag);
     printf("contact		=> %s\n", contact);
-    printf("uflag		=>	%d	SOA update/refresh\n",refresh);
-    printf("yflag		=>	%d	SOA retry\n",retry);
-    printf("xflag		=>	%d	SOA expires\n",expire);
-    printf("tflag		=>	%d	SOA ttl/minimum\n",minimum);
+    printf("uflag		=>	%d	SOA update/refresh\n", refresh);
+    printf("yflag		=>	%d	SOA retry\n", retry);
+    printf("xflag		=>	%d	SOA expires\n", expire);
+    printf("tflag		=>	%d	SOA ttl/minimum\n", minimum);
     printf("local records:\n");
     report_ns();
 /*    CleanExit(0);	this is not needed	*/

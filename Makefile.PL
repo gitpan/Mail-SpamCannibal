@@ -27,6 +27,23 @@ if ((caller)[1]) {
 it contains directory sensitive components.");
 }
 
+my $pv = sprintf "%vd", $^V;
+unless ($pv lt '5.8.0' || $pv gt '5.8.5') {
+  print
+"
+################################################################
+######################### WARNING ##############################
+#                                                              #
+# Early versions of perl 5.8.x contain bugs that cause certain #
+# \@_ operations to fail. Please upgrade to at least perl 5.8.6 #
+#                                                              #
+################################################################
+
+press ENTER:";
+  readline *STDIN;
+  print "\n";
+}
+
 $configtxt = do 'inst/dialog.pl';
 $CONFIG = do 'config.db';
 

@@ -1,6 +1,11 @@
 Revision history for Perl extension Mail::SpamCannibal
 
-0.59
+0.60  Mon Apr 25 11:45:31 PDT 2005
+	Incorporate warning about perl 5.8.0 - 5.8.5
+	about @_ operation failures.
+
+0.59  Mon Apr 18 11:16:40 PDT 2005
+
 	add zonedump.pl
 	./zonedump.pl -h	for help
 
@@ -27,9 +32,8 @@ Revision history for Perl extension Mail::SpamCannibal
 	the case of similtaneous database updates.
 
 	The old -C behavior is not desirable for large zones because it is
-not
-	practical for the database to remain static long enough for a 
-	complete zone dump. The behavior is deprecated, the -C flag is
+	not practical for the database to remain static long enough for 
+	a complete zone dump. The behavior is deprecated, the -C flag is
 	provided to retain the old behavior if for some strange reason
 	you find it desirable.
 	

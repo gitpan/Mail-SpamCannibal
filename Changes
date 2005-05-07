@@ -1,5 +1,22 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.61  Fri May  6 19:25:04 PDT 2005
+	add script sc_dns2rbld.pl and supporting methods in
+	ScriptSupport v0.29 to convert dnsbls zone files to 
+	rbldns format
+
+	updated contrib/zonedump.pl to generate rbldns files
+	with the -r option
+
+	package DNSBLServer v0.41
+	corrected an error in zonefile.c and ns.c that incorrectly reported
+	the ip address during zone transfer or file creation in the text 
+	record of the form:
+
+	4.3.2.1.bl.spamcannibal.org     A       127.0.0.2
+					TXT     "some string  1.2.3.4"
+						 ^this was corrupted^
+
 0.60  Mon Apr 25 11:45:31 PDT 2005
 	Incorporate warning about perl 5.8.0 - 5.8.5
 	about @_ operation failures.

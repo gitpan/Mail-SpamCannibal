@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# zone_dump.pl version 1.00, 4-16-05
+# zone_dump.pl version 1.01, 4-16-05
 #
 # Copyright 2005 Michael Robinton <michael@bizsystems.com>
 # rc.dnsbls is free software; you can redistribute it and/or 
@@ -46,23 +46,34 @@ nice(19) or die "nice failed\n";	# be very nice to other tasks
 
 my $DEBUG = 0;
 my $gzip = 0;
+my $rbldns = 0;
 
-while(($_ = shift @ARGV) =~ /^\-[dz]/) {
+while(($_ = shift @ARGV) && $_ =~ /^\-[dzr]/) {
   if ($_ eq '-d') {
     $DEBUG = $_;
-  } else {
+  }
+  elsif ($_ eq '-r') {
+    $rbldns = new Mail::SpamCannibal::ScriptSupport;
+  }
+  elsif ($_ eq '-z') {
     $gzip = $_;
   }
+# ignore invalid switches
 }
 my $destdir = $_;
 my $timeout = shift;
 
 die qq|
 Syntax:  $0 destination_dir timeout
+    or	 $0 -r destination_dir timeout
     or	 $0 -z destination_dir timeout
+    or	 $0 -r -z destination_dir timeout
 
-	-z 	switch gzips the output file
-		expect 95% compression
+	-r	switch cause an rbldns
+		file to be writtin as well
+
+	-z 	switch gzips the DNS bin output
+		file, expect 95% compression
 
 	Directory to write compressed zone file and
 	'records' information text file 'bl_records'
@@ -105,10 +116,13 @@ my $zoneout = $destdir .'/'. $zonefile;
 
 my $dnsblpid;
 my $error = '';
+my @deadkids;
 
+my $try = 'try';
 RETRY:
 foreach(1..$retry) {
-  print STDERR "retry #$_  $error\n" if $DEBUG;
+  print STDERR "$try #$_  $error\n" if $DEBUG;
+  $try = 'retry';
   $error = '';
   unless ($dnsblpid = is_running($dbenv .'/dnsbls.pid')) {
     $error = "'dnsbls' not running\n";
@@ -121,22 +135,28 @@ foreach(1..$retry) {
 
   print STDERR "dump $zoneout to $destdir, timeout $timeout seconds\n" if $DEBUG;
 
+  WAIT:
   foreach(1..120) {		# allow 120 seconds for task to start, then abort
     opendir(D,$dbenv) or die "failed to open database environment\n";
-    last if (@_ = grep(/dnsbls\.\d+\.pid/,readdir(D)));
+    @_ = grep(/dnsbls\.\d+\.pid/,readdir(D));
     closedir D;
+    foreach my $kid (@_) {
+      last WAIT unless grep(/$kid/,@deadkids);
+    }
     $timer -= 1;
   print STDERR '.' if $DEBUG;
     sleep 1;
   }
   print STDERR "\n" if $DEBUG;
-  foreach(@_) {			# there should not be more than one item
-    print STDERR "check if $_ is alive\n" if $DEBUG;
-    $childf = $dbenv .'/'. $_;	# unless the system is not config'd right
+  foreach my $kid (@_) {		# there should not be more than one item alive
+    next if grep(/$kid/,@deadkids);	# don't check dead kids
+    print STDERR "check if $kid is alive\n" if $DEBUG;
+    $childf = $dbenv .'/'. $kid;	# unless the system is not config'd right
     last if is_running($childf);
     $childf = '';
   }
   unless ($childf) {
+    @deadkids = @_;
     $error = "dnsbls child not found\n";
     next RETRY;
   }
@@ -180,18 +200,39 @@ while(<IN>) {
 seek(IN,0,0);				# rewind for zip operation
 
 if ($gzip) {
-  my $gz = gzopen($zoneout .'.gz.tmp','wb')
+  $gzip = gzopen($zoneout .'.gz.tmp','wb')
 	or die "could not open gzip zonefile\n";
+}
+if ($rbldns) {
+  open(RBL,'>'. $zoneout .'.rbl.tmp')
+	or die "could not open output rbldns file\n";
+}
+
+if ($gzip || $rbldns) {
   while(<IN>) {
-    $gz->gzwrite($_)
+    if($gzip) {
+      $gzip->gzwrite($_)
 	or die "error writing gzip file: $gzerrno\n";
+    }
+    if ($rbldns) {
+      my $line = $rbldns->dns2rblz($_);
+      print RBL $line if $line;
+    }
   }
-  $gz->gzclose;
-  rename $zoneout .'.gz.tmp', $zoneout .'.gz';	# atomic move
+  if ($gzip) {
+    $gzip->gzclose;
+    rename $zoneout .'.gz.tmp', $zoneout .'.gz';	# atomic move
+  }
+  if ($rbldns) {
+    print RBL "\n";
+    close RBL;
+    rename $zoneout .'.rbl.tmp', $zoneout .'.rbl';	# atomic move
+  }
+}
 
-} else {
-
+if ($gzip) {
   unless ($destdir eq $dbenv) {
+    seek(IN,0,0);			# rewind for copy operation
     open(OUT,'>'. $zoneout .'.tmp')
 	or die "could not open output zonefile\n";
     while(<IN>) {

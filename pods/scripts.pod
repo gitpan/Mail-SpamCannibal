@@ -295,3 +295,11 @@ database.
   CN 7543
   KR 1234
   ... and so on...
+
+=head2 sc_dns2rbld.pl
+
+This script converts the DNS zonefile in bind format created by B<dnsbls> 
+kill -USR2 into the format used by the popular rbldns daemon.
+
+  Syntax: ./sc_dns2rbld.pl infile outfile
+

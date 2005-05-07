@@ -1,5 +1,5 @@
 #
-# my version 1.23, 4-19-05 michael@bizsystems.com
+# my version 1.24, 4-25-05 michael@bizsystems.com
 # -*- Perl -*-
 #***********************************************************************
 #
@@ -238,7 +238,7 @@ sub filter_sender {
   return (sc_profile('reverse_IP','REJECT',"bad reverse IP |$&| $hostname"))
 	if $hostname =~ /$ipattern/o;
 # return if known non-dynamic host
-  return ('CONTINUE','ok') if grep ($hostname =~ /$_/,@dyn_ok_domains);
+  return ('CONTINUE','ok') if grep ($hostname =~ /$_/i,@dyn_ok_domains);
   return ('CONTINUE','ok') unless $hostname =~ /([(.\-]|\b)($pattern).?[.\-\d]/io;
   my $match = $&;
 # return if definetly not dynamic host, ends in 'match'.org|com|etc...

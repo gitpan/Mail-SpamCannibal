@@ -912,10 +912,11 @@ NS_errorExit:
 /*	suppress numeric record for 127.0.0.0, it is used internally
 	127.0.0.1 should never be reported, it is the localhost		*/
 
+		in.s_addr = *(u_int32_t *)dbtp.keydbt.data;	/* propagate address to (in) for errIP() use	*/
+
 		if ((A_resp = ns_response((u_char *)dbtp.keydbt.data)) == NULL)
 			goto NS_AXFR_next;		/* do not report promiscious contributions      */
 
-		in.s_addr = *(u_int32_t *)dbtp.keydbt.data;
 		bswap32((u_char *)&rev.s_addr,(u_char *)dbtp.keydbt.data);
 		sprintf(dnbuf,"%s.%s",inet_ntoa(rev),zone_name);
 		RR_A(dnbuf,A_resp,ancount);

@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.28 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.29 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -174,6 +174,8 @@ Mail::SpamCannibal::ScriptSupport - A collection of script helpers
 	abuse_host
   );
 
+=head1 FUNCTIONS
+
   $rv = DO($file);
   $packedIPaddr = SerialEntry()
   $packedIPaddr = TarpitEntry();
@@ -205,6 +207,11 @@ Mail::SpamCannibal::ScriptSupport - A collection of script helpers
   @err=mailcheck($fh,\%MAILFILTER,\%DNSBL,\%default,\@NAignor)
   $rv=zap_one($tool,$netaddr,$db,$verbose,$comment);
   zap_pair($tool,$netaddr,$pri,$sec,$debug,$verbose,$comment);
+
+=head1 METHODS
+
+  $object = new Mail::Spamcannibal::ScriptSupport;
+  $rv = $object->dns2rblz($line);
 
 =head1 DESCRIPTION
 
@@ -1518,8 +1525,6 @@ the headers passed in as "message text"
 			ab2	=> [for debug]
 		};
 
-=back
-
 =cut
 
 sub abuse_host {
@@ -1621,6 +1626,103 @@ sub abuse_host {
 
   return ();
 }
+
+=item * $object = new Mail::Spamcannibal::ScriptSupport;
+
+Returns a reference to a Mail::Spamcannibal::ScriptSupport object
+
+=cut
+
+sub new {
+  my $proto = shift;
+  my $class = ref($proto) || $proto;
+  my $self = {};
+  bless $self, $class;
+  return $self;
+}
+
+=item * $rv = $object->dns2rblz($line);
+
+Converts DNS bind file lines created by B<dnsbls> to the B<rbldns> format.
+
+  input:	DNS bind file line
+  returns:	rbldns file line or ''
+
+Note:
+  if the DNS file was dumped in standard format, the returned
+  rbldns lines will be in the standard format also. If the DNS
+  file was created in promiscious mode, the rbldns lines will
+  be in the enhanced format provided by:
+
+	djbdns-1.05 rbldns patch
+
+  found at:
+
+	http://www.jms1.net/djbdns/rbldns-patch.html
+
+=back
+
+=cut
+
+sub dns2rblz {
+  my($self,$in) = @_;
+  my $out = '';
+  while (1) {
+    if ($self->{soa}) {			# hunting for SOA termination
+      if ($in !~ /\)/) {		# if not closing bracket
+	$in =~ /[^#]+/;			# accumulate numeric records without comments
+	$self->{soa} .= $& || '';
+	$self->{soa} .= ' ';
+      }
+      else {
+	$in =~ /[^#)]/;			# add trailing record
+	$self->{soa} .= $& || '';
+	$self->{soa} =~ s/[\r\n\(]+/ /g;# convert CRLF's and '(' to space
+	$self->{soa} =~ s/\s+/ /g;	# multiple spaces to single space
+	$out = "\n#". $self->{soa};
+	$self->{soa} = '';		# clear flag
+      }
+    } 
+    elsif ($in =~ /^\$ORIGIN\s+(.+)/) {
+      $self->{origin} = $1;
+      $self->{origin} =~ s/\.$self->{base}//i
+	if $self->{base};
+    }
+    elsif ($in =~ /^(\$TTL\s+(\d+)).+/) {
+      $out = "\n#$1" if $2 > 0;
+    }
+    elsif ($in =~ /^([0-9.]+).+A\s+([0-9.]+)/) {	# A record
+      my $rip = $1 .'.'.$self->{origin};
+      @_ = reverse split(/\./,$rip);
+      $self->{IP} = join('.',@_);
+      $out = "\n". $self->{IP};				# print the record
+      $out .= ":$2" unless $2 eq $self->{defresp};	# add answer if not default
+      $self->{answer} = $2;
+    }
+    elsif ($in =~ /^\s.+TXT\s+["]([^"\r\n]+)/) {	# TXT record
+      (my $txt = $1) =~ s/$self->{IP}/\$/;
+      unless ($txt eq $self->{txt}) {
+	$out = ':'. $self->{defresp}			# add answer if not already present
+		if $self->{answer} eq $self->{defresp};
+	$out .= ':'. $1;				# add text
+      }
+    }
+    elsif ($in =~ /rbldnsDEF:([\d.]+):([^\r\n]+)/) {
+      $out = ":$1:$2";
+      $self->{defresp} = $1;
+      $self->{txt} = $2;
+    }
+    elsif ($in =~ /^([a-zA-Z][^\s]+).+(SOA[^#)]+)/) {
+      $self->{base} = $1;			# set zone base
+      $self->{soa} = $2;			# save soa comments and arm collection of multiple lines
+      next if $in =~ /\)/;			# closing bracket
+    }
+# ignore anything else
+    last;
+  }
+  return $out;
+}
+
 =head1 DEPENDENCIES
 
 	NetAddr::IP

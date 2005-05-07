@@ -1,5 +1,19 @@
 Revision history for Perl extension Mail::SpamCannibal::DNSBLserver.
 
+0.41  Sat May  7 07:02:32 PDT 2005
+	corrected an error in zonefile.c and ns.c that incorrectly reported
+	the ip address during zone transfer and zone file creation in the 
+	TXT record of the form:
+
+	4.3.2.1.bl.spamcannibal.org	A	127.0.0.2
+					TXT	"some string  1.2.3.4"
+						 ^this was corrupted^
+
+	add an rbldns default record to the comment header of the zonefile
+	of the form:
+
+		; rbldnsDEF:a:txt
+
 0.40  Sun Apr 17 02:13:38 PDT 2005
 	add -C continuity flag, default '0', this is a BEHAVIOR CHANGE
 	For very large zones and multiple daemons constantly adding

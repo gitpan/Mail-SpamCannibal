@@ -319,7 +319,7 @@ zonefile(FILE * fd)
   extern struct in_addr stdResp, stdRespBeg, stdRespEnd, serial_rec, in;
   extern u_int32_t refresh, retry, expire, minimum, soa_ttl, localip[], diskmax;
   extern int h_name_ctr, mxmark[], visibleMAXeth;
-  extern int zflag, run, dflag;
+  extern int zflag, run, dflag, qflag;
   extern char mybuffer[], * stdErr_response, version[];
   extern pid_t parent;
   extern u_char ah,am,al,az,bh,bm,bl,bz,ch,cm,cl,cz,dh,dm,dl,dz,org, currArec[];
@@ -343,8 +343,15 @@ zonefile(FILE * fd)
   else
     numrecs = dbtp_stati(&dbtp,DBevidence);
 
-/* version, number of records (more or less), date, ORIGIN, and TTL for SOA	*/
-  fprintf(fd,"; Version: %s\n; %u A records\n; zone dump on %s\n$ORIGIN .\n$TTL %u\n",version,numrecs,ctime(&current),soa_ttl);
+/* version, number of records (more or less), date, rbldns default ,ORIGIN, and TTL for SOA	*/
+  if (qflag) {
+    sprintf(mybuffer,"%s?",errormsg);
+    bp = mybuffer;
+  }
+  else
+    bp = errormsg;
+
+  fprintf(fd,"; Version: %s\n; %u A records\n; zone dump on %s; rbldnsDEF:%s:%s\n\n$ORIGIN .\n$TTL %u\n",version,numrecs,ctime(&current),inet_ntoa(stdResp),bp,soa_ttl);
   bp = mybuffer;
   tabout(bp,zone_name,"IN SOA");				/* zonename IN SOA		*/
   fprintf(fd,"%s%s. %s. (\n",bp,local_name,contact);		/* name contact (		*/
@@ -456,10 +463,11 @@ zonefile(FILE * fd)
  *	127.0.0.1 is localhost and should never be reported	
  */
 
+    in.s_addr = *(u_int32_t *)currArec;			/* propagate IP for errIP() use	*/
+
     if ((A_resp = ns_response(currArec)) == NULL)
 	goto NEXT_RECORD;				/* do not report promiscious contributions	*/
 
-    in.s_addr = *(u_int32_t *)currArec;			/* propagate IP for errIP() use	*/
     iload(currArec,A_resp,stdErr_response);
     iprint(fd,bp);
 

@@ -1,5 +1,16 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.62  Sat May  7 22:13:11 PDT 2005
+        corrected type DNSBLserver/zonefile.c in 
+	rbldnsDEF zonefile line
+
+	ScriptSupport.pm v0.30, modified code to workaround
+	difference in perl version handling of $1, $2... variables.
+
+	Corrected type in ScriptSupport for db_watcher
+
+	corrected reversed ($gzip) test in contrib/zonedump.pl
+
 0.61  Fri May  6 19:25:04 PDT 2005
 	add script sc_dns2rbld.pl and supporting methods in
 	ScriptSupport v0.29 to convert dnsbls zone files to 

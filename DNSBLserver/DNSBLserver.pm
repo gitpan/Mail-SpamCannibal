@@ -1,6 +1,6 @@
 package Mail::SpamCannibal::DNSBLserver;
 use vars qw($VERSION);
-$VERSION = do { q|char version[] = "dnsbls 0.41, 5-6-05";| =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
+$VERSION = do { q|char version[] = "dnsbls 0.42, 5-7-05";| =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
 # returns $VERSION which is non-zero
 __END__
 

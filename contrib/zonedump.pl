@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# zone_dump.pl version 1.01, 4-16-05
+# zone_dump.pl version 1.02, 5-7-05
 #
 # Copyright 2005 Michael Robinton <michael@bizsystems.com>
 # rc.dnsbls is free software; you can redistribute it and/or 
@@ -230,17 +230,15 @@ if ($gzip || $rbldns) {
   }
 }
 
-if ($gzip) {
-  unless ($destdir eq $dbenv) {
-    seek(IN,0,0);			# rewind for copy operation
-    open(OUT,'>'. $zoneout .'.tmp')
+unless ($gzip || $destdir eq $dbenv) {
+  seek(IN,0,0);			# rewind for copy operation
+  open(OUT,'>'. $zoneout .'.tmp')
 	or die "could not open output zonefile\n";
-    while(<IN>) {
-      print OUT $_;			# copy file to new destination
-    }
-    close OUT;
-    rename $zoneout .'.tmp', $zoneout;	# atomic move
+  while(<IN>) {
+    print OUT $_;			# copy file to new destination
   }
+  close OUT;
+  rename $zoneout .'.tmp', $zoneout;	# atomic move
 }
 
 close IN;

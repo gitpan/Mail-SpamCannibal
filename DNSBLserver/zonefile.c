@@ -345,7 +345,7 @@ zonefile(FILE * fd)
 
 /* version, number of records (more or less), date, rbldns default ,ORIGIN, and TTL for SOA	*/
   if (qflag) {
-    sprintf(mybuffer,"%s?",errormsg);
+    sprintf(mybuffer,"%s$",errormsg);
     bp = mybuffer;
   }
   else

@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.29 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.30 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -1688,7 +1688,7 @@ sub dns2rblz {
       $self->{origin} =~ s/\.$self->{base}//i
 	if $self->{base};
     }
-    elsif ($in =~ /^(\$TTL\s+(\d+)).+/) {
+    elsif ($in =~ /^(\$TTL\s+(\d+))/) {
       $out = "\n#$1" if $2 > 0;
     }
     elsif ($in =~ /^([0-9.]+).+A\s+([0-9.]+)/) {	# A record
@@ -1700,11 +1700,12 @@ sub dns2rblz {
       $self->{answer} = $2;
     }
     elsif ($in =~ /^\s.+TXT\s+["]([^"\r\n]+)/) {	# TXT record
-      (my $txt = $1) =~ s/$self->{IP}/\$/;
+      $_ = $1;
+      (my $txt = $_) =~ s/$self->{IP}/\$/;
       unless ($txt eq $self->{txt}) {
 	$out = ':'. $self->{defresp}			# add answer if not already present
 		if $self->{answer} eq $self->{defresp};
-	$out .= ':'. $1;				# add text
+	$out .= ':'. $_;				# add text
       }
     }
     elsif ($in =~ /rbldnsDEF:([\d.]+):([^\r\n]+)/) {

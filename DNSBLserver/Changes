@@ -1,5 +1,8 @@
 Revision history for Perl extension Mail::SpamCannibal::DNSBLserver.
 
+0.42  Sat May  7 22:13:11 PDT 2005
+	corrected type in rbldnsDEF zonefile line
+
 0.41  Sat May  7 07:02:32 PDT 2005
 	corrected an error in zonefile.c and ns.c that incorrectly reported
 	the ip address during zone transfer and zone file creation in the 

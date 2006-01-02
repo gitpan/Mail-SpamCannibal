@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 1.27, 3-24-05
+# version 1.28, 12-14-05
 #
 # Copyright 2003 - 2005, Michael Robinton <michael@bizsystems.com>
 #   
@@ -863,12 +863,16 @@ document.SpamAdd.spam.value = "|. $query{spam} .q|";
 
 $html .= q|<script language=javascript1.1>
 function warnAdmin() {
-  if (confirm("Your session will expire in 60 seconds.\n\nClick OK to continue or Cancel to logout\n")) {
+  var timeout = new Date();
+  alert("Your session will expire in 60 seconds.\n\nClick OK to continue\n");
+  var delay = new Date();
+  if (timeout.getTime() + 60000 > delay.getTime()) {
     location.reload(1);
   } else {
     location = location.pathname + '?page=logout';
   }
 }
+
 setTimeout("warnAdmin()",| . $admses .q|);
 </script>
 | if $admses && $query{page} ne 'login';

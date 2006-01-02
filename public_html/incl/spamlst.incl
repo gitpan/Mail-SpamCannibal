@@ -1,5 +1,6 @@
 <font size="+2">Add Spam to Tarpit</font>
 <br>
+<!-- version 1.02, 5-26-05 -->
 Evidence of spam sent to this site.
 <br>
 <blockquote>
@@ -26,6 +27,9 @@ Evidence of spam sent to this site.
   onClick="if (confirm('do you really want to add this 128 address block?')) { document.SpamAdd.action=location.pathname; } else { return false;}">
 <input type=submit name=submit value=24
   onClick="if (confirm('do you really want to add this 256 address block?')) { document.SpamAdd.action=location.pathname; } else { return false;}">
+<blockquote>
+INSERT <a href="#top" onClick='SpamAdd.spam.value="spam source, dynamic/un-named IP\nsee\n"+ SpamAdd.host.value;return false;'>&quot;spam source, dynamic/un-named IP&quot;</a>
+</blockquote>
 </form>
 </blockquote>
 <script language=javascript1.1>

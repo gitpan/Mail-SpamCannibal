@@ -1,11 +1,11 @@
 #
-# my version 1.24, 4-25-05 michael@bizsystems.com
+# my version 1.29, 11-30-05 michael@bizsystems.com
 # -*- Perl -*-
 #***********************************************************************
 #
 # mimedefang-filter
 #
-# Suggested filter for use with SpamCannibal & SpamAssassing
+# Suggested filter for use with SpamCannibal & SpamAssassin
 # to protect Microsoft Windows clients, plus
 #
 # Copyright (C) 2004, Michael Robinton, michael@bizsystems.com
@@ -193,7 +193,7 @@ sub filter_relay {
 # dynamic or non MX static accounts
 #
 my $pattern =
-'pooles|not-active|ipad|unknown|customer|unused|no-dns|'.
+'pooles|not-active|ipad|unknown|customer|unused|no-dns|no-rdns|'.
 'reverse|wlan|user|usr|nat|catv|modem|cable|modemcable|'.
 'cdm|cm\d|client|cust|dhcp|dial|dialuol|dialup|dialip|dip|'.
 'docsis|(a|c|s|x|v|)dsl|dyn(amic|dsl|)|host|pool|ppp|in\-addr\.arpa';
@@ -209,11 +209,13 @@ my @dyn_ok_domains = qw(
 );
 
 my @known_bad_domains = (	# these are dynamic patterns for specific domains
+	'^SHASTA\d+',
 	'^FL.+mesh\.ad\.jp',
 	'^pc.+\d+.+\.comcast\.net',
 	'^cncln.online.ln.cn',
 	'^s[a-z0-9]+\..+shawcable\.net',
 	'^nameservices.net',
+	'^no.such',
 );
 
 sub filter_sender {
@@ -235,10 +237,10 @@ sub filter_sender {
 
 # return if not possible dynamic host
   return ('CONTINUE','ok') if $hostname =~ /^mail/i;
-  return (sc_profile('reverse_IP','REJECT',"bad reverse IP |$&| $hostname"))
-	if $hostname =~ /$ipattern/o;
 # return if known non-dynamic host
   return ('CONTINUE','ok') if grep ($hostname =~ /$_/i,@dyn_ok_domains);
+  return (sc_profile('reverse_IP','REJECT',"bad reverse IP |$&| $hostname"))
+	if $hostname =~ /$ipattern/o;
   return ('CONTINUE','ok') unless $hostname =~ /([(.\-]|\b)($pattern).?[.\-\d]/io;
   my $match = $&;
 # return if definetly not dynamic host, ends in 'match'.org|com|etc...
@@ -253,6 +255,10 @@ sub filter_recipient {
   my($recip, $sender, $ip, $host, $first, $helo,
 	$rcpt_mailer, $rcpt_host, $rcpt_addr) = @_;
   my $cleanrecip = sc_clean_email($recip);
+# catch email to postmaster and abuse from null sender
+  if ($sender =~ /^<?>?$/ && $cleanrecip =~ /^(postmaster|abuse)\@/i) {
+    return (sc_profile("null_${1}_sender","REJECT','553 5.1.7 null sender not acceptable for $1"));
+  }
   my @match = grep($cleanrecip =~ /\@$_$/i,keys %Relay_checklist);
   if (@match) {
     my($rv,$msg) = md_check_against_smtp_server($sender,

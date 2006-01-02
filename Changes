@@ -1,5 +1,40 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.65  Sun Jan  1 17:06:26 PST 2006
+	Replace the guts of Password.pm v0.03 with Data::Password::Manager
+	update the documentation tree to reflect the change
+
+	Correct a documentation typo in WEbService.pm v0.03
+	There were no code changes from v0.02
+
+	update public_html/cannibal.cgi v1.28 to remove CANCEL
+	from timeout alert pop-up
+
+	update contrib/mimedefang-filter to refuse mail to abuse@ and
+	postmaster@ from null sender <>
+
+0.64  Tue Nov 22 10:11:56 PST 2005
+	corrected several serious typo's introduced in the 0.31 update
+	of ScriptSupport v0.31. Updated version to ScriptSupport v0.32
+
+0.63  Mon Nov 21 10:11:43 PST 2005
+	update v0.31 of ScriptSupport.pm bl_Preen to check old 
+	'contrib' entries a minimum of every 30 days
+
+	updated public_html/spamlst.incl to add clickable
+	link that adds "spam" text to the text box
+
+	update scripts/sc_abuse.pl to add capabaility to send
+	abuse reports to multiple addresses for a configured 
+	abuse domain or to send to and abuse address that differs
+	from the offending domain.
+
+	update scripts/sc_abuse.pl to update SPAMCOUNT data in
+	the same manner as sc_mailfilter.pl
+
+	update sc_mailfilter.conf.sample to include necessary
+	ABUSE => parameters for sc_abuse.pl
+
 0.62  Sat May  7 22:13:11 PDT 2005
         corrected type DNSBLserver/zonefile.c in 
 	rbldnsDEF zonefile line

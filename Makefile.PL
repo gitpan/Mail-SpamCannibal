@@ -58,6 +58,7 @@ before running this installation procedure.
 my %xmodules = (
   'Geo::IP::PurePerl'			=> 'Geo-IP-PurePerl',
   'Geo::CountryFlags'			=> 'Geo-CountryFlags',
+  'Data::Password::Manager'		=> 'Data-Password-Manager',
   'IPTables::IPv4::DBTarpit'		=> 'IPTables-IPv4-DBTarpit',
   'IPTables::IPv4::DBTarpit::Tools'	=> 'IPTables-IPv4-DBTarpit-Tools',
   'IPTables::IPv4::DBTarpit::Inst'	=> 'IPTables-IPv4-DBTarpit-Inst',
@@ -93,6 +94,7 @@ my %makeparms = (
    'PREREQ_PM'	  => {
 			'IPTables::IPv4::DBTarpit' => '0.23',
 			'Geo::IP::PurePerl'	=> '1.10',
+			'Data::Password::Manager'  => '0.01',
 			'Sys::Hostname::FQDN'	=> '0.06',
 			'Net::DNS::Codes'	=> '0.08',
 			'Net::DNS::ToolKit'	=> '0.20',

@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 #
-# sc_mailfilter.pl
+# sc_abuse.pl
 #
-# version 1.06, 10-5-03
+# version 1.07, 10-5-05
 #
 #################################################################
 # WARNING! do not modify this script, make one with a new name. #
@@ -10,7 +10,7 @@
 # SpamCannibal.                                                 #
 #################################################################
 #
-# Copyright 2003, Michael Robinton <michael@bizsystems.com>
+# Copyright 2003 - 2005 Michael Robinton <michael@bizsystems.com>
    
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -46,6 +46,7 @@ use Mail::SpamCannibal::PidUtil qw(
 	get_script_name
 	make_pidfile
 );
+use Fcntl qw(:DEFAULT :flock);
 
 sub usage {
   print STDERR $_[0],"\n\n" if $_[0];
@@ -74,6 +75,10 @@ To: localabuse1	2 domain fields	'abuse@domain.com'
 To: localabuse2	2 domain fields	'abuse@domain.com'
 To: localabuse3	3 domain fields	'abuse@spam.domain.com'
 To: localabuse4	4 domain fields	'abuse@some.spam.domain.com'
+
+Also see the comments for the ABUSE key in sc_mailfilter.conf
+to send abuse messages to multiple destination addresses or a
+destination address that differs from the offending domain.
 
 |;
   exit 1;
@@ -178,14 +183,43 @@ my $fh = *STDIN;
       }
     }
     else {
-      my $target = 'abuse@'. $localvars->{to};
-      my $to = ($DEBUG) ? $admin : $target;
-      sendmessage('X-abuse-rcpt: '. $localvars->{ab2} ."\n".
-	"X-abuse-target: $target\n".
-	'Subject: spam from '. $localvars->{shost} ."\n\n". $localvars->{SPAM},
-	$to,
-	$admin
-      );
+      my $target = lc $localvars->{to};
+      my @target;
+      if (exists $MAILFILTER->{ABUSE} &&
+	  grep($target eq lc $_,keys %{$MAILFILTER->{ABUSE}})) {
+	foreach (keys %{$MAILFILTER->{ABUSE}}) {
+	  next unless $target eq lc $_;
+	  $target = $_;
+	  last;
+	}
+	@target = @{$MAILFILTER->{ABUSE}->{$target}};
+      }
+      @target = ('abuse@'. $target)
+	unless @target;
+
+      foreach $target (@target) {
+	next unless $target =~ /$emailfmt/;
+	my $to = ($DEBUG) ? $admin : $target;
+	sendmessage('X-abuse-rcpt: '. $localvars->{ab2} ."\n".
+		"X-abuse-target: $target\n".
+		'Subject: spam from '. $localvars->{shost} ."\n\n". $localvars->{SPAM},
+		$to,
+		$admin
+	);
+      }
+      if (exists $MAILFILTER->{SPAMCOUNT} &&					# spam counting active
+	  $MAILFILTER->{SPAMCOUNT} =~ m|.+/| &&					# extract directory portion
+	  -d $& &&								# directory exists
+	  sysopen(FILE,$MAILFILTER->{SPAMCOUNT},O_RDWR|O_CREAT) &&		# open counter file
+	  ($_ = select(FILE)) && ($| = 1) && (select $_)) {			# flush file handle
+	if (flock(FILE, LOCK_EX)) {						# block until locked
+	  $_ = <FILE> || 0;							# last count
+	  seek(FILE,0,0);							# rewind file
+	  print FILE $_+1,"\n";							# increment count
+	  truncate(FILE, tell(FILE));
+	}      
+	close FILE;
+      }
     }
   }
 } # end while

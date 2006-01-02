@@ -1,7 +1,8 @@
 #!/usr/bin/perl
 
 # sc_mailfilter.conf
-# Configuration for sc_mailfilter.pl
+# version 1.03, 10-5-05
+# Configuration for sc_mailfilter.pl, sc_abuse.pl
 
 my $MAILFILTER = {
 
@@ -12,6 +13,7 @@ my $MAILFILTER = {
 
 	BLCONFIG	=> '/usr/local/spamcannibal/config/sc_BlackList.conf',
 #
+
 
 # A list of mail host which are terminating servers for incoming mail to
 # this site. Include the IP addresses of any acceptable relays and backup 
@@ -44,6 +46,7 @@ my $MAILFILTER = {
 		mail4.ournetwork.net
 	)],
 
+
 # Do not automatically include private network addresses in MXhosts.
 #	127./8, 10./8, 172.16/12, 192.168/16
 #
@@ -51,7 +54,7 @@ my $MAILFILTER = {
 
 #	NOPRIVATE => 1;
 
-#
+
 # Report exceptions and failed entry attempts
 #
 # [ OPTIONAL ] recommended
@@ -59,7 +62,7 @@ my $MAILFILTER = {
 	REPORT	  => 'my.email@addy.com',
 #
 
-#
+
 # Count each message received for processing. This will
 # normally be approximately the number of added spams.
 #
@@ -69,7 +72,8 @@ my $MAILFILTER = {
 
 	SPAMCOUNT  => '/usr/local/spamcannibal/spamcount.txt',
 
-# PGP or GPG configuration information to decrypt incomming messages.
+
+# PGP or GPG configuration information to decrypt incoming messages.
 # Verify that a message has PGP encrypted content prior to decryption so
 # that plain text messages are not inadvertently passed to the to the
 # tarpit. Prevent unauthorized access/addition to the tarpit.
@@ -104,6 +108,7 @@ my $MAILFILTER = {
 
 	DIRTY	  => 1,
 
+
 # Validate IP's spam hosts against SPMCNBL_DB_ARCHIVE
 # as a condition of adding to tarpit. 
 #
@@ -120,4 +125,58 @@ my $MAILFILTER = {
 
 #	VALIDATE  => 1,
 
+
+# FOR sc_abuse.pl
+# If the of the originating spammer server is found as the key of the 
+# ABUSE hash, instead of an abuse message being sent to abuse@domain.com,
+# if the domainkey is found in the ABUSE hash, the abuse message is
+# sent to the address(s) found in the corresponding data array
+#
+# [ OPTIONAL ] 
+
+	ABUSE	=> {
+		'bellsouth.net'	=> [qw(
+				ipoperations@bellsouth.net
+				postmaster@bellsouth.net
+				root@bellsouth.net
+				abuse@bellsouth.net
+		)],
+		'blueyonder.co.uk' => [qw(
+				abuse@blueyonder.co.uk
+				abuse@telewest.co.uk
+		)],
+		'earthlink.net' => [qw(
+				abuse@earthlink.net
+				postmaster@earthlink.net
+				root@earthlink.net
+				openrelay@abuse.earthlink.net
+				junkmail@earthlink.net
+		)],
+		'eircom.net'	=> [qw(
+				cd@eircom.net
+				dcurran@eircom.net
+				abuse@ericom.net
+				postmaster@ericom.net
+				root@ericom.net
+				tech@indigo.ie
+				ross@eircom.net
+		)],
+		'hotmail.com'	=> [qw(
+				abuse@hotmail.com
+				abuse@msn.com
+				postmaster@hotmail.com
+				postmaster@msn.com
+		)],
+		'yahoo.com'	=> [qw(
+				netblockadmin@yahoo-inc.com
+				abuse@yahoo.com
+				abuse@yahoo-inc.com
+				postmaster@yahoo.com
+				postmaster@yahoo-inc.com
+				root@yahoo-inc.com
+		)],
+		'myvzw.com'	=> [qw(
+				abuse@verizon.net
+		)],
+	},
 };

@@ -71,8 +71,8 @@ href="#top">Download</a> link.
 <p>
 SpamCannibal does not identify spam.  SpamCannibal uses a list of identified
 spam sources (IP
-addresses) to know what to block. SpamCannibal's network module contiuously
-adds the IP address of incomming connections to its database. From this
+addresses) to know what to block. SpamCannibal's network module continuously
+adds the IP address of incoming connections to its database. From this
 list, there are three ways to obtain a list of
 spam sources:
 <ol>
@@ -81,7 +81,7 @@ simply mail the
 offending spam to the SpamCannibal mail filter robot which will dutifully
 strip out the sending
 mail server host address and add it to SpamCannibal's tarpit database.
-<li>Use a remote DNSBL to screen SpamCannibal's arcive database of IP
+<li>Use a remote DNSBL to screen SpamCannibal's archive database of IP
 connection addresses. SpamCannibal's BLcheck.pl
 script does this for you automatically when run periodically from a cron
 job.

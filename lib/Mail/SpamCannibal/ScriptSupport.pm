@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.30 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.32 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -1083,9 +1083,16 @@ sub BLpreen {
       $zapped = 1;
       next Record;
     }
-    if ($no_preen && ($last_access + $no_preen < $now)) {	# if this is an old tarpit record
-      print 'skip old record' if $VERBOSE;
-      next Record;				# skip it until it checks in
+    my $age = $now - $last_access;
+    if ($no_preen && 
+	$age > $no_preen				# if this is an old tarpit record
+    ) {
+      if (($age % 2592000) < 86400) {			# check old records at least once every 30 days
+	print 'check old record every 30 days' if $VERBOSE;
+      } else {
+	print 'skip old record' if $VERBOSE;
+	next Record;				# skip it until it checks in
+      }
     }
     if (matchNetAddr($IP,\@NAignor)) {		# remove if in ignore database
       zap_pair($tool,$key,$tarpit,$contrib,$DEBUG,$VERBOSE,'ignore');
@@ -1543,7 +1550,7 @@ sub abuse_host {
   dispose_of($fh);
 
   return(3,"startup blocked by DB watcher process")
-	if -e $localvars->{dbhome} .'/'. 'blockedBYwatcher';
+	if -e $lv->{dbhome} .'/'. 'blockedBYwatcher';
 
 # skip the headers from local client
   my @discard;

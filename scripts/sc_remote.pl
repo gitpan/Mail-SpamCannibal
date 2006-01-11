@@ -2,7 +2,7 @@
 #
 # sc_remote.pl
 #
-# version 1.04, 10-30-03
+# version 1.05, 1-10-06
 #
 #################################################################
 # WARNING! if you modify this script, make a backup copy.	#
@@ -12,7 +12,7 @@
 #
 # utility to make a remote connection to the server hosting the tarpit
 #
-# Copyright 2003, Michael Robinton <michael@bizsystems.com>
+# Copyright 2003 - 2006, Michael Robinton <michael@bizsystems.com>
    
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -62,8 +62,10 @@ $comment
 
 Syntax:	sc_session.pl command [arg1] [arg2] ...
 
-  sc_session.pl admin	on | off (command line only)
+  sc_session.pl admin	  on | off (command line only)
   sc_session.pl	newsess	  user password 
+  sc_session.pl newtick   user
+  sc_session.pl login     session_id expire password maxretry
   sc_session.pl updpass	  session_id expire user newpass oldpass
   sc_session.pl	chksess   session_id expire (relative)
   sc_session.pl rmvsess	  session_id
@@ -71,12 +73,16 @@ Syntax:	sc_session.pl command [arg1] [arg2] ...
   sc_session.pl insBL	  session_id expire dot.quad.ip.addr stuff...
   sc_session.pl	insEVD	  session_id expire dot.quad.ip.addr stuff...
   sc_session.pl insEBLKnn session_id expire dot.quad.ip.addr stuff...
-  sc_session.pl delete	session_id expire dot.quad.ip.addr
-  sc_session.pl delBLK	session_id expire dot.quad.ip.addr
+  sc_session.pl delete	  session_id expire dot.quad.ip.addr
+  sc_session.pl delBLK	  session_id expire dot.quad.ip.addr
 
   admin		returns "OK status"
 	allow admin addition/deletion of users
   newsess	returns "OK session_id"
+  newtick	returns "OK session_id"
+  login		returns "OK username" or (error text)
+	expire is a login retry expiration, retry
+	is the maximum allowable failed passwords
   updpass	returns OK or (error text)
 	blank passwords deletes user (not self)
   chksess	returns "OK username" or (error text)
@@ -122,6 +128,12 @@ my $action = clean(shift @ARGV);
 my $rv;
 if ($action =~ /^newsess/) {	# new session
   $rv = Normal(@ARGV[0,1]);
+}
+elsif ($action =~ /^newtick/) { # creat a new ticket without password validation
+  $rv = Normal(@ARGV[0]);
+}
+elsif ($action =~ /^login/) {	# login user using current ticket
+  $rv = Normal(@ARGV[0,1,2,3]);
 }
 elsif ($action =~ /^updpass/) {	# update password - possibly create new user
   $rv = Normal(@ARGV[0,1,2,3,4]);

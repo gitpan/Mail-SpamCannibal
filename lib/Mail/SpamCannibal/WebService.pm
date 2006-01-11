@@ -7,7 +7,7 @@ use vars qw($VERSION @ISA @EXPORT_OK);
 require Exporter;
 @ISA = qw(Exporter);
 
-$VERSION = do { my @r = (q$Revision: 0.03 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.04 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 @EXPORT_OK = qw(
 	sendhtml
@@ -277,6 +277,9 @@ key value pairs.
 Note: in scalar form, the unescaped query string is returned to preserve
 possible imbedded '=' characters.
 
+In array form, duplicate keys have their values appended to previous
+key/value pair with a null (\0) separator.
+
 =back
 
 =cut
@@ -296,7 +299,11 @@ sub get_query {
   foreach(@_) {
     my($key,$val) = split(/=/,$_,2);
     $val = '' unless defined $val;
-    $query{$key} = unescape($val);
+    if (exists $query{$key}) {
+      $query{$key} .= "\0". unescape($val);
+    } else {
+      $query{$key} = unescape($val);
+    }
   }
   return %query;
 }

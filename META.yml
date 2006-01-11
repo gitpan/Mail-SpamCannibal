@@ -1,0 +1,26 @@
+# http://module-build.sourceforge.net/META-spec.html
+#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
+name:         Mail-SpamCannibal
+version:      0.66
+version_from: SpamCannibal.pm
+installdirs:  site
+requires:
+    Data::Password::Manager:       0.01
+    Digest::MD5:                   2.00
+    Geo::IP::PurePerl:             1.10
+    IPTables::IPv4::DBTarpit:      0.23
+    MIME::Base64:                  2.00
+    Net::DNS::Codes:               0.08
+    Net::DNS::ToolKit:             0.20
+    Net::DNSBL::MultiDaemon:       0.13
+    Net::SMTP:                     2.10
+    Net::Whois::IP:                0.35
+    NetAddr::IP:                   0.35
+    Proc::PidUtil:                 0.06
+    Sys::Hostname::FQDN:           0.06
+    Test::Harness:                 2.01
+    Test::Simple:                  0.42
+    Unix::Syslog:                  0.97
+
+distribution_type: module
+generated_by: ExtUtils::MakeMaker version 6.30

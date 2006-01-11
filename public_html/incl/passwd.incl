@@ -1,0 +1,18 @@
+<blockquote>
+<b><a href="" onClick='document.cookie="SpamCannibal=";return true;'>HOME</a></b>
+</blockquote>
+<center>
+<form name=login action="" method=POST>
+<font size="-1">Enter your PASSWORD:</font><br>
+<input type=password name=passwd><p>
+<input type=hidden name=page value=ahome>
+<input type=submit value=LOGIN onClick="document.login.action = location.pathname;">
+</form>
+</center>
+<script language=javascript1.1>
+document.login.passwd.focus();
+function tohome() {
+  document.cookie = "SpamCannibal=";
+  return true;
+}
+</script>

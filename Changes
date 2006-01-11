@@ -1,5 +1,21 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.66  Tue Jan 10 17:36:37 PST 2006
+	Corrected comment error in style sheet public_html/incl/top.incl
+
+	Update WebService.pm 0.04 to support multiple key/value returns with
+	the same name from a form. Update public_html/cannibal.cgi v2.01 to
+	provide multiple selected deletes from the admin lookup window.
+
+	Update Session.pm 0.04 to support split user/password login windows,
+	rename t/ses_val.t => ses_val.old.t to make sure old behavior
+	remains supported, add t/ses_val.t to test new behavior
+	Update scripts/sc_session.pl v1.09 and scripts/sc_remote.pl v1.05
+
+	Updated public_html/cannibal.cgi and config/sc_web.conf to 
+	support split user/password login windows. Updated 
+	public_html/incl/login.incl. Added public_html/incl/passwd.inc.
+
 0.65  Sun Jan  1 17:06:26 PST 2006
 	Replace the guts of Password.pm v0.03 with Data::Password::Manager
 	update the documentation tree to reflect the change

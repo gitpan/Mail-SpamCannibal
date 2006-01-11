@@ -5,9 +5,9 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 1.28, 12-14-05
+# version 2.01, 1-10-06
 #
-# Copyright 2003 - 2005, Michael Robinton <michael@bizsystems.com>
+# Copyright 2003 - 2006, Michael Robinton <michael@bizsystems.com>
 #   
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -84,6 +84,7 @@ die "could not load config file"
 
 my ($admin,$sess,%extraheaders);
 my $expire	= $CONFIG->{expire} || 300;		# default expiration 5 minutes
+my $log_expire	= $CONFIG->{log_expire} || 180;		# default expiration 3 minutes
 my %query	= get_query();
 
 # check for query from LaBrea client & convert if necessary
@@ -92,6 +93,14 @@ if ($query{query} && $query{query} =~ /(\d+\.\d+\.\d+\.\d+)/) {
   $query{lookup} = $1;
 }
 
+# return session on success, undef otherwise
+#
+sub is_cookie() {
+  return($ENV{HTTP_COOKIE} && 
+	 $ENV{HTTP_COOKIE} =~ /SpamCannibal=([\w-]+\.[\w-]+\.\d+\.\d+\.[\w-]+)/)
+		? $1 : undef;
+}  
+
 my $admses = 0;
 my $user;
 if ($ENV{SCRIPT_FILENAME} && $ENV{SCRIPT_FILENAME} =~ m|/admin\..+$|) {
@@ -99,20 +108,26 @@ if ($ENV{SCRIPT_FILENAME} && $ENV{SCRIPT_FILENAME} =~ m|/admin\..+$|) {
   if (($admin = $CONFIG->{wrapper}) &&
       -e $admin && -x $admin &&
       do {			# return true if good session instantiated
-	if ($query{user} &&
-	    defined $query{passwd} &&
-	    ($_ = sesswrap("$admin newsess $query{user} $query{passwd}")) &&
-	    $_ =~ /^OK\s+([\w-]+\.[\w-]+\.\d+\.\d+\.[\w-]+)/) {
+	if (	$query{user} &&
+		($_ = sesswrap("$admin newtick $query{user}")) &&
+		$_ =~ /^OK\s+([\w-]+\.[\w-]+\.\d+\.\d+\.[\w-]+)/) {
 	  $sess = $1;
+	  $query{page} = 'passwd';
 	}
-	elsif ($ENV{HTTP_COOKIE} && 
-	    $ENV{HTTP_COOKIE} =~ /SpamCannibal=([\w-]+\.[\w-]+\.\d+\.\d+\.[\w-]+)/ &&
-	    ($sess = $1) &&
-	    ($_ = sesswrap("$admin chksess $sess $expire")) &&
-	    $_ =~ /^OK\s*(.+)/ &&
-	    ($user = $1)) {
+	elsif (	defined $query{passwd} &&
+		($sess = is_cookie) &&
+		($_ = sesswrap("$admin login $sess $log_expire $query{passwd} $CONFIG->{maxretry}")) &&
+		($_ =~ /^OK\s*([^\s]+)/ || ($_ =~ /^NOT OK\s*([^\s]+)/ && ($query{page} = 'passwd'))) &&
+		($user = $1)) {
 	  1;
-	} else {
+	}
+	elsif (	($sess = is_cookie) &&
+		($_ = sesswrap("$admin chksess $sess $expire")) &&
+		$_ =~ /^OK\s*([^\s]+)/ &&
+		($user = $1)) {
+	  1;
+	}
+	else {
 	  0;
 	}
       }
@@ -124,7 +139,7 @@ if ($ENV{SCRIPT_FILENAME} && $ENV{SCRIPT_FILENAME} =~ m|/admin\..+$|) {
     $query{page} = 'ahome'
 	unless $query{page};
     $admses = $expire - 60;					# this is an admin session
-    $admses =0 if $admses < 0;
+    $admses = 0 if $admses < 0;
     $admses *= 1000;						# session web page timeout
   }
   else {
@@ -167,14 +182,13 @@ while (1) {
   my ($name,$nav);
 
   if ($admin) {		# use nav2 for admin
-    $nav = (grep $query{page} =~ /^$_/,qw(sorry login))	# no nav bar for listed pages
+    $nav = (grep $query{page} =~ /^$_/,qw(sorry login passwd))	# no nav bar for listed pages
 	? '' : 'nav2';
   } else {
     $nav = 'nav';
   }
 
 ######	STATIC pages except 'home'
-
   foreach $name (@{$CONFIG->{static}}) {
     if ($query{page} =~ /^$name/) {
       foreach (qw(
@@ -404,8 +418,7 @@ function wIP(ip) {
 	  $html .= q
 |</td><td width=10>&nbsp;</td><td><table cellspacing=0 cellpadding=2 border=1>
 <tr><td class=hot><a href="#top" class=hot onMouseOver="return(show('delete |. $IP .q|'));" onMouseOut="return(off());"
-  onClick="self.location = location.pathname + '?page=delete&remove=' + '|. 
-	  $IP .q|'; return false;">X</a></td></tr></table></td><td>delete</td>
+  onClick="return(wDelete());">X</a></td></tr></table></td><td>delete</td>
     <td><table cellspacing=0 cellpadding=2 border=1>
       <td class=hot nowrap><a href="#top" class=hot onMouseOver="return(show('delete CIDR/24 |. $IP .q|'));" onMouseOut="return(off());"
   onClick="if (confirm('do you really want to delete a 256 address block?')) { self.location = location.pathname + '?page=delBLK&remove=' + '|.
@@ -427,7 +440,9 @@ function wIP(ip) {
 	  $text =~ s/$IP(\D)/$substr$1/g;
 	  $results = "\n<pre>\n". $text ."\n</pre>";
 	}
+	my $ip_found = 1;
 	if ($admin && $text =~ /^not\s+in\s+\w+\s+database/) {
+	  $ip_found = 0;
 	  $html .= q|
 <td width=20>&nbsp;</td><td><table cellspacing=0 cellpadding=2 border=1>
     <td class=cold><a href="#top" class=cold onMouseOver="return(show('tarpit |. $IP .q|'));" onMouseOut="return(off());"
@@ -442,6 +457,35 @@ function wIP(ip) {
 </form>
 |;
 	if ($admin) {
+	  $html .= q|<script language=javascript1.1>
+function wDelete() {
+  if (document.bulkremove) {
+    var tmp;
+    var checked = 0;
+    if (tmp = document.bulkremove.rm.length) {    // is an array
+      for (i = 0;i < tmp;i++) {
+        if (document.bulkremove.rm[i].checked)
+          checked++;
+      }
+    } else if (document.bulkremove.rm.checked)
+      checked = 1;
+    if (checked > 0) {
+      checked += |. $ip_found .q|;
+      if (checked > 1)
+        tmp = 'addresses?';
+      else
+        tmp = 'address?';
+      document.bulkremove.action = location.pathname;
+      if (confirm('do you really want to delete ' + checked + ' IP ' + tmp))
+        document.bulkremove.submit();
+      return false;
+    }
+  }
+  self.location = location.pathname + '?page=delete&remove=' + '|. $IP .q|';
+  return false;
+}
+</script>
+|;
 	  use integer;
 	  my $found = 0;
 	  my $related = '';
@@ -461,20 +505,21 @@ function wIP(ip) {
 	      $found += 1;
 	      $related .= q|<tr><td><a href="#top" onMouseOver="return(show('lookup |. $addr .q|'));" onMouseOut="return(off());"
   onClick="lookup.lookup.value='|. $addr .q|';lookup.submit();return false;">|. $addr .q|</a></td><td>|.
-	      scalar localtime($timetag) .q|</td></tr>
+	      scalar localtime($timetag) .q|</td><td align=center><input name=rm type=checkbox value="|. $addr .q|"></td></tr>
 |;
 	    }
 	  } else {	# response was NOT OK
 	    $html .= '<font size="+1" color=red><pre>' . $_ . '</pre></font><br>'
 	  }
 	  if ($found) {
-	    $html .= q|<blockquote>
+	    $html .= q|<form name=bulkremove action='' method=POST><blockquote>
 <b>|. $found .q| record|. (($found > 1) ? 's' : '') .q| in the same netblock</b>
 <p>
 <table cellspacing=0 cellpadding=2 border=1>
-  <tr><td align=center>host address</td><td align=center>last contact</td></tr>|.
+  <tr><td align=center>host address</td><td align=center>last contact</td><td>delete<input
+type=hidden name=page value=delete><input type=hidden name=remove value='|. $IP .q|'></td></tr>|.
 	    $related .q|
-</table></blockquote>
+</table></blockquote></form>
 |;
 	  }
 	}
@@ -654,6 +699,15 @@ function wIP(ip) {
     unless ($_ =~ /^OK/) {
       $query{pagerror} = '<font size="+1" color=red>'. $_ .'</font><br>';
     } 
+    if ($action eq 'delete' && exists $query{rm}) {
+      my @zap = split("\0",$query{rm});
+print STDERR "@zap\n";
+      foreach my $ip (@zap) {
+	$_ = sesswrap("$admin $action $sess $expire $ip");
+	$query{pagerror} .= '<font size="+1" color=red>'. $_ .'</font><br>'
+		unless $_ =~ /^OK/;
+      }
+    }
     $query{page} = 'lookup';
     $query{lookup} = $query{remove};
     next PageGen;

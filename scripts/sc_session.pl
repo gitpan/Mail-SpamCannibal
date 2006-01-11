@@ -2,7 +2,7 @@
 #
 # sc_session.pl
 #
-# version 1.08, 6-23-04
+# version 1.09, 1-2-06
 #
 #################################################################
 # WARNING! if you modify this script, make a backup copy.	#
@@ -14,7 +14,7 @@
 # Update passwords
 # insert and delete tarpit records
 #
-# Copyright 2003, Michael Robinton <michael@bizsystems.com>
+# Copyright 2003 - 2006, Michael Robinton <michael@bizsystems.com>
    
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -93,6 +93,8 @@ Syntax:	sc_session.pl command [arg1] [arg2] ...
 
   sc_session.pl admin	  on | off (command line only)
   sc_session.pl	newsess	  user password 
+  sc_session.pl newtick   user
+  sc_session.pl login	  session_id expire password maxretry
   sc_session.pl updpass	  session_id expire user newpass oldpass
   sc_session.pl	chksess   session_id expire (relative)
   sc_session.pl rmvsess	  session_id
@@ -106,6 +108,10 @@ Syntax:	sc_session.pl command [arg1] [arg2] ...
   admin		returns "OK status"
 	allow admin addition/deletion of users
   newsess	returns "OK session_id"
+  newtick	returns "OK session_id"
+  login		returns "OK username" or (error text)
+	expire is a login retry expiration, retry
+	is the maximum allowable failed passwords
   updpass	returns OK or (error text)
 	blank passwords deletes user (not self)
   chksess	returns "OK username" or (error text)
@@ -162,6 +168,12 @@ my %db_config = (	# this is the default, modified by InsXXX and Delete below
 my $rv;
 if ($action =~ /^newsess/) {	# new session
   $rv = NewSess();
+}
+elsif ($action =~ /^newtick/) {	# creat a new ticket without password validation
+  $rv = NewTick();
+}
+elsif ($action =~ /^login/) {	# login user using current ticket
+  $rv = LogIN();
 }
 elsif ($action =~ /^updpass/) {	# update password - possibly create new user
   $rv = UpdPass();
@@ -348,6 +360,21 @@ sub NewSess {
   return 'OK ' . $sess_id;
 }
 
+# creat a ticket as above, but do not validate password
+# set the retry count to 1
+#
+sub NewTick {
+  my($user) = clean($ARGV[0]);
+  return $error
+	unless defined pw_get($user,$passwd_file,\$error);
+# creat ticket, set session count = 1
+  $user = encode($user);
+  my $sess_id = new_ses($session_dir,$user,$secret,\$error,1);
+  return undef
+	unless $sess_id;
+  return 'OK ' . $sess_id;
+}
+
 sub ChkSess {
   my($sesid,$expire) = @ARGV;
   my $user = validate($session_dir,$sesid,$secret,\$error,$expire);
@@ -358,13 +385,56 @@ sub ChkSess {
   return 'OK '. $user;
 }
   
+sub LogIN {
+  my($sesid,$expire,$passwd,$retry) = @ARGV;
+  $sesid = clean($sesid);
+  $expire = clean($expire) || 500;		# three minute default
+  $passwd = ($passwd)
+	? $passwd = clean($passwd)
+	: '';
+  $retry = clean($retry) || 0;
+  $retry = 0 if $retry < 0;
+  my($user,$count,$file) = validate($session_dir,$sesid,$secret,\$error,$expire);
+  return $error if $error;
+  my $cryptpass;
+  unless (	(defined ($cryptpass = pw_get($user,$passwd_file,\$error))) &&
+		(pw_valid($passwd,$cryptpass) || do {$error = 'invalid password'; 0;})
+	) {
+    if ($retry && $count < $retry) {		# continue if login count has not expired
+      my $rv =  rewrite_session($session_dir .'/'. $file, ++$count);
+      return ($rv) ? $rv : $error;
+    }
+    remove($sesid);
+    return $error;
+  }
+# set session ticket valid
+  $error = rewrite_session($session_dir .'/'. $file, -1);
+  return ($error) ? $error : 'OK ' . $user;
+}
+
+# write val to filptr, return undef on success, error on failure
+#
+sub rewrite_session {
+  my ($filptr,$val) = @_;
+  open(SES,'>'. $filptr) or return 'session expired';
+  print SES $val;
+  close SES;
+  return undef;
+}  
+
 sub Remove {
   my $sesid = clean($ARGV[0]);
+  @_ = $sesid;
+  goto &remove;
+}
+
+sub remove {
+  my($sesid) = @_;
   my $file = $session_dir .'/'. (split('.',$sesid,3))[2];
   return 'session missing'
-	unless -e $file && -f $file;
+        unless -e $file && -f $file;
   return 'could not remove session file'
-	unless unlink $file;
+        unless unlink $file;
   return 'OK';
 }
 
@@ -573,4 +643,3 @@ sub GetC24 {
   $tool->closedb;
   return 'OK '. $vals;
 }
-

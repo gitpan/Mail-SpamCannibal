@@ -30,6 +30,8 @@ contrib/robots.txt
 contrib/mimedefang-filter
 contrib/rc_debian_spamcannibal
 contrib/zonedump.pl
+contrib/zone_cron.pl
+contrib/zone_cron.sh
 lib/Mail/SpamCannibal/GoodPrivacy.pm
 lib/Mail/SpamCannibal/LaBreaDaemon.pm
 lib/Mail/SpamCannibal/ParseMessage.pm
@@ -78,6 +80,7 @@ public_html/incl/home.incl
 public_html/incl/logo1.incl
 public_html/incl/logo2.incl
 public_html/incl/nav.incl
+public_html/incl/passwd.incl
 public_html/incl/top.incl
 public_html/incl/top2.incl
 public_html/incl/updpass.incl
@@ -128,11 +131,13 @@ t/sc_sesswrap.t
 t/ses_coded.t
 t/ses_mac.t
 t/ses_val.t
+t/ses_val.old.t
 t/ss_codes.t
 t/ss_dbjobs.t
 t/ss_netaddr.t
 t/ss_valid127.t
 t/ws_date.t
+t/ws_query.t
 t/ws_webservice.t
 tlib/broken.asc
 tlib/crypted.asc
@@ -229,3 +234,4 @@ DNSBLserver/t/zone_basics.t
 DNSBLserver/t/zoneiprint.t
 DNSBLserver/t/zoneoflush.t
 DNSBLserver/t/zoneratelimit.t
+META.yml                                 Module meta-data (added by MakeMaker)

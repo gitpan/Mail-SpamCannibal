@@ -9,7 +9,7 @@ use vars qw($VERSION @ISA @EXPORT_OK);
 require Exporter;
 @ISA = qw(Exporter);
 
-$VERSION = do { my @r = (q$Revision: 0.02 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.04 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 @EXPORT_OK = qw(
 	mac
@@ -40,9 +40,10 @@ Mail::SpamCannibal::Session - session management utilities
   $encoded = encode($string);
   $string = decode($encoded);
   $mac = mac(@elements);
-  $sess_id = new_ses($base64ID,$session_dir,\$error);
+  $sess_id=new_ses($base64ID,$session_dir,\$error,$ses_val);
   $var = clean($tainted);
   $user=validate($session_dir,$sess_id,$secret,\$error,$expire);
+  ($user,$content,$file)=validate($session_dir,$sess_id,$secret,\$error,$expire);
   $rv = sesswrap($command,$stdin);
 
 =cut
@@ -121,14 +122,25 @@ sub mac {
   return $scode;
 }
 
-=item * $sess_id = new_ses($base64ID,$session_dir,\$error);
+=item * $sess_id = new_ses($base64ID,$session_dir,\$error,$ses_val);
 
 Create a new session and return the identifying string.
 
   input:	session directory path,
 		base64 unique ID, (URL safe)
 		secret key for MAC,
-		pointer to $error scalar
+		pointer to $error scalar,
+		[optional] value for session
+		file contents, default -1
+
+Normally the session file is created containing a -1 with the presumption
+that the login procedure and password verification was successful. If the
+application needs to track conditional login attempts, then the session
+value can be initialized to a positive value and the 'validate' function
+(below) will return a false (undef) for 'user' when called with a SCALAR return
+value. The application must set the session value negative for the 'user'
+string to be returned.
+
 
   returns:	session ID or undef
 
@@ -141,7 +153,7 @@ Create a new session and return the identifying string.
 # and ticket = mac(user(base64),time,pid,secret)
 #
 sub new_ses {
-  my ($session_dir,$base64ID,$secret,$ep) = @_;
+  my ($session_dir,$base64ID,$secret,$ep,$ses_val) = @_;
   my $time = time;
   my $ticket = mac($base64ID,$time,$$,$secret);
   my $file = $time .'.'. $$ .'.'. $ticket;
@@ -149,6 +161,7 @@ sub new_ses {
   $$ep = 'could not create session key';
   open(SES,'>'. $session_dir .'/'. $file)
 	or return undef;
+  print SES ($ses_val) ? $ses_val : -1;
   close SES;
   return $base64ID .'.'. $mac .'.'. $file;
 }
@@ -171,6 +184,8 @@ sub clean {
 
 =item * $user=validate($session_dir,$sess_id,$secret,\$error,$expire);
 
+=item * ($user,$content,$file)=validate($session_dir,$sess_id,$secret,\$error,$expire);
+
 Validate a current session. The session directory is swept for
 sessions that have exceeded the expire time (seconds), then checked for the
 presence of a matching session. On error, a descriptive message is placed in
@@ -183,7 +198,12 @@ the external scalar $error and undef is returned.
 		expire (seconds) [optional]
 			default = 15 minutes
 
-  returns:	user name or undef
+  returns:	scalar: user name or undef
+		array: (user,contents,sess file)
+			or ()
+
+NOTE: in SCALAR mode, the return value will always be false if the session
+contents are > 0.
 
 =cut
 
@@ -196,7 +216,7 @@ sub validate {
   $expire = time - clean($expire);
   unless (opendir(D,$session_dir)) {
 	$$ep = 'could not open session directory';
-	return undef;
+	return (wantarray) ? () : undef;
   }
   my @files = grep(!/^\./, readdir(D));
   closedir D;
@@ -211,20 +231,29 @@ sub validate {
   my ($user,$mac,$file) = split(/\./,$sesid,3);
   unless ($mac eq mac($user,$file,$secret)) {
     $$ep = 'session ID is altered';
-    return undef;
+    return (wantarray) ? () : undef;
   }
   my ($time,$pid,$ticket) = split(/\./,$file);
   unless ($ticket eq mac($user,$time,$pid,$secret)) {
     $$ep = 'corrupt session ticket';
-    return undef;
+    return (wantarray) ? () : undef;
   }
   unless (open(SES,$session_dir .'/'. $file)) {
     $$ep = 'no such session';
-    return undef;
+    return (wantarray) ? () : undef;
   }
   $_ = <SES>;
   close SES;
-  return decode($user);
+  if ($_) {
+    chomp;
+  } else {
+    $_ = -1;
+  }
+  return (wantarray)
+	? (decode($user),$_,$file)
+	: ($_ && $_ < 0)
+		? decode($user)
+		: do {$$ep = 'login required'; undef};
 }
 
 =item * $rv = sesswrap($command,$stdin);
@@ -305,7 +334,7 @@ sub sesswrap {
 
 =head1 COPYRIGHT
 
-Copyright 2003, Michael Robinton <michael@bizsystems.com>
+Copyright 2003 - 2005 , Michael Robinton <michael@bizsystems.com>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

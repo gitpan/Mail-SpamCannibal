@@ -214,6 +214,15 @@ MY_POD2TEXT = |. $Config{scriptdirexp} .'/pod2text' .q|
   $post_constants;
 }
 
+### replaced in MY::postamble - install_permissions
+### 
+#	chmod 0644 $(SPAMCANNIBAL_HOME)/config/sc_web.conf.sample
+#	if [ -f $(SPAMCANNIBAL_HOME)/config/sc_web.conf ]; then \
+#	    chmod 0644 $(SPAMCANNIBAL_HOME)/config/sc_web.conf; \
+#	fi
+### replaced with ...  below
+#	chmod 0644 $(SPAMCANNIBAL_HOME)/config/sc_web*
+
 sub MY::postamble {
   my $postamble;
   $postamble = q|
@@ -252,10 +261,7 @@ install_sc_permissions	:
 	chmod 0700 $(SPAMCANNIBAL_HOME)/private
 	chmod 0600 $(SPAMCANNIBAL_HOME)/private/*
 	chmod 0640 $(SPAMCANNIBAL_HOME)/config/*
-	chmod 0644 $(SPAMCANNIBAL_HOME)/config/sc_web.conf.sample
-	if [ -f $(SPAMCANNIBAL_HOME)/config/sc_web.conf ]; then \
-	    chmod 0644 $(SPAMCANNIBAL_HOME)/config/sc_web.conf; \
-	fi
+	chmod 0644 $(SPAMCANNIBAL_HOME)/config/sc_web*
 	chmod 04755 $(SPMCNBL_SCRIPT_DIR)/sc_sesswrap
 	chmod 01700 $(SPMCNBL_SCRIPT_DIR)/sc_session.pl
 	chmod 0700 $(SPMCNBL_SCRIPT_DIR)/sc_remote.pl

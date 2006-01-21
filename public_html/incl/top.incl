@@ -22,6 +22,10 @@
 <script language=javascript1.2>
 var navwidth = 100 + 10; // from above + margin of 10
 var labrea = '';
+function cleanPath() {
+  self.location = self.location.pathname;
+  self.focus();
+}  
 function toTop() {
   if (self.location != top.location) {
       top.location = self.location.href;
@@ -43,4 +47,4 @@ function off() {
 }
 </script>
 </head>
-<body
+<body onFocus="if (!(!passwd) && (!passwd.closed)) { passwd.close(); };"

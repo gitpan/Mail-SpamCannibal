@@ -2,7 +2,7 @@
 #
 # sc_session.pl
 #
-# version 1.09, 1-2-06
+# version 1.10, 1-20-06
 #
 #################################################################
 # WARNING! if you modify this script, make a backup copy.	#
@@ -402,7 +402,7 @@ sub LogIN {
 	) {
     if ($retry && $count < $retry) {		# continue if login count has not expired
       my $rv =  rewrite_session($session_dir .'/'. $file, ++$count);
-      return ($rv) ? $rv : $error;
+      return ($rv) ? $rv : "NOT OK $user  : $error";
     }
     remove($sesid);
     return $error;

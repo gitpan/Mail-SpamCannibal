@@ -1,13 +1,14 @@
 <p>
 &nbsp;
 <center>
-<form name=login action="" method=POST>
+<form name=login action="" method=POST target='passwd'>
 <font size="-1">Enter your USER NAME:</font><br>
-<input type=text name=user><p>
+<input type=text name=u2><p>
+<input type=hidden name=user value=''>
 <input type=hidden name=page value=password>
-<input type=submit value=GO onClick="document.login.action = location.pathname;">
+<input type=submit value=GO onClick="login.user.value = login.u2.value;login.u2.value = '';popwin(bgcolor);document.login.action = location.pathname;">
 </form>
 </center>
 <script language=javascript1.1>
-document.login.user.focus();
+document.login.u2.focus();
 </script>

@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 2.01, 1-10-06
+# version 2.03, 1-20-06
 #
 # Copyright 2003 - 2006, Michael Robinton <michael@bizsystems.com>
 #   
@@ -71,6 +71,7 @@ use Mail::SpamCannibal::WebService qw(
 	html_cat
 	cookie_date
 	get_query
+	make_jsPOP_win
 );
 use Mail::SpamCannibal::Session qw(
 	decode
@@ -103,6 +104,7 @@ sub is_cookie() {
 
 my $admses = 0;
 my $user;
+my $passexp = 0;
 if ($ENV{SCRIPT_FILENAME} && $ENV{SCRIPT_FILENAME} =~ m|/admin\..+$|) {
   $extraheaders{'Set-Cookie'} = 'SpamCannibal=on; path=/; expires='. cookie_date(1);
   if (($admin = $CONFIG->{wrapper}) &&
@@ -117,6 +119,7 @@ if ($ENV{SCRIPT_FILENAME} && $ENV{SCRIPT_FILENAME} =~ m|/admin\..+$|) {
 	elsif (	defined $query{passwd} &&
 		($sess = is_cookie) &&
 		($_ = sesswrap("$admin login $sess $log_expire $query{passwd} $CONFIG->{maxretry}")) &&
+		($query{page} = '2realAH') &&
 		($_ =~ /^OK\s*([^\s]+)/ || ($_ =~ /^NOT OK\s*([^\s]+)/ && ($query{page} = 'passwd'))) &&
 		($user = $1)) {
 	  1;
@@ -143,7 +146,8 @@ if ($ENV{SCRIPT_FILENAME} && $ENV{SCRIPT_FILENAME} =~ m|/admin\..+$|) {
     $admses *= 1000;						# session web page timeout
   }
   else {
-    $query{page} = 'login';
+    $query{page} = 'login'
+	unless $query{page} eq '2realAH';			# reset to login indirectly if password expire
   }
 
   push @{$CONFIG->{static}}, @{$CONFIG->{admin}};
@@ -182,10 +186,20 @@ while (1) {
   my ($name,$nav);
 
   if ($admin) {		# use nav2 for admin
-    $nav = (grep $query{page} =~ /^$_/,qw(sorry login passwd))	# no nav bar for listed pages
+    $nav = ($query{page} =~ /sorry|login|passwd/)	# no nav bar for listed pages
 	? '' : 'nav2';
+    if ($query{page} eq 'login') {
+      $ftxt{pwin} = make_jsPOP_win('passwd',300,200) .q|
+<script language=javascript1.1>
+var |. $ftxt{bgcolor} .q|;
+</script>
+|;
+    } else {
+      $ftxt{pwin} = '';
+    }
   } else {
     $nav = 'nav';
+    $ftxt{pwin} = '';
   }
 
 ######	STATIC pages except 'home'
@@ -196,6 +210,7 @@ while (1) {
 		bgcolor
 		top2
 		versions
+		pwin
 		logo2
 		stats
 		),
@@ -560,6 +575,21 @@ type=hidden name=page value=delete><input type=hidden name=remove value='|. $IP 
     next PageGen;
   }
 
+###### 2REALAH
+
+  if ($admin && $query{page} =~ '2realAH') {
+    $html = q|<html>
+<head><title>SpamCannibal</title>
+<link rel="shortcut icon" type="image/ico" href="/favicon.ico" />
+<script language=javascript1.1>
+if (!(!opener))
+  opener.cleanPath();
+self.close();
+</script>
+</head><body>
+|;
+  }
+
 ######  AHOME
 
   if ($admin && $query{page} =~ 'ahome') {
@@ -701,7 +731,6 @@ type=hidden name=page value=delete><input type=hidden name=remove value='|. $IP 
     } 
     if ($action eq 'delete' && exists $query{rm}) {
       my @zap = split("\0",$query{rm});
-print STDERR "@zap\n";
       foreach my $ip (@zap) {
 	$_ = sesswrap("$admin $action $sess $expire $ip");
 	$query{pagerror} .= '<font size="+1" color=red>'. $_ .'</font><br>'
@@ -737,6 +766,7 @@ print STDERR "@zap\n";
     }
 
     $html =~ s/onLoad/onUnLoad=\"popadclose();\" onLoad/;
+    $html .= make_jsPOP_win('alookup',580,400);
     $html .= q|<script language=javascript1.1>
 function dbvs(db,rn) {
   document.dbsel.action = location.pathname
@@ -751,19 +781,8 @@ function popadclose() {
   if (alookup.closed == null) return;
   alookup.close();
 }
-function popadmwin() {
-  alookup = window.open ( "","alookup",    
-"toolbar=no,menubar=no,location=no,scrollbars=yes,status=yes,resizable=yes," +
-  "width=580,height=400");
-  if (alookup.opener == null ) alookup.opener = self;    
-  alookup.document.open();  
-  alookup.document.writeln('<html><body bgcolor="#ffffcc"></body></html>');  
-  alookup.document.close();  
-  alookup.focus();  
-  return false;
-}  
 function lIP(ip) {
-  popadmwin();
+  popwin('|. $bgcolor .q|');
   document.ViewDB.lookup.value = ip;
   document.ViewDB.action = location.pathname;
   document.ViewDB.submit();
@@ -929,7 +948,7 @@ function warnAdmin() {
 
 setTimeout("warnAdmin()",| . $admses .q|);
 </script>
-| if $admses && $query{page} ne 'login';
+| if $admses && $query{page} !~ /login|passwd|2realAH/;
 
 $html .= q|</body>
 </html>

@@ -7,7 +7,7 @@ use vars qw($VERSION @ISA @EXPORT_OK);
 require Exporter;
 @ISA = qw(Exporter);
 
-$VERSION = do { my @r = (q$Revision: 0.04 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.05 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 @EXPORT_OK = qw(
 	sendhtml
@@ -180,7 +180,14 @@ are arguments to the function call.
                 height [optional - 400 def]
   returns:      html text
 
-The javascript function returns 'false'.
+The javascript function creates a global variable of the name $name and takes the argument "color"
+
+	i.e.	var $name;
+		popwin(color);
+
+and always returns "false". The default color is light yellow [#ffffcc] if
+no color is specified.
+
 
 =cut
 
@@ -191,12 +198,15 @@ sub make_jsPOP_win {
 
   my $html = q|
 <script language=javascript1.1>
-function popwin(query) {
+var |. $name .q|;
+function popwin(color) {
+  if (!color)
+    color = '#ffffcc';
   |. $name .q| = window.open ( "","|. $name .q|",
 "toolbar=no,menubar=no,location=no,scrollbars=yes,status=yes,resizable=yes," +
   "width=|. $width .q|,height=|. $height .q|");
   |. $name .q|.document.open();
-  |. $name .q|.document.writeln('<html><body bgcolor="#ffffcc"></body></html>');
+  |. $name .q|.document.writeln('<html><body bgcolor="' + color + '"></body></html>');
   |. $name .q|.document.close();
   |. $name .q|.focus();
   return false;

@@ -92,12 +92,15 @@ print "cache value mismatch\nnot "
 ## test 6	check jsPOP javascript generator
 my $expected = q|
 <script language=javascript1.1>
-function popwin(query) {
+var testname;
+function popwin(color) {
+  if (!color)
+    color = '#ffffcc';
   testname = window.open ( "","testname",
 "toolbar=no,menubar=no,location=no,scrollbars=yes,status=yes,resizable=yes," +
   "width=555,height=444");
   testname.document.open();
-  testname.document.writeln('<html><body bgcolor="#ffffcc"></body></html>');
+  testname.document.writeln('<html><body bgcolor="' + color + '"></body></html>');
   testname.document.close();
   testname.focus();
   return false;
@@ -105,6 +108,6 @@ function popwin(query) {
 </script>
 |;
 my $jshtml = make_jsPOP_win('testname',555,444);
-print "make_jsPOP_win text mismatch:\n$jshtml\nnot "
+print ":got: $jshtml\nexp: $expected\nnot "
 	unless $jshtml eq $expected;
 &ok;

@@ -1,5 +1,21 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.67  Fri Jan 20 18:53:52 PST 2006
+	update WebService v0.05 make_jsPOP_win(...) so that the javascript
+	function "popwin" that it returns takes a color argument.
+
+	updated Makefile.PL to change permissions on sc_web* instead of
+	sc_web.conf, etc.... during the install process. See note in Makefile
+
+	update scripts/sc_session.pl v1.10 to correctly retry password
+	entries multiple times as set in the config file
+
+	update public_html/cannibal.cgi v2.02 to pop a seperate password
+	window for login attempts
+
+	update incl/... top.incl, login.incl, passwd.incl to facilitate
+	seperate password window implementation
+
 0.66  Tue Jan 10 17:36:37 PST 2006
 	Corrected comment error in style sheet public_html/incl/top.incl
 

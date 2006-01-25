@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 2.03, 1-20-06
+# version 2.04, 1-24-06
 #
 # Copyright 2003 - 2006, Michael Robinton <michael@bizsystems.com>
 #   
@@ -174,6 +174,9 @@ $ftxt{versions} = q|<!--|.
 	q| NDT:|. $Net::DNS::ToolKit::VERSION .
 	q| IID:|. $IPTables::IPv4::DBTarpit::VERSION .
 	q| -->
+<script language=javascript1.1>
+  bgcolor="|. $bgcolor .q|";
+</script>
 |;
 
 my $html = '';
@@ -188,18 +191,10 @@ while (1) {
   if ($admin) {		# use nav2 for admin
     $nav = ($query{page} =~ /sorry|login|passwd/)	# no nav bar for listed pages
 	? '' : 'nav2';
-    if ($query{page} eq 'login') {
-      $ftxt{pwin} = make_jsPOP_win('passwd',300,200) .q|
-<script language=javascript1.1>
-var |. $ftxt{bgcolor} .q|;
-</script>
-|;
-    } else {
-      $ftxt{pwin} = '';
-    }
+    $ftxt{versions} .= make_jsPOP_win('passwd',300,200)
+	if $query{page} eq 'login';
   } else {
     $nav = 'nav';
-    $ftxt{pwin} = '';
   }
 
 ######	STATIC pages except 'home'
@@ -210,7 +205,6 @@ var |. $ftxt{bgcolor} .q|;
 		bgcolor
 		top2
 		versions
-		pwin
 		logo2
 		stats
 		),
@@ -582,7 +576,7 @@ type=hidden name=page value=delete><input type=hidden name=remove value='|. $IP 
 <head><title>SpamCannibal</title>
 <link rel="shortcut icon" type="image/ico" href="/favicon.ico" />
 <script language=javascript1.1>
-if (!(!opener))
+if (!(opener == (void 0) |. '||'. q| !opener ))
   opener.cleanPath();
 self.close();
 </script>

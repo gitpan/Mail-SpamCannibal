@@ -21,10 +21,15 @@
 </style>
 <script language=javascript1.2>
 var navwidth = 100 + 10; // from above + margin of 10
+var bgcolor = '#ffffcc';
 var labrea = '';
+var passwd = '';
 function cleanPath() {
-  self.location = self.location.pathname;
   self.focus();
+  var reload = self.location.pathname;
+  document.open();
+  document.write("<html><body bgcolor='" + bgcolor + "' </html>\n");
+  self.location = reload;
 }  
 function toTop() {
   if (self.location != top.location) {
@@ -47,4 +52,5 @@ function off() {
 }
 </script>
 </head>
-<body onFocus="if (!(!passwd) && (!passwd.closed)) { passwd.close(); };"
+<body
+  onFocus="if (!(passwd == (void 0) || !passwd) && (!passwd.closed)) { passwd.close(); };"

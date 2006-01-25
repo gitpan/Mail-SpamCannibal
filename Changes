@@ -1,5 +1,10 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.68  Tue Jan 24 18:20:11 PST 2006
+	Corrected javascript 'undefined' variable detection in 
+	public_html/cannibal.cgi v2.04. Updated same to clear
+	'username' page upon successful password validation
+
 0.67  Fri Jan 20 18:53:52 PST 2006
 	update WebService v0.05 make_jsPOP_win(...) so that the javascript
 	function "popwin" that it returns takes a color argument.

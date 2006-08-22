@@ -1,4 +1,4 @@
-<!-- last updated 12-5-03 -->
+<!-- last updated 4-28-06 -->
 <font size=+1>SpamCannibal Required Modules and Dependencies</font>
 <p>
 <a href="http://search.cpan.org/search?query=IPTables::IPv4::DBTarpit">IPTables::IPv4::DBTarpit</a>
@@ -28,7 +28,7 @@
     available on <a href="http://CPAN.org/">CPAN.org</a><br>
   <a href="http://search.cpan.org/search?query=Geo::IP::PurePerl">Geo::IP::PurePerl</a>
     available on <a href="http://CPAN.org/">CPAN.org</a><br>
-  <a href="http://search.cpan.org/search?query=NetAddr::IP">NetAddr::IP</a> version 3.14 or better
+  <a href="http://search.cpan.org/search?query=NetAddr::IP::Lite">NetAddr::IP::Lite</a> version 0.02 or better
     available on <a href="http://CPAN.org/">CPAN.org</a><br>
   <a href="http://search.cpan.org/search?query=Net::Whois::IP">Net::Whois::IP</a> version 0.35 or better
     available on <a href="http://CPAN.org/">CPAN.org</a><br>

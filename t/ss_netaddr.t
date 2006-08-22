@@ -9,7 +9,7 @@ BEGIN { $| = 1; print "1..35\n"; }
 END {print "not ok 1\n" unless $loaded;}
 
 #use diagnostics;
-use NetAddr::IP;
+use NetAddr::IP::Lite;
 use Mail::SpamCannibal::ScriptSupport qw(
         list2NetAddr
         matchNetAddr

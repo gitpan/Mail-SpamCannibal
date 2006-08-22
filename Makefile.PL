@@ -75,7 +75,7 @@ my %xmodules = (
   'Net::DNSBL::Utilities'		=> 'Net-DNSBL-Utilities',
   'Net::SMTP'				=> 'Net-SMTP',
   'Net::Whois::IP'			=> 'Net-Whois-IP',
-  'NetAddr::IP'				=> 'NetAddr-IP',
+  'NetAddr::IP::Lite'			=> 'NetAddr-IP-Lite',
   'Proc::PidUtil'			=> 'Proc-PidUtil',
   'Sys::Hostname::FQDN'			=> 'Sys-Hostname-FQDN',
 );
@@ -98,7 +98,7 @@ my %makeparms = (
 			'Sys::Hostname::FQDN'	=> '0.06',
 			'Net::DNS::Codes'	=> '0.08',
 			'Net::DNS::ToolKit'	=> '0.20',
-			'NetAddr::IP'		=> '0.35',
+			'NetAddr::IP::Lite'	=> '0.02',
 			'Net::DNSBL::MultiDaemon' => '0.13',
 			'Net::SMTP'		=> '2.10',
 			'Net::Whois::IP'	=> '0.35',

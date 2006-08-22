@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 #
 # sc_cleanup.pl
-# version 1.02, 10-7-03
+# version 1.03, 4-28-06
 #
 #################################################################
 # WARNING! do not modify this script, make one with a new name. #
@@ -35,7 +35,7 @@ use Mail::SpamCannibal::PidUtil 0.02 qw(
 	if_run_exit
 	zap_pidfile
 );
-use NetAddr::IP;
+use NetAddr::IP::Lite;
 use Mail::SpamCannibal::ScriptSupport qw(
 	zap_one
 );
@@ -142,7 +142,7 @@ if_run_exit($environment,'already running');
   my $config = \%default;
   my($record,$netaddy,$timestamp,$ip,$zapped);
 
-  my $localnet = new NetAddr::IP('127.0.0.0','255.0.0.0');
+  my $localnet = new NetAddr::IP::Lite('127.0.0.0','255.0.0.0');
 
   my $run = 1;
   local $SIG{TERM} = sub { $run = 0; };
@@ -156,7 +156,7 @@ if_run_exit($environment,'already running');
     $ip = inet_ntoa($netaddy);
     print "$evidence: $ip "
 	if $VERBOSE;
-    if (new NetAddr::IP($ip)->within($localnet)) {
+    if (new NetAddr::IP::Lite($ip)->within($localnet)) {
 	print 'skipping...' if $VERBOSE;
 	next;
     }
@@ -179,7 +179,7 @@ if_run_exit($environment,'already running');
     $ip = inet_ntoa($netaddy);
     print "$contrib: ", inet_ntoa($netaddy), ' '
 	if $VERBOSE;
-    if (new NetAddr::IP($ip)->within($localnet)) {
+    if (new NetAddr::IP::Lite($ip)->within($localnet)) {
 	print 'skipping...' if $VERBOSE;
 	next;
     }
@@ -200,7 +200,7 @@ if_run_exit($environment,'already running');
     $ip = inet_ntoa($netaddy);
     print "$tarpit: ", inet_ntoa($netaddy), ' '
 	if $VERBOSE;
-    if (new NetAddr::IP($ip)->within($localnet)) {
+    if (new NetAddr::IP::Lite($ip)->within($localnet)) {
         print 'skipping...' if $VERBOSE;
         next;
     }

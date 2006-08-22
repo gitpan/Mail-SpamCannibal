@@ -1,5 +1,26 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.70  Mon Aug 21 14:23:48 PDT 2006
+	add support for 'rbldnsd ip4set format' to 
+	ScriptSupport v0.34
+	and to 'contrib/zonedump.pl'.
+
+0.69  Fri Apr 28 16:27:02 PDT 2006
+	switch from NetAddr::IP to NetAddr::IP::Lite
+
+	correct typo in documentation index.pod
+
+	comment out code to detect null sender for 
+	postmaster && abuse in contrib/mimedefang-filter
+	let the sysadmin uncomment if wanted
+
+	update public_html/incl/spamlst.incl to change
+	wording of admin link and proto text
+
+	update public_html/incl/login.incl to place
+		*****'s in the text box while
+	waiting for the password action to complete
+
 0.68  Tue Jan 24 18:20:11 PST 2006
 	Corrected javascript 'undefined' variable detection in 
 	public_html/cannibal.cgi v2.04. Updated same to clear

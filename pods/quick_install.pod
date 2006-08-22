@@ -4,8 +4,9 @@
 SpamCannibal Quick Install
 
   Jonathan Baker-Bates E<lt>jonathan_AT_bakerbates.comE<gt>
+  Michael Robinton E<lt>michael@bizsystems.comE<gt>
 
-  Last Update - 13/09/04 v0.2
+  Last Update - April 28, 2006
 
 =head2 DESCRIPTION
 
@@ -80,7 +81,7 @@ Then install the following if you don't already have them:
  Unix::Syslog
  Net::DNS::Codes
  Net::DNS::ToolKit
- NetAddr::IP
+ NetAddr::IP::Lite
  Net::SMTP -- part of standard perl
  Net::Whois::IP
  Proc::PidUtil

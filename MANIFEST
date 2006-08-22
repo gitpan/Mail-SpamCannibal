@@ -1,5 +1,6 @@
 Changes
 MANIFEST
+MANIFEST.SKIP
 INSTALL
 GPL
 Makefile.PL

@@ -5,7 +5,7 @@ All - SpamCannibal Documentation
 
 =for html <font size=+2>Documentation for the SpamCannibal Package</font>
 <br>&nbsp;
-<br><!-- version 1.14, 1-1-06 -->
+<br><!-- version 1.15, 4-28-06 -->
 <font size=+1><a href="install.html#support">Support and Project Participation</a></font><br>
 <font size=+1><a href=howtouse.html>HOWTO use SpamCannibal</a></font> with your mail system<br>
 <font size=+1><a href=howitworks.html>HOW SpamCannibal Works</a></font><br>
@@ -28,7 +28,7 @@ Detailed installation instructions for all packages<br>
 <font size=+1><b>DAEMON rc.scripts</b></font>
 <blockquote>
 <table cellpadding=4 border=0>
-<tr valign=top><td>rc.dbtarpit</td><td>type: rc.dbtaript.pl -h and see the manpage for dbtarpit</td></tr>
+<tr valign=top><td>rc.dbtarpit</td><td>type: rc.dbtarpit.pl -h and see the manpage for dbtarpit</td></tr>
 <tr valign=top><td><a href=rc.dnsbls.html>rc.dnsbls</a></td><td>dnsbls startup script</td></tr>
 <tr valign=top><td><a href=rc.bdbaccess.html>rc.bdbaccess</a></td><td>bdbaccess startup script</td></tr>
 <tr valign=top><td><a href=rc.sc_dbwatch.html>rc.sc_dbwatch</a></td><td>database watcher ALL daemon start script</td></tr>
@@ -90,7 +90,7 @@ The included dynamic files for this page are transferred periodically from their
 <tr valign=top><td><a href=Net-DNSBL-MultiDaemon.html>Net::DNSBL::MultiDaemon</a></td><td>multi_dnsbl daemon to optimize DNSBL lookups</td></tr>
 <tr valign=top><td><a href=Net-SMTP.html>Net::SMTP</a></td><td>perl SMTP interface</td></tr>
 <tr valign=top><td><a href=Net-Whois-IP.html>Net::Whois::IP</a></td><td>perl Whois interface</td></tr>
-<tr valign=top><td><a href=NetAddr-IP.html>NetAddr::IP</a></td><td>perl routines to manipulate IP addresses</td></tr>
+<tr valign=top><td><a href=NetAddr-IP-Lite.html>NetAddr::IP::Lite</a></td><td>perl routines to manipulate IP addresses</td></tr>
 <tr valign=top><td><a href=Proc-PidUtil.html>Proc::PidUtil</td><td>perl routines to manage PID files</td></tr>
 <tr valign=top><td><a href=Sys-Hostname-FQDN.html>Sys::Hostname::FQDN</a></td><td>routine to return local host name</td></tr>
 </table>

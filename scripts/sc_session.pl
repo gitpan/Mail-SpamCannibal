@@ -2,7 +2,7 @@
 #
 # sc_session.pl
 #
-# version 1.10, 1-20-06
+# version 1.11, 4-28-06
 #
 #################################################################
 # WARNING! if you modify this script, make a backup copy.	#
@@ -60,7 +60,7 @@ use Mail::SpamCannibal::Password qw(
 	pw_obscure
 	pw_get
 );
-use NetAddr::IP;
+use NetAddr::IP::Lite;
 
 # extract the path we're using
 $0 =~ m|/scripts/sc_session|;
@@ -523,7 +523,7 @@ sub InsEBLK {
 	or return $error;
 
   $addr = clean($addr);
-  (new NetAddr::IP("${addr}/${CIDR}")->range()) =~ /(\d+\.\d+\.\d+\.)(\d+)\s+\-+\s+\d+\.\d+\.\d+\.(\d+)/;
+  (new NetAddr::IP::Lite("${addr}/${CIDR}")->range()) =~ /(\d+\.\d+\.\d+\.)(\d+)\s+\-+\s+\d+\.\d+\.\d+\.(\d+)/;
   @_ = ($2..$3);
   my $cidr = $1;
   foreach(@_) {

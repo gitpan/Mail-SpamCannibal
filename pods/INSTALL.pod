@@ -154,7 +154,7 @@ appropriate directory on your system.
   Unix::Syslog
   Net::DNS::Codes
   Net::DNS::ToolKit
-  NetAddr::IP
+  NetAddr::IP::Lite
   Net::SMTP -- part of standard perl
   Net::Whois::IP
   Proc::PidUtil

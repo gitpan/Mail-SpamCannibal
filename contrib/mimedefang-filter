@@ -1,5 +1,5 @@
 #
-# my version 1.29, 11-30-05 michael@bizsystems.com
+# my version 1.32, 8-12-06 michael@bizsystems.com
 # -*- Perl -*-
 #***********************************************************************
 #
@@ -216,6 +216,8 @@ my @known_bad_domains = (	# these are dynamic patterns for specific domains
 	'^s[a-z0-9]+\..+shawcable\.net',
 	'^nameservices.net',
 	'^no.such',
+	'adsl$',
+	'dhcp$',
 );
 
 sub filter_sender {
@@ -256,9 +258,9 @@ sub filter_recipient {
 	$rcpt_mailer, $rcpt_host, $rcpt_addr) = @_;
   my $cleanrecip = sc_clean_email($recip);
 # catch email to postmaster and abuse from null sender
-  if ($sender =~ /^<?>?$/ && $cleanrecip =~ /^(postmaster|abuse)\@/i) {
-    return (sc_profile("null_${1}_sender","REJECT','553 5.1.7 null sender not acceptable for $1"));
-  }
+#  if ($sender =~ /^<?>?$/ && $cleanrecip =~ /^(postmaster|abuse)\@/i) {
+#    return (sc_profile("null_${1}_sender","REJECT','553 5.1.7 null sender not acceptable for $1"));
+#  }
   my @match = grep($cleanrecip =~ /\@$_$/i,keys %Relay_checklist);
   if (@match) {
     my($rv,$msg) = md_check_against_smtp_server($sender,

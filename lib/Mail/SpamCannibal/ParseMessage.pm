@@ -3,10 +3,10 @@ package Mail::SpamCannibal::ParseMessage;
 use strict;
 #use diagnostics;
 use Socket;
-use NetAddr::IP;
+use NetAddr::IP::Lite;
 use vars qw($VERSION @ISA @EXPORT_OK);
 
-$VERSION = do { my @r = (q$Revision: 0.07 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.08 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 require Exporter;
@@ -411,21 +411,21 @@ sub firstremote {
   foreach(@_) {				# remove duplicates and non-existent hosts [255.255.255.255]
     next if $_ eq $last || $_ eq '255.255.255.255';
     $last = $_;
-    push @local, new NetAddr::IP($_);
+    push @local, new NetAddr::IP::Lite($_);
   }
   my @private;
   unless ($no) {
-    @private = ('127./8',		 	# exclude local and
-      '10./8','172.16/12','192.168/16');	# private networks
+    @private = ('127.0.0.0/8',		 	# exclude local and
+      '10.0.0.0/8','172.16.0.0/12','192.168.0.0/16');	# private networks
     foreach(0..$#private) {
-      $private[$_] = new NetAddr::IP($private[$_]);
+      $private[$_] = new NetAddr::IP::Lite($private[$_]);
     }
   }
 # check for presence of "from" in excluded address range
   my $from = '';
   my $by;
   foreach my $hp (0..$#{$mtap}) {
-    my $mtaobj = new NetAddr::IP($mtap->[$hp]->{from});
+    my $mtaobj = new NetAddr::IP::Lite($mtap->[$hp]->{from});
 # goto next header if address is in the exclusion list
     next if grep($_->contains($mtaobj),(@local,@private));
     $from = $mtap->[$hp]->{from};	# tenatively this one
@@ -438,7 +438,7 @@ sub firstremote {
     my @from = ($by);
     _host2ip(\@from,\@by);
     foreach(@by) {
-      my $byobj = new NetAddr::IP($_);
+      my $byobj = new NetAddr::IP::Lite($_);
 # return valid 'from' address if 'by' is found in local host list
       return $from if grep($_->contains($byobj),@local);
     }
@@ -508,7 +508,7 @@ sub string2array {
 
 =head1 DEPENDENCIES
 
-  NetAddr::IP version 3.14
+  NetAddr::IP::Lite version 0.02
 
 =head1 EXPORT
 
@@ -530,7 +530,7 @@ Michael Robinton <michael@bizsystems.com>
 
 =head1 COPYRIGHT
 
-Copyright 2003, Michael Robinton <michael@bizsystems.com>
+Copyright 2003 - 2006, Michael Robinton <michael@bizsystems.com>
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or 

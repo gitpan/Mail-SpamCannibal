@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 #
-# zone_dump.pl version 1.02, 5-7-05
+# zone_dump.pl version 1.03, 8-21-06
 #
-# Copyright 2005 Michael Robinton <michael@bizsystems.com>
+# Copyright 2005 - 2006 Michael Robinton <michael@bizsystems.com>
 # rc.dnsbls is free software; you can redistribute it and/or 
 # modify it under the terms of the GPL software license.
 #
@@ -18,7 +18,7 @@ use Proc::PidUtil 0.07 qw(
         make_pidfile
         zap_pidfile
 );
-use Mail::SpamCannibal::ScriptSupport qw(
+use Mail::SpamCannibal::ScriptSupport 0.34 qw(
 	DO
 );
 
@@ -46,14 +46,23 @@ nice(19) or die "nice failed\n";	# be very nice to other tasks
 
 my $DEBUG = 0;
 my $gzip = 0;
-my $rbldns = 0;
+my $rbldns= 0;
+my $rbldnset = 0;
+my $rbldnstset = 0;
 
-while(($_ = shift @ARGV) && $_ =~ /^\-[dzr]/) {
+while(($_ = shift @ARGV) && $_ =~ /^\-[dizr]/) {
   if ($_ eq '-d') {
     $DEBUG = $_;
   }
   elsif ($_ eq '-r') {
-    $rbldns = new Mail::SpamCannibal::ScriptSupport;
+    $rbldns = new Mail::SpamCannibal::ScriptSupport
+	unless $rbldns;
+    $rbldnstset = 1;
+  }
+  elsif ($_ eq '-i') {
+    $rbldns = new Mail::SpamCannibal::ScriptSupport
+	unless $rbldns;
+    $rbldnset = 1;
   }
   elsif ($_ eq '-z') {
     $gzip = $_;
@@ -66,13 +75,16 @@ my $timeout = shift;
 die qq|
 Syntax:  $0 destination_dir timeout
     or	 $0 -r destination_dir timeout
+    or	 $0 -i destination_dir timeout
     or	 $0 -z destination_dir timeout
-    or	 $0 -r -z destination_dir timeout
+    or	 $0 -r -i -z destination_dir timeout
 
-	-r	switch cause an rbldns
-		file to be writtin as well
+	-i	cause an rbldns ip4set
+		file to be written
+	-r	cause an rbldns ip4tset
+		file to be written
 
-	-z 	switch gzips the DNS bin output
+	-z 	gzips the DNS bin output
 		file, expect 95% compression
 
 	Directory to write compressed zone file and
@@ -203,11 +215,14 @@ if ($gzip) {
   $gzip = gzopen($zoneout .'.gz.tmp','wb')
 	or die "could not open gzip zonefile\n";
 }
-if ($rbldns) {
-  open(RBL,'>'. $zoneout .'.rbl.tmp')
-	or die "could not open output rbldns file\n";
+if ($rbldnstset) {
+  open(RBLt,'>'. $zoneout .'.rbl.tmp')
+	or die "could not open output rbldns ip4tset file\n";
 }
-
+if ($rbldnset) {
+  open(RBLs,'>'. $zoneout .'.ip4set.rbl.tmp')
+	or die "could not open output rbldns ip4set file\n";
+}
 if ($gzip || $rbldns) {
   while(<IN>) {
     if($gzip) {
@@ -216,17 +231,26 @@ if ($gzip || $rbldns) {
     }
     if ($rbldns) {
       my $line = $rbldns->dns2rblz($_);
-      print RBL $line if $line;
+      if ($line) {
+	print RBLt $line if $rbldnstset;
+	print RBLs $rbldns->rbldns_compress($line)
+		if $rbldnset;
+      }
     }
   }
   if ($gzip) {
     $gzip->gzclose;
     rename $zoneout .'.gz.tmp', $zoneout .'.gz';	# atomic move
   }
-  if ($rbldns) {
-    print RBL "\n";
-    close RBL;
+  if ($rbldnstset) {
+    print RBLt "\n";
+    close RBLt;
     rename $zoneout .'.rbl.tmp', $zoneout .'.rbl';	# atomic move
+  }
+  if ($rbldnset) {
+    print RBLs $rbldns->rbldns_done();
+    close RBLs;
+    rename $zoneout .'.ip4set.rbl.tmp', $zoneout .'.ip4set.rbl';
   }
 }
 

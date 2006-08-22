@@ -10,14 +10,14 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.32 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.34 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
 use Config;
 use IPTables::IPv4::DBTarpit::Tools;
 
-use NetAddr::IP;
+use NetAddr::IP::Lite;
 use Net::DNS::ToolKit qw(
 	get16
 	ttlAlpha2Num
@@ -212,6 +212,8 @@ Mail::SpamCannibal::ScriptSupport - A collection of script helpers
 
   $object = new Mail::Spamcannibal::ScriptSupport;
   $rv = $object->dns2rblz($line);
+  $textline = $object->rbldns_compress($textline);
+  $lastline = $object->rbldns_done();
 
 =head1 DESCRIPTION
 
@@ -305,11 +307,11 @@ sub valid127 {
   return '127.0.0.3' unless inet_aton($IP);
 
   unless ($rblkbegin) {	# fill object cache if empty
-    $rblkbegin	= NetAddr::IP->new('127.0.0.3')->numeric();
-    $rblkend	= NetAddr::IP->new('127.255.255.255')->numeric();
+    $rblkbegin	= NetAddr::IP::Lite->new('127.0.0.3')->numeric();
+    $rblkend	= NetAddr::IP::Lite->new('127.255.255.255')->numeric();
   }
 
-  my $rcode = NetAddr::IP->new($IP)->numeric();
+  my $rcode = NetAddr::IP::Lite->new($IP)->numeric();
   return '127.0.0.3' if $rcode < $rblkbegin || $rcode > $rblkend;
   return $IP;
 }
@@ -676,7 +678,7 @@ address is contained in the list.
   output:	Number of objects created
 		or undef on error
 
-The NAobject array is filled with NetAddr::IP object references.
+The NAobject array is filled with NetAddr::IP::Lite object references.
 
 =item * $rv = matchNetAddr($ip,\@NAobject);
 
@@ -1013,7 +1015,7 @@ sub BLpreen {
   my $contrib	= $default->{txtfile}->[0];
   my $evidence	= $default->{txtfile}->[1];
 
-  my $localnet = new NetAddr::IP('127.0.0.0','255.0.0.0');
+  my $localnet = new NetAddr::IP::Lite('127.0.0.0','255.0.0.0');
   my @NAignor;
   list2NetAddr($DNSBL->{IGNORE},\@NAignor)
 	or return('missing IGNORE array in config file');
@@ -1073,7 +1075,7 @@ sub BLpreen {
     my($key,$data) = @_;
     my $IP = inet_ntoa($key);
     print "$IP " if $VERBOSE;
-    if (new NetAddr::IP($IP)->within($localnet)) {	# ignore 127.x.x.x addresses
+    if (new NetAddr::IP::Lite($IP)->within($localnet)) {	# ignore 127.x.x.x addresses
       print 'skipping...' if $VERBOSE;
       next Record;
     }
@@ -1667,8 +1669,6 @@ Note:
 
 	http://www.jms1.net/djbdns/rbldns-patch.html
 
-=back
-
 =cut
 
 sub dns2rblz {
@@ -1731,9 +1731,82 @@ sub dns2rblz {
   return $out;
 }
 
+=item * $textline = $object->rbldns_compress($textline);
+
+Compress B<ip4tset> rbldnsd data file lines produced by B<dns2rblz> above to
+B<ip4set> data format.
+
+  input:	ip4tset line
+  returns:	ip4set line
+
+=cut
+
+sub rbldns_compress {
+  my($rbl,$line) = @_;
+  return '' unless $line =~ /\S/;
+  unless ($line =~ /^[\n]?(\d+\.\d+\.\d+\.)(\d+)/) {
+    $line =~ s/\n//g;
+    $line .= "\n";
+  }
+  elsif (! exists $rbl->{start}) {
+    $rbl->{start} = $1;
+    $rbl->{first} = $2;
+    $rbl->{last} = $2;
+    $line = $1 . $2;
+  }
+  elsif ($rbl->{start} ne $1) {
+    if ($rbl->{first} == $rbl->{last}) {
+      $line = "\n". $1 . $2;
+    }
+    else {
+      $line = '-'. $rbl->{last} ."\n". $1 . $2;
+    }
+    $rbl->{start} = $1;
+    $rbl->{first} = $2;
+    $rbl->{last} = $2;
+  }
+  elsif ($rbl->{last} + 1 == $2) {
+    $rbl->{last} = $2;
+    $line = '';
+  }
+  else {
+    $line = '-'. $rbl->{last} ."\n" . $1 . $2;
+    $rbl->{first} = $2;   
+    $rbl->{last} = $2;
+  }
+  return $line;
+}
+
+=item * $lastline = $object->rbldns_done();
+
+Complete the last line of an ip4set dataset conversion.
+
+  input:	none
+  returns:	remainder of last line
+		in the ip4set data file
+
+=cut
+
+sub rbldns_done {
+  my $rbl = shift;
+  if ($rbl->{first} == $rbl->{last}) {
+    return "\n";
+  } else {
+    return '-'. $rbl->{last} ."\n";
+  }
+}
+
+
+
+=pod
+
+=back
+
+=cut
+
 =head1 DEPENDENCIES
 
-	NetAddr::IP
+	NetAddr::IP::Lite
 	Net::DNS::Codes
 	Net::DNS::ToolKit
 	Net::DNS::ToolKit::RR

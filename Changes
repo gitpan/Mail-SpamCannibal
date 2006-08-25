@@ -1,5 +1,13 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.71  Fri Aug 25 15:49:53 PDT 2006
+	add update_sc.sh to the contrib directory.
+	this script rsync's data for a mirror site
+
+        ScriptSupport v0.35
+	correct 'rbldnsd ip4set format' generation error
+	for data sets that contain non-default TXT lines
+
 0.70  Mon Aug 21 14:23:48 PDT 2006
 	add support for 'rbldnsd ip4set format' to 
 	ScriptSupport v0.34

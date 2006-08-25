@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.34 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.35 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -1744,7 +1744,12 @@ B<ip4set> data format.
 sub rbldns_compress {
   my($rbl,$line) = @_;
   return '' unless $line =~ /\S/;
-  unless ($line =~ /^[\n]?(\d+\.\d+\.\d+\.)(\d+)/) {
+  $line =~ s/\n//g;
+  if ($line =~ /^:/) {
+    delete $rbl->{start};
+    $line .= "\n";
+  }
+  elsif ($line !~ /^(\d+\.\d+\.\d+\.)(\d+)(.*)/) {
     $line =~ s/\n//g;
     $line .= "\n";
   }
@@ -1752,14 +1757,14 @@ sub rbldns_compress {
     $rbl->{start} = $1;
     $rbl->{first} = $2;
     $rbl->{last} = $2;
-    $line = $1 . $2;
+    $line = $1 . $2 .($3 || '');
   }
   elsif ($rbl->{start} ne $1) {
     if ($rbl->{first} == $rbl->{last}) {
-      $line = "\n". $1 . $2;
+      $line = "\n". $1 . $2 .($3 || '');
     }
     else {
-      $line = '-'. $rbl->{last} ."\n". $1 . $2;
+      $line = '-'. $rbl->{last} ."\n". $1 . $2 .($3 || '');
     }
     $rbl->{start} = $1;
     $rbl->{first} = $2;
@@ -1770,7 +1775,7 @@ sub rbldns_compress {
     $line = '';
   }
   else {
-    $line = '-'. $rbl->{last} ."\n" . $1 . $2;
+    $line = '-'. $rbl->{last} ."\n" . $1 . $2 .($3 || '');
     $rbl->{first} = $2;   
     $rbl->{last} = $2;
   }

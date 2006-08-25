@@ -190,6 +190,7 @@ my %makeparms = (
 				'rc.sc_lbdaemon.sample'	=> 'docs/rc.sc_lbdaemon.html',
 				'DNSBLserver/rc.dnsbls' => 'docs/rc.dnsbls.html',
 				'BDBaccess/rc.bdbaccess' => 'docs/rc.bdbaccess.html',
+				'contrib/update_sc.sh'	=> 'docs/update_sc.sh.html',
 		  },
    'clean'	  => { FILES	=> "*~ tmp* docs* script/sc_sesswrap"},
    'dist'         => { COMPRESS	=> 'gzip', SUFFIX => 'gz'},

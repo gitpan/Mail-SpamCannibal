@@ -33,6 +33,7 @@ contrib/rc_debian_spamcannibal
 contrib/zonedump.pl
 contrib/zone_cron.pl
 contrib/zone_cron.sh
+contrib/update_sc.sh
 lib/Mail/SpamCannibal/GoodPrivacy.pm
 lib/Mail/SpamCannibal/LaBreaDaemon.pm
 lib/Mail/SpamCannibal/ParseMessage.pm

@@ -1,6 +1,6 @@
 package Mail::SpamCannibal::BDBaccess;
 use vars qw($VERSION);
-$VERSION = do { q|char version[] = "bdbaccess 0.19, 11-12-04";| =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
+$VERSION = do { q|char version[] = "bdbaccess 0.20, 9-9-06";| =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
 # returns $VERSION which is non-zero
 __END__
 

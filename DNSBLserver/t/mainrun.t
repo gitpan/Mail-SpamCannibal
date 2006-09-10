@@ -79,7 +79,7 @@ sub checkextra {
 
 ## test 2 - check for bailout on pid running found
 my @x = ('-o', '-r', $localdir .'/tmp', '-n', 'xx.yy.com', '-a', '11.22.33.44', '-e', 'no message');
-mkdir './tmp';
+mkdir './tmp',0755;
 open(F,'>'. "${localdir}/tmp/dnsbls.pid")
 	or die "could not open ${localdir}/tmp/dnsbls.pid for testing\n";
 print F "$$\n";

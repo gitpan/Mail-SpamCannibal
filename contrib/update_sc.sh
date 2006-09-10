@@ -2,7 +2,7 @@
 #
 # update_sc.sh
 # update spamcannibal zone file
-# version 1.03, 8-24-06, michael@spamcannibal.org
+# version 1.06, 9-9-06, michael@spamcannibal.org
 #
 
 ###### pid file locations ######
@@ -11,7 +11,7 @@ PIDNAMED="/var/run/named.pid"
 
 ###### rsync server and files ######
 ROOT="rsync.spamcannibal.org::zonefiles/"
-RBL="bl.spamcannibal.org.in.ip4set.rbl"
+RBL="bl.spamcannibal.org.in.cmb.rbl"
 BIND="bl.spamcannibal.org.in.gz"
 
 ###### script ######
@@ -20,7 +20,7 @@ usage () {
   echo $1
   echo "usage:  $0 /zonefile/path/targetname bind|rbl"
   echo "i.e.    $0 /etc/named/master/somedomain.com bind"
-  echo "        $0 /var/lib/rbldns/someip4set.rbl rbl"
+  echo "        $0 /var/lib/rbldns/some.combined.set.rbl rbl"
   exit -1
 }
   
@@ -37,6 +37,7 @@ elif [ $TARGET = "" ]; then
   usage "missing target name"
 fi
 
+ERROR=""
 function pathof {
   if [ -x /bin/$1 ]; then
     echo /bin/$1
@@ -50,8 +51,7 @@ function pathof {
 # sigh, rndc is not here, quietly fail
     echo ""
   else
-    echo "ERROR: could not find path for '$1'"
-    exit -1
+    ERROR="ERROR: could not find path for '$1'"
   fi
 }
 
@@ -59,14 +59,17 @@ CP=`pathof cp`
 MV=`pathof mv`
 PS=`pathof ps`
 WC=`pathof wc`
-CAT=`cat`
+CAT=`pathof cat`
 CUT=`pathof cut`
 GZIP=`pathof gzip`
 GREP=`pathof grep`
 KILL=`pathof kill`
-RSYNC=`pathof rsync`
-RSYNC="$RSYNC --stats -ut"
+RSYNC="`pathof rsync` --stats -ut"
 TAIL=`pathof tail`
+if [ "$ERROR" != "" ]; then
+  echo $ERROR
+  exit -1
+fi
 
 # get the first PID of job name in $1
 #
@@ -81,7 +84,7 @@ function daemonpid {
 #
 function running {
   PROCESS=`$PS -p $1 | $TAIL -1 | $GREP $1`
-  if [ `echo $PROCESS | $WC -w` -ne 0 ]; then
+  if [ "`echo $PROCESS | $WC -w`" != "0" ]; then
     echo $1
   else
     echo 0
@@ -106,16 +109,16 @@ RESPONSE=`{
   $RSYNC ${ROOT}${FILE} ${DIR}rsync.${TARGET}${GZ} | $GREP -i literal | $CUT -d' ' -f3
 }`
 
-if [ $RESPONSE -eq 0 ]; then
+if [ "$RESPONSE" = "" ] || [ "$RESPONSE" = "0" ]; then
   exit 0
 fi
 
 if [ "$2" = "bind" ]; then
-  $CP ${DIR}rsync.${TARGET}${GZ} ${DIR}tmp.${TARGET}${GZ}
+  $MV ${DIR}rsync.${TARGET}${GZ} ${DIR}tmp.${TARGET}${GZ}
   $GZIP -d ${DIR}tmp.${TARGET}${GZ}
   RNDC=`pathof rndc`
 else
-  $CP ${DIR}rsync.${TARGET} ${DIR}tmp.${TARGET}
+  $MV ${DIR}rsync.${TARGET} ${DIR}tmp.${TARGET}
   RNDC=""
 fi
 # atomic move
@@ -130,12 +133,16 @@ fi
 if [ -e $PID ]; then
   PID=`cat $PID`
   PID=`running $PID`
-  if [ $PID -eq 0 ]; then
+  if [ "$PID" = "" ] || [ "$PID" =  "0" ]; then
 # last gasp try
     PID=`daemonpid $DAEMON`
   fi
 else
   PID=`daemonpid $DAEMON`
+fi
+
+if [ "$PID" = "" ]; then
+  PID=0
 fi
 
 if [ $PID -ne 0 ]; then

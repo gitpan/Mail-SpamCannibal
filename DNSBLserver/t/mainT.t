@@ -77,7 +77,7 @@ sub checkextra {
   &ok;
 }
 
-mkdir './tmp';
+mkdir './tmp',0755;
 
 ## test 2 - 
 my $expect = q

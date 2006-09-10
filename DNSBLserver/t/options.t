@@ -43,7 +43,7 @@ sub ok {
 
 my $localdir = cwd();
 my $testdir = $localdir .'/tmp.dbhome';
-mkdir $testdir;
+mkdir $testdir,0755;
 
 sub fqdn {
   (gethostbyname(&{"${TCTEST}::t_short"}()))[0];

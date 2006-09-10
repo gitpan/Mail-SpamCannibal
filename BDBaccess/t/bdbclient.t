@@ -43,7 +43,7 @@ sub ok {
 }
 
 my $dir = cwd() .'/tmp';
-mkdir $dir;
+mkdir $dir,0755;
 
 ## test 2	open listen socket
 my $listen = IO::Socket::UNIX->new(

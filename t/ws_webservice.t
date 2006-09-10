@@ -44,7 +44,7 @@ sub ok {
   ++$test;
 }
 
-mkdir './tmp';
+mkdir './tmp',0755;
 
 my $file = {
 	test1	=> './tmp/test1.txt',

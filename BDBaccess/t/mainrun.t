@@ -79,7 +79,7 @@ sub checkextra {
 
 ## test 2 - check for bailout on pid running found
 my @x = ('-o', '-r', $localdir .'/tmp', '-f', 'abcdef');
-mkdir './tmp';
+mkdir './tmp',0755;
 open(F,'>'. "${localdir}/tmp/bdbaccess_unix.pid")
 	or die "could not open ${localdir}/tmp/bdbaccess_unix.pid for testing\n";
 print F "$$\n";

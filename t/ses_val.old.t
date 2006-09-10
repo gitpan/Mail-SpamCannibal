@@ -52,7 +52,7 @@ sub next_sec {
   $now;
 }
 
-mkdir './tmp';
+mkdir './tmp',0755;
 
 my $sesdir = './tmp';
 

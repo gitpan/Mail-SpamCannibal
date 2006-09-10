@@ -41,7 +41,7 @@ foreach my $dir (qw(tmp tmp.dbhome tmp.bogus)) {
   unlink $dir if -e $dir;       # remove files of this name as well
 }
 
-mkdir 'tmp';
+mkdir 'tmp',0755;
 
 my $localdir = cwd();
 

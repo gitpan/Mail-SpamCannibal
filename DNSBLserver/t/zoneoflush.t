@@ -45,7 +45,7 @@ sub ok {
 
 my $localdir = cwd() .'/tmp';
 
-mkdir $localdir;
+mkdir $localdir,0755;
 
 my $localstdout = $localdir .'/main.out';
 

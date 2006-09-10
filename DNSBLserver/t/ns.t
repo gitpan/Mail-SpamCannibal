@@ -64,7 +64,7 @@ sub ok {
 
 my $localdir = cwd();
 
-mkdir './tmp.dbhome';
+mkdir './tmp.dbhome',0755;
 my $dbhome = $localdir.'/tmp.dbhome';
 
 sub NOREAD {1};

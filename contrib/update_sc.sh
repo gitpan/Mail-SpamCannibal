@@ -2,7 +2,7 @@
 #
 # update_sc.sh
 # update spamcannibal zone file
-# version 1.06, 9-9-06, michael@spamcannibal.org
+# version 1.08, 9-10-06, michael@spamcannibal.org
 #
 
 ###### pid file locations ######
@@ -11,20 +11,22 @@ PIDNAMED="/var/run/named.pid"
 
 ###### rsync server and files ######
 ROOT="rsync.spamcannibal.org::zonefiles/"
-RBL="bl.spamcannibal.org.in.cmb.rbl"
+CMB="bl.spamcannibal.org.in.cmb.rbl"
+IP4SET="bl.spamcannibal.org.in.ip4set.rbl"
 BIND="bl.spamcannibal.org.in.gz"
 
 ###### script ######
 
 usage () {
   echo $1
-  echo "usage:  $0 /zonefile/path/targetname bind|rbl"
+  echo "usage:  $0 /zonefile/path/targetname bind|ip4set|combined"
   echo "i.e.    $0 /etc/named/master/somedomain.com bind"
-  echo "        $0 /var/lib/rbldns/some.combined.set.rbl rbl"
+  echo "        $0 /var/lib/rbldns/some.ip4set.set.rbl ip4set"
+  echo "        $0 /var/lib/rbldns/some.combined.set.rbl combined"
   exit -1
 }
   
-if [ $# -ne 2 ] || ([ "bind" != "$2" ] && [ "rbl" != "$2" ]); then
+if [ $# -ne 2 ] || ([ "bind" != "$2" ] && [ "ip4set" != "$2" ] && [ "combined" != "$2" ]); then
   usage "bad command format"
 fi
 
@@ -99,10 +101,14 @@ if [ "$2" = "bind" ]; then
 else
   PID=$PIDRBLDNS
   DAEMON=rbldnsd
-  FILE=$RBL
 # add zip component for unzipped file
   RSYNC=${RSYNC}z
   GZ=""
+  if [ "$2" = "ip4set" ]; then
+    FILE=$IP4SET
+  else
+    FILE=$CMB
+  fi
 fi
 
 RESPONSE=`{
@@ -114,11 +120,11 @@ if [ "$RESPONSE" = "" ] || [ "$RESPONSE" = "0" ]; then
 fi
 
 if [ "$2" = "bind" ]; then
-  $MV ${DIR}rsync.${TARGET}${GZ} ${DIR}tmp.${TARGET}${GZ}
+  $CP ${DIR}rsync.${TARGET}${GZ} ${DIR}tmp.${TARGET}${GZ}
   $GZIP -d ${DIR}tmp.${TARGET}${GZ}
   RNDC=`pathof rndc`
 else
-  $MV ${DIR}rsync.${TARGET} ${DIR}tmp.${TARGET}
+  $CP ${DIR}rsync.${TARGET} ${DIR}tmp.${TARGET}
   RNDC=""
 fi
 # atomic move
@@ -169,11 +175,12 @@ update_sc.sh -- rsync mirror script
 
     1)	the absolute path to the zonefile name on the
 	client host. This would be a zonefile path and
-	file for the 'named' daemon or an ip4set path
-	and file for the 'rbldnsd' daemon.
+	file for the 'named' daemon or an ip4set or
+	combined file path for the 'rbldnsd' daemon.
 
-    2)  the word 'bind' or 'rbl' to indicate which file
-	to retrieve from rsync.spamcannibal.org
+    2)  the word 'bind', 'ip4set', or 'combined'
+	to indicate which file to retrieve from 
+	rsync.spamcannibal.org
 
 The B<update_sc.sh> script can be run manually or by B<crond>
 

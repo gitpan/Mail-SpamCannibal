@@ -1,5 +1,9 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.73  Sun Sep 10 13:08:26 PDT 2006
+	modify contrib/update_sc.sh to allow selection
+	of 'bind', 'ip4set', and 'combined' data sets
+
 0.72  Sat Sep  9 20:38:22 PDT 2006
 	correct bugs in contrib/update_sc.sh
 

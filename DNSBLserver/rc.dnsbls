@@ -6,9 +6,9 @@ eval 'exec $perl -w -S $0 ${1+"$@"}'
 my $perl = '/usr/bin/perl';
 
 #
-# rc.dnsbls version 0.10, 6-8-04
+# rc.dnsbls version 0.11, 9-17-06
 #
-# Copyright 2003, 2004, Michael Robinton <michael@bizsystems.com>
+# Copyright 2003 - 2006, Michael Robinton <michael@bizsystems.com>
 # rc.dnsbls is free software; you can redistribute it and/or 
 # modify it under the terms of the GPL software license.
 #
@@ -117,6 +117,7 @@ my $addtime = sub {
 	if &$thereis($oparm);
 };
 
+&$addtime('neg_cache', '-s');
 &$addtime('refresh', '-u');
 &$addtime('retry', '-y');
 &$addtime('expire', '-x');

@@ -17,9 +17,17 @@ my $DNSBLS = {
 
 #	contact		=> 'person@mydomain.com',
 
-# Set the update/refresh interval for the SOA record. May be
-# specified in seconds or alphanumerics or both
+# Set the actual ttl for the SOA record. This used in 
+# combination with the TTL/minimum below to set the netative
+# caching interval for client DNS caches. The negative TTL
+# is the lesser of this setting or TTL/minimum below.
+# May be specified in seconds or alphanumerics or both
 #	i.e.	1w 1d 1h 1m 1s
+# [ OPTIONAL ]
+
+	neg_cache	=> '10m',	# 0 seconds default
+
+# Set the update/refresh interval for the SOA record.
 # [ OPTIONAL ]
 
 #	refresh		=> '12h',	# 43200 seconds default

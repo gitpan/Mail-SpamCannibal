@@ -1,5 +1,14 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.75  Sun Sep 17 15:53:24 PDT 2006
+	added soa minimum ttl switch for negative caching
+	-s switch to DNSBLserver package 
+	config/dnsbls.conf.sample, rc.dnsbls, main.c, data.c
+
+NOTE: the first two of these must be installed MANUALLY
+
+	add MANIFEST.SKIP to DNSBLserver and BDBaccess
+
 0.74  Mon Sep 11 16:55:20 PDT 2006
 	'mkdir' compatability update for perl 5.0503
 
@@ -23,7 +32,7 @@ Revision history for Perl extension Mail::SpamCannibal
 	add update_sc.sh to the contrib directory.
 	this script rsync's data for a mirror site
 
-        ScriptSupport v0.35
+	ScriptSupport v0.35
 	correct 'rbldnsd ip4set format' generation error
 	for data sets that contain non-default TXT lines
 
@@ -121,7 +130,7 @@ Revision history for Perl extension Mail::SpamCannibal
 	ABUSE => parameters for sc_abuse.pl
 
 0.62  Sat May  7 22:13:11 PDT 2005
-        corrected type DNSBLserver/zonefile.c in 
+	corrected type DNSBLserver/zonefile.c in 
 	rbldnsDEF zonefile line
 
 	ScriptSupport.pm v0.30, modified code to workaround

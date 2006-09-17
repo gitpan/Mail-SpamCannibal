@@ -1,5 +1,8 @@
 Revision history for Perl extension Mail::SpamCannibal::BDBreader
 
+0.21Sun Sep 17 15:53:24 PDT 2006
+	add MANIFEST.SKIP
+
 0.20  Sat Sep  9 20:38:22 PDT 2006
 	updated test file 'mkdir' statement for compatibility with  Perl 5.0503
 

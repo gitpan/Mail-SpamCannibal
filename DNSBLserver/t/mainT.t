@@ -98,6 +98,7 @@ promiscuous	=> 0 reporting enabled
 zone		=> foo.bar.com
 Zflag		=> 0 Zap zone file TXT records
 contact		=> root.foo.bar.com
+sflag		=>	0	SOA ttl/negative caching
 uflag		=>	43200	SOA update/refresh
 yflag		=>	3600	SOA retry
 xflag		=>	86400	SOA expires

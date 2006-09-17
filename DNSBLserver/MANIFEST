@@ -1,6 +1,7 @@
 Changes
 GPL
 MANIFEST
+MANIFEST.SKIP
 README
 Makefile.PL
 DNSBLserver.pm

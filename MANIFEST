@@ -152,6 +152,7 @@ BDBaccess/CTest.xs
 BDBaccess/Changes
 BDBaccess/GPL
 BDBaccess/MANIFEST
+BDBaccess/MANIFEST.SKIP
 BDBaccess/Makefile.PL
 BDBaccess/README
 BDBaccess/WHATARE.c.files
@@ -185,6 +186,7 @@ DNSBLserver/Changes
 DNSBLserver/DNSBLserver.pm
 DNSBLserver/GPL
 DNSBLserver/MANIFEST
+DNSBLserver/MANIFEST.SKIP
 DNSBLserver/Makefile.PL
 DNSBLserver/README
 DNSBLserver/WHATARE.c.files

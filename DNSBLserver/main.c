@@ -1,6 +1,6 @@
 /* main.c
  *
- * Copyright 2003, Michael Robinton <michael@bizsystems.com>
+ * Copyright 2003 - 2006, Michael Robinton <michael@bizsystems.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,6 +60,7 @@
   -a   : eth1 another NS Address (up to 10)
   -m   : 10 mark preference for MX entry (Note 2)
 
+  -s   : 60 : SOA negative caching interval
   -u   : 43200 : SOA update/refresh interval
   -y   : 3600  : SOA retry interval
   -x   : 86400 : SOA expire
@@ -121,7 +122,7 @@ int realMain(int argc, char **argv)
   extern int bflag, zone_request;
   extern struct in_addr stdResp, stdRespBeg, stdRespEnd, serial_rec;
   
-  char getoptstr[] = "z:a:n:N:u:y:x:m:t:c:e:g:br:i:j:k:p:dlvPVTZ?ho";
+  char getoptstr[] = "z:a:n:N:s:u:y:x:m:t:c:e:g:br:i:j:k:p:dlvPVTZ?ho";
   char c, * nsname = NULL, * addip = NULL, * pidpathname;
   int nstore = 0, Mptr = 0, mxsave = 0, aflag = 0, status, testflag = 0, gflag = 1;
   int flags, maxfd, ready;
@@ -221,6 +222,9 @@ int realMain(int argc, char **argv)
       case 't':
       	minimum = strtoul(optarg,NULL,0);
 	break;
+      case 's':
+      	soa_ttl = strtoul(optarg,NULL,0);
+      	break;
       case 'c':
       	contact = optarg;
       	break;
@@ -349,6 +353,7 @@ Error_nsname:
     printf("zone		=> %s\n", zone_name);
     printf("Zflag		=> %d Zap zone file TXT records\n", Zflag);
     printf("contact		=> %s\n", contact);
+    printf("sflag		=>	%d	SOA ttl/negative caching\n", soa_ttl);
     printf("uflag		=>	%d	SOA update/refresh\n", refresh);
     printf("yflag		=>	%d	SOA retry\n", retry);
     printf("xflag		=>	%d	SOA expires\n", expire);

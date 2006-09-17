@@ -123,6 +123,7 @@ OPTIONS - short version
       -a    : eth1 another NS Address (up to 10)
       -m    : 10 mark preference for MX entry (Note 2)
 
+      -s    : 60 : SOA negative caching interval
       -u    : 43200 : SOA update/refresh interval
       -y    : 3600  : SOA retry interval
       -x    : 86400 : SOA expire
@@ -224,6 +225,14 @@ OPTIONS - long version
           i.e.
           dnsbls -n mx1.spamcannibal.com -m 10 -a 172.16.2.124
           -m    : 10 mark preference for MX entry (Note 2)
+
+    * -s nnnn
+        Set the negative caching interval/minimum TTL for the SOA record
+        itself. The minimum of this value and the TTL/minimum (option -t
+        below) determine the minimum caching interval for authoratitive
+        NXDOMAIN answers
+
+                default 0
 
     * -u nnnnn
         Set the Update/refresh interval for the SOA record (seconds).

@@ -3,7 +3,7 @@
  * Adapted in part from LaBrea - Data.c 
  * by Tom Liston <tliston@premmag.com>, Copyright (C) 2001, 2002 
  *
- * Portions copyright 2003, Michael Robinton <michael@bizsystems.com>
+ * Portions copyright 2003 - 2006, Michael Robinton <michael@bizsystems.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,6 +58,7 @@ char helpstring[] =
 "  -a	: eth1 another NS Address (up to 10)\n"
 "  -m	: 10 mark preference for MX entry (Note 2)\n"
 "\n"
+"  -s	: 60 : SOA negative caching interval\n"
 "  -u	: 43200	: SOA update/refresh interval\n"
 "  -y	: 3600	: SOA retry interval\n"
 "  -x	: 86400	: SOA expire\n"

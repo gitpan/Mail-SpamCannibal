@@ -1,6 +1,6 @@
 package Mail::SpamCannibal::DNSBLserver;
 use vars qw($VERSION);
-$VERSION = do { q|char version[] = "dnsbls 0.43, 9-9-06";| =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
+$VERSION = do { q|char version[] = "dnsbls 0.44, 9-17-06";| =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
 # returns $VERSION which is non-zero
 __END__
 
@@ -140,6 +140,7 @@ switch is used with this utility. See "DNS query format" above.
   -a    : eth1 another NS Address (up to 10)
   -m    : 10 mark preference for MX entry (Note 2)
 
+  -s    : 60 : SOA negative caching interval
   -u    : 43200 : SOA update/refresh interval
   -y    : 3600  : SOA retry interval
   -x    : 86400 : SOA expire
@@ -248,6 +249,14 @@ Mark the name entry as an MX server and specify the preference.
   i.e.
   dnsbls -n mx1.spamcannibal.com -m 10 -a 172.16.2.124
   -m    : 10 mark preference for MX entry (Note 2)
+
+=item * -s nnnn
+
+Set the negative caching interval/minimum TTL for the SOA record itself. The minimum of 
+this value and the TTL/minimum (option -t below) determine the minimum
+caching interval for authoratitive NXDOMAIN answers
+
+	default 0
 
 =item * -u nnnnn
 

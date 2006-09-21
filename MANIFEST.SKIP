@@ -23,3 +23,4 @@ DNSBLserver/config.log
 DNSBLserver/dnsbls
 DNSBLserver/mysiteconf.h
 public_html/incl/toolfaq.incl
+\.yml$

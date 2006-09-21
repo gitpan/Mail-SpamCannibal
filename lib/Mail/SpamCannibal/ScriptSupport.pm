@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.36 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.37 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -1741,9 +1741,12 @@ sub dns2rblz {
       }
     }
     elsif ($in =~ /^\s.+A\s+(.+)/) {	# NS A record
-      $self->{nsa} = $self->{nsa}
-	? "\n" : '';
-	$self->{nsa} .= '@ '. ($self->{ttl} || 0) .' A '. $1;
+      if ($self->{nsa}) {
+	$self->{nsa} .= "\n";
+      } else {
+	$self->{nsa} = '';
+      }
+      $self->{nsa} .= '@ '. ($self->{ttl} || 0) .' A '. $1;
     }
 # ignore anything else
     last;

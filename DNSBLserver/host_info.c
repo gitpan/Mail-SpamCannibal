@@ -225,7 +225,8 @@ set_local_name()
         Aptr = Astart = current_Astart(j);
         do {
           localip[i] = *Aptr;
-        } while ((Aptr = next_A_record(Astart,Aptr)) != NULL);
+          i++;
+       } while ((Aptr = next_A_record(Astart,Aptr)) != NULL && i < visibleMAXeth);
         break;
       }
     }

@@ -1,5 +1,13 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.76  Thu Sep 21 14:12:12 PDT 2006
+	fixed bug in 'dnsbls' that did not increment localip[i]
+	when reporting multiple ip addresses for the local zone
+
+	fixed bug in ScriptSupport::dns2rblz v0.37 where multiple ip
+	ip addresses are not accumulated in the conversion to
+	rbldnsd format for zone dumps.
+
 0.75  Sun Sep 17 15:53:24 PDT 2006
 	added soa minimum ttl switch for negative caching
 	-s switch to DNSBLserver package 

@@ -12,3 +12,4 @@ CTest\.c
 dnsbls
 dnsbls\.pod
 mysiteconf\.h
+\.gz$

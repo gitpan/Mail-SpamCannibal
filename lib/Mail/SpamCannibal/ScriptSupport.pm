@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.37 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.39 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -1691,7 +1691,7 @@ sub dns2rblz {
 	$self->{soa} =~ s/\s+/ /g;	# multiple spaces to single space
 	while ($self->{soa} =~ / $/) { chop $self->{soa} };
 	$self->{soa} =~ /\d+$/;		# extract ttl
-	$self->{ttl} = $&;
+	$self->{ttl} = $& unless $self->{ttl};
 	$self->{soa} =~ s/SOA/SOA $self->{ttl}/i;
 	$out = "\n#\$". $self->{soa};
 	$self->{soa} = '';		# clear flag

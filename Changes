@@ -1,5 +1,26 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.78  Thu Oct 19 08:06:45 PDT 2006
+	removed stub zone collection from contrib/zonedump.pl
+	and ScriptSupport::dns2rblz v0.39 -- concept flawed
+	use Net::Bind::rbldnsdAccessor instead
+
+0.77  Thu Sep 22 11:54:11 PDT 2006
+	ScriptSupport::dns2rlbz v0.38
+	set ttl for soa to be the $TTL if present or the 
+	minimum from the soa record
+
+	add stub zone collection to ScriptSupport::dns2rblz v0.38
+	so that (almost) authoratitive mirroring can be set up on 
+	a bind 9 server using forwarder and forward only.
+
+	add sample stub zone collection to contrib/zonedump.pl
+
+  REMEMBER to update your zonedump.pl if you wish to use this feature
+
+	add missing -L argument to dnsbls optarg list
+	in DNSBLserver package
+
 0.76  Thu Sep 21 14:12:12 PDT 2006
 	fixed bug in 'dnsbls' that did not increment localip[i]
 	when reporting multiple ip addresses for the local zone

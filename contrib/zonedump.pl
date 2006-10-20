@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# zone_dump.pl version 1.04, 9-9-06
+# zone_dump.pl version 1.06, 10-19-06
 #
 # Copyright 2005 - 2006 Michael Robinton <michael@bizsystems.com>
 # rc.dnsbls is free software; you can redistribute it and/or 
@@ -50,6 +50,8 @@ my $rbldns= 0;
 my $rbldnset = 0;
 my $rbldnstset = 0;
 my $rbldnscombined = 0;
+my $stub = 0;
+my $port = 0;
 
 while(($_ = shift @ARGV) && $_ =~ /^\-[dizrc]/) {
   if ($_ eq '-d') {
@@ -84,14 +86,13 @@ Syntax:  $0 destination_dir timeout
     or	 $0 -i destination_dir timeout
     or	 $0 -c destination_dir timeout
     or	 $0 -z destination_dir timeout
-    or	 $0 -r -i -c -z dest_dir timeout
 
 	-c	cause an rbldns 'combined'
 		ip4set file to be written.
 		This file include NS A record
 		for the DSNBL base zone
 
- deprecated -i	cause an rbldns ip4set
+ 	-i	cause an rbldns ip4set
 		file to be written
 
  deprecated -r	cause an rbldns ip4tset
@@ -197,11 +198,11 @@ foreach(1..$retry) {
   }
   print STDERR "\n" if $DEBUG;
   unless ($timer > 0) {
-    $error = "timeout waiting for zone dump to complete\n";
+    $error .= "timeout waiting for zone dump to complete\n";
     next RETRY;
   }
   unless (-e $zonein && -r $zonein) {
-    $error = "'dnsbls' failed to create $zonein\n";
+    $error .= "'dnsbls' failed to create $zonein\n";
     next RETRY;
   }
   last;
@@ -298,4 +299,5 @@ open(OUT,'>'. $destdir .'/bl_records.tmp')
 print OUT $records;
 close OUT;
 rename $destdir .'/bl_records.tmp', $destdir .'/bl_records';
+
 exit 0;

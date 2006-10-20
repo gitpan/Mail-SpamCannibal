@@ -122,7 +122,7 @@ int realMain(int argc, char **argv)
   extern int bflag, zone_request;
   extern struct in_addr stdResp, stdRespBeg, stdRespEnd, serial_rec;
   
-  char getoptstr[] = "z:a:n:N:s:u:y:x:m:t:c:e:g:br:i:j:k:p:dlvPVTZ?ho";
+  char getoptstr[] = "L:z:a:n:N:s:u:y:x:m:t:c:e:g:br:i:j:k:p:dlvPVTZ?ho";
   char c, * nsname = NULL, * addip = NULL, * pidpathname;
   int nstore = 0, Mptr = 0, mxsave = 0, aflag = 0, status, testflag = 0, gflag = 1;
   int flags, maxfd, ready;

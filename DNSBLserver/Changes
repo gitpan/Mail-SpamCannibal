@@ -1,5 +1,8 @@
 Revision history for Perl extension Mail::SpamCannibal::DNSBLserver.
 
+0.46  Fri Sep 22 12:24:33 PDT 2006
+	add missing -L argument to dnsbls optarg list
+
 0.45  Thu Sep 21 14:12:12 PDT 2006
 	fixed bug that did not increment localip[i] when reporting 
 	multiple ip addresses for the local zone

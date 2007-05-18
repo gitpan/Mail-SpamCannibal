@@ -333,6 +333,9 @@ Error_nsname:
   }
   contact = rname;
   
+  if (errormsg != undef_err && strchr(errormsg,'?') != NULL)
+  	qflag = 1;				/* error message contains question mark, append address */
+  
   if(testflag) {
     if (stop)			/* if testing and no STDOUT is wanted	*/
 	return(0);
@@ -344,6 +347,7 @@ Error_nsname:
     printf("Limit       -L	=> %dcps, maximum zonefile build rate\n", diskmax);
     printf("Continuity  -C	=> %d continuity\n", continuity);
     printf("eflag		=> %s\n",errormsg);
+    printf("qflag		=> %d append IP address\n", qflag);
     printf("dflag		=> %d no daemon\n", dflag);
     printf("oflag		=> %d log to stdout\n", oflag);
     printf("loglvl		=> %d log enabled > 0\n", datalog);
@@ -392,8 +396,6 @@ Error_nsname:
     sprintf(rtn, "Error: -e, you must specify a default error message");
     goto ErrorExit;
   }
-  else if (strchr(errormsg,'?') != NULL)
-    	qflag = 1;			/* error message contains question mark, append address	*/
   
   if((pidpathname = chk4pid(NULL)) == NULL) {	/* bail if another dnsbls is running	*/
     rtn = mybuffer;

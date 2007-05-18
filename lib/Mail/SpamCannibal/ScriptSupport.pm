@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.39 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.40 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -127,6 +127,7 @@ require Exporter;
 	BLpreen
 	mailcheck
 	abuse_host
+	block4zonedump
 );
 
 # autoload declarations
@@ -172,6 +173,7 @@ Mail::SpamCannibal::ScriptSupport - A collection of script helpers
 	BLpreen
 	mailcheck
 	abuse_host
+	block4zonedump
   );
 
 =head1 FUNCTIONS
@@ -207,6 +209,7 @@ Mail::SpamCannibal::ScriptSupport - A collection of script helpers
   @err=mailcheck($fh,\%MAILFILTER,\%DNSBL,\%default,\@NAignor)
   $rv=zap_one($tool,$netaddr,$db,$verbose,$comment);
   zap_pair($tool,$netaddr,$pri,$sec,$debug,$verbose,$comment);
+  block4zonedump($environment);
 
 =head1 METHODS
 
@@ -1639,6 +1642,39 @@ sub abuse_host {
   return ();
 }
 
+=item * block4zonedump($environment);
+
+Checks to see if a dnsbl zonedump is in progress and blocks until the zonedump is complete
+
+  input:	$environment pointer
+  returns:	nothing
+
+=cut
+
+sub block4zonedump {
+  my $env = shift;
+  local *D;
+# fail silently if directory is not valid or pid file is not present
+  return unless -e $env && -d $env;
+  my $doublecheck = 2;			# check twice
+WAIT:
+  while ($doublecheck-- > 0) {		# wait here while job lives
+    opendir(D,$env) or return;		# return if $env can not be opened
+    my @dfiles = grep(/^dnsbls/,readdir(D));
+    closedir D;
+    foreach (@dfiles) {
+      next unless $_ =~ /dnsbls\.\d+\.pid/;
+      if (kill 0, $1) {		# if job is running
+	$doublecheck = 1;	# always double check a running job
+	sleep 60;		# wait a minute
+	next WAIT;
+      }
+      unlink $env .'/'. $_;	# clean up dead pid files
+    }
+    sleep 10;			# allow time for a restart
+  }
+}
+
 =item * $object = new Mail::Spamcannibal::ScriptSupport;
 
 Returns a reference to a Mail::Spamcannibal::ScriptSupport object
@@ -1933,6 +1969,7 @@ sub rbldnst_done {
 	BLpreen
 	mailcheck
 	abuse_host
+	block4zonedump
 
 =head1 COPYRIGHT
 

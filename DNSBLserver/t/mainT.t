@@ -89,6 +89,7 @@ block		=> 0 AXFR transfers blocked
 Limit       -L	=> 200000cps, maximum zonefile build rate
 Continuity  -C	=> 0 continuity
 eflag		=> no message
+qflag		=> 0 append IP address
 dflag		=> 1 no daemon
 oflag		=> 1 log to stdout
 loglvl		=> 0 log enabled > 0

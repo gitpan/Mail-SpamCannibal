@@ -124,14 +124,15 @@ it works in the <a hrev="#top">FAQ</a>.
 The ONLY way you can get into SpamCannibal's database is by sending spam or
 virus ladened email to our mail servers!
 <p>
-SpamCannibal does not block email access except for IP addresses that have
+SpamCannibal does not block email access except for IP addresses and ranges that have
 sent or relayed what we believe to be spam or other unsolicited email directly to our email
-servers.  Spam originating IP addresses are blocked ONLY for access to our mail servers,
+servers.  SpamCannibal uses its database to block access by IP addresses ONLY   
+y its own mail servers,
 however, the database we use for that purpose is freely available for anyone to look at
 and use as they see fit.
 <p>
 If you have been referred to this site because you appear to be blocked by
-some third party, speak to the administrators of the site you are trying to contact.
+some third party, speak to the administrators of the third party site you are trying to contact.
 <p>
 SpamCannibal does not scan remote hosts or otherwise test remote sites. The
 ONLY way you can get into SpamCannibal's database is by sending unsolicited

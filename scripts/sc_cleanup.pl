@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 #
 # sc_cleanup.pl
-# version 1.03, 4-28-06
+# version 1.04, 5-17-07
 #
 #################################################################
 # WARNING! do not modify this script, make one with a new name. #
@@ -36,8 +36,9 @@ use Mail::SpamCannibal::PidUtil 0.02 qw(
 	zap_pidfile
 );
 use NetAddr::IP::Lite;
-use Mail::SpamCannibal::ScriptSupport qw(
+use Mail::SpamCannibal::ScriptSupport 0.40 qw(
 	zap_one
+	block4zonedump
 );
 
 sub usage {
@@ -126,6 +127,8 @@ die <<EOF if -e $CONFIG->{DBTP_ENVHOME_DIR} .'/'. 'blockedBYwatcher';
 EOF
 
 if_run_exit($environment,'already running');
+
+block4zonedump($environment);
 
 # strategy	IGNORE 127.xxx.xxx.xxx records
 # these must be deleted by hand with sc_admin.pl

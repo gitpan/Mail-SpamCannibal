@@ -2,7 +2,7 @@
 #
 # sc_BLcheck.pl
 #
-# version 1.04, 10-5-03
+# version 1.05, 5-17-07
 #
 #################################################################
 # WARNING! do not modify this script, make one with a new name. #
@@ -10,7 +10,7 @@
 # SpamCannibal.                                                 #
 #################################################################
 #
-# Copyright 2003, Michael Robinton <michael@bizsystems.com>
+# Copyright 2003 - 2007, Michael Robinton <michael@bizsystems.com>
    
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,9 +31,10 @@ use strict;
 #use diagnostics;
 use lib qw(blib/lib blib/arch);
 use Mail::SpamCannibal::SiteConfig;
-use Mail::SpamCannibal::ScriptSupport 0.08 qw(
+use Mail::SpamCannibal::ScriptSupport 0.40 qw(
 	BLcheck
 	DO
+	block4zonedump
 );
 
 use Mail::SpamCannibal::PidUtil 0.02 qw(
@@ -114,6 +115,8 @@ die <<EOF if -e $CONFIG->{DBTP_ENVHOME_DIR} .'/'. 'blockedBYwatcher';
 EOF
 
 if_run_exit($environment,'already running');
+
+block4zonedump($environment);
 
 my $err = BLcheck($DNSBL,\%default);
 zap_pidfile($environment);

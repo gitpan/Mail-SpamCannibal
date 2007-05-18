@@ -1,5 +1,20 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.79  Thu May 17 16:11:33 PDT 2007
+	dnsbls 0.47
+	add reporting of "qflag" to -T output
+
+	Change wording in cannibal.cgi v2.05 for LOOKUP warning to:
+	Automated lookups not allowed, click LOOKUP IP to continue.
+
+	added 'block4zonedump' to ScriptSupport.pm v0.40
+	add call to 'block4zonedump' to scripts
+	sc_BLcheck.pl, sc_BLpreen.pl, sc_cleanup.pl
+
+	zonedumps for very large zone files are perturbed by blcheck and
+	blpreen IP additions and deletions. This addition to the script
+	files allows them to block until the zonedump completes
+
 0.78  Thu Oct 19 08:06:45 PDT 2006
 	removed stub zone collection from contrib/zonedump.pl
 	and ScriptSupport::dns2rblz v0.39 -- concept flawed

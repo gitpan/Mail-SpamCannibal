@@ -1,5 +1,8 @@
 Revision history for Perl extension Mail::SpamCannibal::DNSBLserver.
 
+0.47  Thu Mar 29 11:38:48 PDT 2007
+	add reporting of "qflag" to -T output
+
 0.46  Fri Sep 22 12:24:33 PDT 2006
 	add missing -L argument to dnsbls optarg list
 

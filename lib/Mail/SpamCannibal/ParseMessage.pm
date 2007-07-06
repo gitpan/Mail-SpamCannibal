@@ -6,7 +6,7 @@ use Socket;
 use NetAddr::IP::Lite;
 use vars qw($VERSION @ISA @EXPORT_OK);
 
-$VERSION = do { my @r = (q$Revision: 0.08 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.09 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 require Exporter;
@@ -21,6 +21,7 @@ require Exporter;
 	firstremote
 	array2string
 	string2array
+	trimmsg
 );
 
 # autoload declarations
@@ -35,6 +36,7 @@ sub firstremote;
 sub _headers;
 sub array2string;
 sub string2array;
+sub trimmsg;
 
 sub DESTROY {};
 
@@ -446,6 +448,38 @@ sub firstremote {
   return '';	# sorry :-( bogus!
 }
 
+=item * $end = trimmsg(\%MAILFILTER,\@lines)
+
+If message length is limited by configuration of MAXMSG, remove
+duplicate blank lines and return the $end pointer for further processing
+
+  input:	pointer to MAILFILTER hash,
+		pointer to @lines array
+  returns:	ending line number
+
+=cut
+
+sub trimmsg {
+  my($MAILFILTER,$ap) = @_;
+  return $#${ap} unless exists $MAILFILTER->{MAXMSG} && $MAILFILTER->{MAXMSG} > 0;
+  my @newlines;
+  my $prev = 'random stuff';
+  foreach(@$ap) {	# remove duplicate blank lines
+    unless ($prev =~ /\S/) {
+      next unless $_ =~ /\S/;
+    }
+    $prev = $_;
+    push @newlines, $_;
+  }
+  @$ap = @newlines;
+  my $end =  0;
+  for ($end = 0;$end <=$#{$ap};$end++) {
+    last if $ap->[$end] eq '';
+  }
+  $end += $MAILFILTER->{MAXMSG};
+  return ($end > $#{$ap}) ? $#{$ap} : $end;
+}
+
 =item * $string = array2string(\@array,$begin,$end);
 
 Makes a string from the array elements beginning with $begin and ending with
@@ -516,13 +550,16 @@ sub string2array {
 
 =head1 EXPORT_OK
 
-        limitread
-        dispose_of
-        headers
+	limitread
+	dispose_of
+	headers
 	rfheaders
-        skiphead 
-        get_MTAs
-        firstremote
+	skiphead
+	get_MTAs
+	firstremote
+	array2string
+	string2array
+	trimmsg
 
 =head1 AUTHOR
 
@@ -530,7 +567,7 @@ Michael Robinton <michael@bizsystems.com>
 
 =head1 COPYRIGHT
 
-Copyright 2003 - 2006, Michael Robinton <michael@bizsystems.com>
+Copyright 2003 - 2007, Michael Robinton <michael@bizsystems.com>
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or 

@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # sc_mailfilter.conf
-# version 1.03, 10-5-05
+# version 1.05, 6-25-07
 # Configuration for sc_mailfilter.pl, sc_abuse.pl
 
 my $MAILFILTER = {
@@ -97,6 +97,18 @@ my $MAILFILTER = {
 # will be forwarded to the REPORT target for evaluation.
 
 
+# Require that a least on of these headers is present. Use this in place of
+# PGP above to limit the source of entries to the database.
+# This is a single value or an array of values. The values may be regular
+# expressions. They will be matched in a case insensitive manner and the
+# pattern must be the 'start' of a header.
+#
+#	REQHEAD		=> 'received:.+myhost\.com',
+#	  or
+#	REQHEAD		=> [	'received:.+mylaptop',
+#				'received:.+desktop\.pc',
+#	],
+
 # Use dirty read of headers. Use this procedure only if you can not avoid
 # auto-wrapping in your mail client. Some goofy stuff can slip through or
 # headers may be mangled and not properly parsed.
@@ -108,6 +120,20 @@ my $MAILFILTER = {
 
 	DIRTY	  => 1,
 
+
+# Trim the length of the message portion of spam samples
+# When batch submitting without manually editing the spam samples,
+# configuration variable limits the length to the lesser of the
+# set number of lines or the length of the sample
+#
+# NOTE: this behavior is overriden if the destination "spam" address
+#	i.e. spam@yourdomain.com
+# ends in the character "X" (not case sensitive)
+#	i.e. spamx@yourdomain.com
+#
+# [ OPTIONAL ]
+
+#	MAXMSG	  => 8,		# something useful?
 
 # Validate IP's spam hosts against SPMCNBL_DB_ARCHIVE
 # as a condition of adding to tarpit. 

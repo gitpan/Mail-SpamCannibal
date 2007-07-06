@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.40 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.42 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -42,6 +42,7 @@ use Mail::SpamCannibal::ParseMessage qw(
 	firstremote
 	array2string
 	string2array
+	trimmsg
 );
 use Mail::SpamCannibal::GoodPrivacy qw(
 	decrypt
@@ -1428,6 +1429,40 @@ sub mailcheck {
   return (1,'no message found')
 	unless skiphead(\@lines,\@discard);
 
+# return if 'magic' header required and not found
+  if (exists $MAILFILTER->{REQHEAD}) {
+    my @headkeys;
+    if (ref $MAILFILTER->{REQHEAD} && ref $MAILFILTER->{REQHEAD} eq 'ARRAY') {
+      @headkeys = @{$MAILFILTER->{REQHEAD}};
+    } elsif ($MAILFILTER->{REQHEAD}) {
+      push @headkeys, $MAILFILTER->{REQHEAD}
+    }
+    my $match = 0;
+    if (@headkeys) {		# check for matching header if header required
+      my $match = 0;
+    MATCH:
+      foreach my $header (@headkeys) {
+	if (grep($_ =~ /^$header/i,@discard)) {
+	  $match = 1;
+	  last MATCH;
+	}
+      }
+      return (1,'missing required source header')
+	unless $match;
+    }
+  }
+
+# find "to:" so that we can determine if MAXMSG should be ignored
+  my $to;
+  foreach(@discard) {
+    if ($_ =~ /to:\s*[<]?(.+)@.+[>]?\s*/i) {
+      $to = $1;
+      delete $MAILFILTER->{MAXMSG}	# ignore MAXMSG if dest address ends in "x"
+	if $to =~ /x$/i;
+      last;
+    }
+  }
+
 # decrypt if Good Privacy
   my $err;
 
@@ -1457,6 +1492,7 @@ sub mailcheck {
       return(1,$err);
     }
   }
+
   undef @discard;
 
 # extract headers
@@ -1485,10 +1521,13 @@ sub mailcheck {
   return (1,'spam source ignored')
 	if matchNetAddr($spamsource,$NAignor);
 
+# trim message length if required
+  my $end = trimmsg($MAILFILTER,\@lines);
+
 # stringify headers and message
   my $spam;
   return (1,'no evidence found')
-	unless ($spam = array2string(\@lines));	# punt if no message
+	unless ($spam = array2string(\@lines,0,$end));	# punt if no message
 
   $spam = substr($spam,0,$savlim)
 	if length($spam) > $savlim;
@@ -1973,7 +2012,7 @@ sub rbldnst_done {
 
 =head1 COPYRIGHT
 
-Copyright 2003 - 2004, Michael Robinton <michael@bizsystems.com>
+Copyright 2003 - 2007, Michael Robinton <michael@bizsystems.com>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

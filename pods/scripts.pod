@@ -133,6 +133,12 @@ user directory containing the following:
   "|/usr/local/spamcannibal/scripts/sc_mailfilter.pl \
    -v /usr/local/spamcannibal/config/sc_mailfilter.conf"
 
+NOTE: if a username that ends in the character "X" is aliased to the
+spamcannibal user, messages sent to this "To:" address will not have the
+message truncated by the configuration entry "MAXMSG". This is useful when
+one wishes to have a large spam sample record for some egregious type of
+behavior such as RFC2476 violations.
+
 =head2 sc_abuse.pl
 
 This script parses a spam message in the format delivered to the spam

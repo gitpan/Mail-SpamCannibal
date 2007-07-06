@@ -8,7 +8,7 @@ you make a request to have an address removed from the
 database. Since you can only get into the database by sending spam, explain
 below why the IP address should be removed. <b>Do not email us asking for an
 IP to be removed because some other site has blacklisted it. Contact that
-site directly. We will remove it automatically when they do.</b>
+site directly.</b>
 <p>
 IP address: <input type=text name=IP>&nbsp;&nbsp;&nbsp;&nbsp;<input type=submit value=SUBMIT onClick="Contact.action = location.pathname;"><br>
 Email addr: <input type=text name=email>

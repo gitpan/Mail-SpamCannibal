@@ -1,5 +1,15 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.80  Mon Jun 25 09:51:43 PDT 2007
+	in ParseMessage 0.09 add sub to conditionally remove blank
+	lines and trim the total number of lines in the message portion 
+	of the spam sample if 'MSGMAX' is in the config file
+
+	in ScriptSupport 0.42 add call to trimmsg above.
+
+	add description of config element and alter sample
+	config file.
+
 0.79  Thu May 17 16:11:33 PDT 2007
 	dnsbls 0.47
 	add reporting of "qflag" to -T output

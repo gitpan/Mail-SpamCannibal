@@ -78,6 +78,7 @@ public_html/images/spamsg.jpg
 public_html/images/updpass.jpg
 public_html/incl/README
 public_html/incl/contact.incl
+public_html/incl/delist.incl
 public_html/incl/home.incl
 public_html/incl/logo1.incl
 public_html/incl/logo2.incl

@@ -24,18 +24,21 @@
 <tr align=center><td class=wht><a href="#top" onClick="return(nav('whois'));" 
   onMouseOver="return(show('Whois IP'));" onMouseOut="return(off());">Whois IP</a></td></tr>
 
-<tr align=center><td class=gry><a href="#top" onClick="return(nav('updpass'));" 
+<tr align=center><td class=gry><a href="#top" onClick="return(nav('delist'));" 
+  onMouseOver="return(show('DELETE IP LIST'));" onMouseOut="return(off());">Delete List</a></td></tr>
+
+<tr align=center><td class=wht><a href="#top" onClick="return(nav('updpass'));" 
   onMouseOver="return(show('UPDATE PASSWORD'));" onMouseOut="return(off());">Upd Passwd</a></td></tr>
 
-<tr align=center><td class=wht><a href="#top" onClick="location = 'docs/';return false;"
+<tr align=center><td class=gry><a href="#top" onClick="location = 'docs/';return false;"
   onMouseOver="return(show('DOCUMENTATION'));" onMouseOut="return(off());">Documentation</a></td></tr>
 
-<tr align=center><td class=gry><a href="#top" onClick="return(nav('logout'));" 
+<tr align=center><td class=wht><a href="#top" onClick="return(nav('logout'));" 
   onMouseOver="return(show('LOGOUT'));" onMouseOut="return(off());">Logout</a></td></tr>
 
 <script language=javascript1.2>
 if(labrea != '') {
-  document.writeln('<tr align=center><td class=wht><a href="#top" onClick="self.location = labrea;return false;"');
+  document.writeln('<tr align=center><td class=gry><a href="#top" onClick="self.location = labrea;return false;"');
   document.writeln('onMouseOver="return(show(\'SITE STATS\'));" onMouseOut="return(off());">Site Stats</a></td></tr>');
 }
 </script>

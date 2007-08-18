@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 2.05, 3-29-07
+# version 2.06, 8-6-07
 #
 # Copyright 2003 - 2007, Michael Robinton <michael@bizsystems.com>
 #   
@@ -237,11 +237,12 @@ while (1) {
     $html .= (exists $CONFIG->{reason} && $CONFIG->{reason})
 	? $CONFIG->{reason}
 	: q
-|SpamCannibal does not block email access except for IP addresses that have
-sent or relayed what we believe to be spam or other unsolicited email
-directly to our email servers.  Spam originating IP addresses are blocked 
-ONLY for access to our mail servers, however, the database we use for that
-purpose is freely available for anyone to look at and use as they see fit.
+|SpamCannibal does not block email access except for IP addresses and
+generic netblocks that have sent or relayed what we believe to be spam or 
+other unsolicited email directly to our email servers.  Spam originating 
+IP addresses are blocked ONLY for access to our mail servers, however, 
+the database we use for that purpose is freely available for anyone to 
+look at and use as they see fit.
 |;
     $html .= "<hr>\n";
     last PageGen;
@@ -734,6 +735,44 @@ self.close();
     $query{page} = 'lookup';
     $query{lookup} = $query{remove};
     next PageGen;
+  }
+
+######  DELETE LIST
+
+  if ($admin && $query{page} =~ /^delist/ ) {
+    foreach (qw(
+	top
+	bgcolor
+	top2
+	versions
+	logo2
+	stats
+	),
+	$nav,
+	'delist',
+	) {
+	html_cat(\$html,$_,$CONFIG,\%ftxt);
+    }   
+
+    if (exists $query{remove}) {
+      my @zap = split(/\n/,$query{remove});
+      my $cnt = 0;
+      foreach (@zap) {
+	next unless $_ =~ /^\d+\.\d+\.\d+\.\d+/;
+	my $ip = $&;
+	next if $_ =~ /\stimeout\s/;				# skip if this is a timeout
+	$_ =  sesswrap("$admin delete $sess $expire $ip");
+	unless ($_ =~ /^OK/) { 
+	  $query{pagerror} = '<font size="+1" color=red>'. $_ .'</font><br>';
+	}
+        $cnt++;
+      }
+      unless ($cnt) {
+	$pagerror = '<font size="+1" color=red>no valid IP addresses</font><br>';
+      }
+      $html .= $pagerror;
+    }
+    last PageGen;
   }
 
 ######  VIEW DB

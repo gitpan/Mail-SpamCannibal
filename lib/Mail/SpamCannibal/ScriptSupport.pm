@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.42 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.44 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -1447,8 +1447,11 @@ sub mailcheck {
 	  last MATCH;
 	}
       }
-      return (1,'missing required source header')
-	unless $match;
+      unless ($match) {
+	@_ = (@discard, @lines);
+	$err = 'Subject: '. $err ."\n\n". array2string(\@_);
+	return(2,$err);
+      }
     }
   }
 

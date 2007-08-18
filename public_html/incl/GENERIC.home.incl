@@ -1,7 +1,8 @@
 
-This service does not block email access except for the IP addresses that have sent 
+This service does not block email access except for the IP addresses and
+generic netblocks that have sent 
 or relayed what we believe to be spam or other unsolicited email
-directly to our MX hosts. Spam originating IP addresses are blocked only for
+directly to our MX hosts. Spam originating IP addresses and netblocks are blocked only for
 access to our mail servers, however, the database we use for that purpose is
 freely availble for anyone to look at for use as they see fit. Use at your
 own risk.

@@ -1,5 +1,5 @@
 # sc_web.conf.sample
-# version 1.07, 1-3-06
+# version 1.08, 8-6-07
 #
 # The configuration file is divided into three sections
 #
@@ -149,6 +149,7 @@ purpose is freely available for anyone to look at and use as they see fit.
   nav2	  => './incl/nav2.incl',	# for all admin pages
 ######## individual body text follows
 # if page text does not appear here, it must be generated in this script
+  delist  => './incl/delist.incl',	# text box
   sorry	  => './incl/sorry.incl',	# 411 error
   blklist => './incl/blklist.incl',
   contact => './incl/contact.incl',

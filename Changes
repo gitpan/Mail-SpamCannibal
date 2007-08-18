@@ -1,5 +1,15 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.81  Sat Aug 18 14:45:27 PDT 2007
+	in SMTPsend 0.05, correct documentation format error
+
+	add admin 'delete list' function to provide a text box into which 
+	a commented list of IP addresses can be entered for deletion,
+	set wrap=off
+
+	change ScriptSupport to return entire email sent to mail filter
+	when required header match fails
+
 0.80  Mon Jun 25 09:51:43 PDT 2007
 	in ParseMessage 0.09 add sub to conditionally remove blank
 	lines and trim the total number of lines in the message portion 

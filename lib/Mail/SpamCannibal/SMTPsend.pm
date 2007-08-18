@@ -28,7 +28,7 @@ require Exporter;
 
 @ISA = qw(Exporter);
 
-$VERSION = do { my @r = (q$Revision: 0.04 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.05 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 @EXPORT_OK = qw(
 	getMXhosts
@@ -76,7 +76,7 @@ prior to calling B<sendmessage> (do not import getMXhosts).
 			mx2.designated.host.com
 	);
   }
- 
+
 =cut
 
 #use Net::DNS::ToolKit::Debug qw(print_buf);
@@ -197,7 +197,7 @@ sub sendmessage {
 
 =head1 COPYRIGHT
 
-Copyright 2003, Michael Robinton <michael@bizsystems.com>
+Copyright 2003 - 2007, Michael Robinton <michael@bizsystems.com>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

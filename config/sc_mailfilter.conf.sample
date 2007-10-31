@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # sc_mailfilter.conf
-# version 1.05, 6-25-07
+# version 1.07, 10-31-07
 # Configuration for sc_mailfilter.pl, sc_abuse.pl
 
 my $MAILFILTER = {
@@ -152,6 +152,29 @@ my $MAILFILTER = {
 #	VALIDATE  => 1,
 
 
+# For generic PTR records containing:
+#	d+?d+?d+?d+ or 12 digits
+# test the entire /24 for compliance and mark all 
+# non-compliant records as "spammy"
+#
+# 'message'	is a string inserted in all matching
+#		'generic' records to which the IP
+#		address of the spam record is appended
+#
+# 'agressive'	true will test all class C's for every 
+#		IP address submitted to the filter
+#
+#		false will test only those class C's
+#		for which the submitted IP address
+#		returns a missing or generic PTR record
+#
+# [ OPTIONAL ]
+
+	XCIDR24	  => {
+	    message	=> "spam source, anonymous/un-named IP\nsee\n",
+	    aggressive	=> 0,	# recommend false
+	},
+
 # FOR sc_abuse.pl
 # If the of the originating spammer server is found as the key of the 
 # ABUSE hash, instead of an abuse message being sent to abuse@domain.com,
@@ -160,7 +183,7 @@ my $MAILFILTER = {
 #
 # [ OPTIONAL ] 
 
-	ABUSE	=> {
+	ABUSE	  => {
 		'bellsouth.net'	=> [qw(
 				ipoperations@bellsouth.net
 				postmaster@bellsouth.net

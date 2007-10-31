@@ -97,6 +97,7 @@ public_html/incl/GENERIC.home.incl
 public_html/incl/blklist.incl
 public_html/incl/spamlst.incl
 public_html/incl/stats.incl
+public_html/incl/rdnsblk.incl
 public_html/index.html
 private/passwd.initial
 scripts/sc_abuse.pl

@@ -1,5 +1,16 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.82  Tue Oct 30 11:25:04 PDT 2007  
+	add bogon dnsbl to sc_BlackList
+	add page to return PTR records for an IP address
+	modify admin LOOKUP page to have PTR records button
+
+	add expanded /24 spam recording for generic IP addresses
+	see ScriptSupport::xcidr24 and comments in
+	config/sc_mailfilter.conf.example
+
+	updated sc_mailfilter.conf.example to support above
+
 0.81  Sat Aug 18 14:45:27 PDT 2007
 	in SMTPsend 0.05, correct documentation format error
 

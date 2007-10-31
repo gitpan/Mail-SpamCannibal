@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 2.06, 8-6-07
+# version 2.10, 9-18-07
 #
 # Copyright 2003 - 2007, Michael Robinton <michael@bizsystems.com>
 #   
@@ -38,9 +38,8 @@ use Mail::SpamCannibal::ScriptSupport qw(
 	validIP
 	valid127
 );
-use Net::DNS::Codes qw(
-	T_A
-);
+use Net::DNS::Codes qw(:all);
+
 use Net::DNS::ToolKit qw(
 	newhead
 	gethead
@@ -50,6 +49,7 @@ use Net::DNS::ToolKit qw(
 	ttlAlpha2Num
 );
 use Net::DNS::ToolKit::Utilities qw(
+	id
 	query
 	question
 	rlook_send
@@ -83,6 +83,7 @@ my $CONFIG = DO '../config/sc_web.conf';
 die "could not load config file"
 	unless $CONFIG;
 
+my $OverRide = 0;					# override mod perl output
 my ($admin,$sess,%extraheaders);
 my $expire	= $CONFIG->{expire} || 300;		# default expiration 5 minutes
 my $log_expire	= $CONFIG->{log_expire} || 180;		# default expiration 3 minutes
@@ -444,7 +445,7 @@ function wIP(ip) {
 	if($second) {		# if secondary db 'blcontrib'
 	  $text =~ s|(http://([\w\.\-\?#&=/]+))|\<a href="$1"\>$2\</a\>|;
 	  $results = "\n<p>\n". $text;
-	}else {
+	} else {
 	  $text =~ s/</&lt;/g;		# unmask html <
 	  $text =~ s/>/&gt;/g;		# unmask html >
 	  $text =~ s/$IP(\D)/$substr$1/g;
@@ -454,20 +455,37 @@ function wIP(ip) {
 	if ($admin && $text =~ /^not\s+in\s+\w+\s+database/) {
 	  $ip_found = 0;
 	  $html .= q|
-<td width=20>&nbsp;</td><td><table cellspacing=0 cellpadding=2 border=1>
+<td width=20>&nbsp;</td><td><table cellspacing=0 cellpadding=2 border=1><tr>
     <td class=cold><a href="#top" class=cold onMouseOver="return(show('tarpit |. $IP .q|'));" onMouseOut="return(off());"
   onClick="self.location = location.pathname + '?page=spamlst&host=' + '|. $IP .q|'; return false;">&#164;</a></td></tr></table><td>add to tarpit</td>|;
 	}
 	my $hostname = rlook_rcv($socket,$timeout);
 	$html .= '</td></tr></table>';
 	if ($hostname) {
-	  $html .= "\n&nbsp;&nbsp;". $hostname;
+	  $html .= q|<table cellspacing=0 cellpadding=0 border=0><tr><td width=10>&nbsp;</td><td>|. $hostname .q|</td>|;
 	}
-	$html .= $results .q|
+	else {
+	  $html .= q|<table cellspacing=0 cellpadding=0 border=0><tr><td width=10>&nbsp;</td>|;
+	}
+	if ($admin) {
+	  $html .= q|<td width=10>&nbsp;</td><td><table cellspacing=0 cellpadding=1 border=1><tr><td class=hot><a
+href="#top" class=hot onMouseOver="return(show('PTR records'));" onMouseOut="return(off());"
+onClick="document.rdnsblk.lookup.value='|. $IP .q|'; document.rdnsblk.submit(); return false;">&nbsp;PTR's&nbsp;</a></td>
+</tr></table></td>
+|;
+	}
+	$html .= q|</tr></table>
+|. $results .q|
 </form>
 |;
+
 	if ($admin) {
-	  $html .= q|<script language=javascript1.1>
+	  $html .= q|
+<form name="rdnsblk" target="_blank" action="" method=POST>
+<input type=hidden name=lookup value="">
+<input type=hidden name=page value=rdnsblk>
+</form>
+<script language=javascript1.1>
 function wDelete() {
   if (document.bulkremove) {
     var tmp;
@@ -775,6 +793,108 @@ self.close();
     last PageGen;
   }
 
+######  RDNSBLK
+
+  if ($admin && $query{page} =~ /^rdnsblk/ ) {
+    my $IP = validIP($query{lookup});
+    my $regexp = $query{regexp} || '';
+    foreach (qw(
+	top
+	bgcolor
+	top2
+	versions
+	logo2
+	stats
+	),
+	$nav,
+	'rdnsblk',
+	) {
+	html_cat(\$html,$_,$CONFIG,\%ftxt);
+    }
+    if ($IP && $IP =~ /(\d+)\.(\d+)\.(\d+)/) {
+      my $revip = "${3}.${2}.${1}.in-addr.arpa";
+      my $match = "${&}.";
+      my $sock = IO::Socket::INET->new(
+	PeerAddr	=> inet_ntoa(scalar get_ns()),
+	PeerPort	=> 53,
+	Proto		=> 'udp',
+	Type		=> IO::Socket::INET::SOCK_DGRAM,
+      ) or print STDERR "could not open socket for rdns lookup\n";
+      my($buffer,$response);
+      (my $rgx = $regexp) =~ s/\\/\\\\/g;
+      $html .= q|<script language=javascript1.1>
+document.rdnsblk.lookup.value='|. $IP .q|';
+document.rdnsblk.regexp.value='|. $rgx .q|';
+</script>
+<blockquote>
+<table cellspacing=0 cellpadding=2 border=1>
+|;
+      $OverRide = 1;
+      local $| = 1;		# flush buffer on each print statement
+      print q
+|Content-type: text/html
+|;
+      if (keys %extraheaders) {
+	foreach(keys %extraheaders) {
+	  print $_,':: ',$extraheaders{"$_"};
+	}
+      }
+      print q|
+
+|, $html;
+
+      $html = '';
+      my($get,$put,$parse) = new Net::DNS::ToolKit::RR;
+      foreach (0..255) {
+	my $name = join('.',$_,$revip);
+	my $ip = $match . $_;
+	my $bp = \$buffer;
+	my $offset = newhead($bp,
+		id(),
+		BITS_QUERY | RD,
+		1,0,0,0,
+	);
+	$offset = $put->Question(\$buffer,$offset,$name,T_PTR,C_IN);
+	eval {
+		local $SIG{ALRM} = sub {die "timeout"};
+		alarm 5;			# 5 second timeout
+		my $wrote = syswrite $sock, $buffer, $offset;
+		my $urcv;
+		die "failed to get UDP message" unless
+			defined ($urcv = sysread($sock, $response, NS_PACKETSZ));
+		alarm 0;
+	};
+	if ($@) {
+	  print "<tr><td>$ip</td><td>timeout ${timeout}s</td></tr>\n";
+	  next;
+	}
+	$bp = \$response;
+	my ($newoff,$id,$qr,$opcode,$aa,$tc,$rd,$ra,$mbz,$ad,$cd,$rcode,
+		$qdcount,$ancount,$nscount,$arcount)
+		= gethead($bp);
+	next if ($rcode != NOERROR);
+	my($type,$class,$ttl,$rdlength,@rdata);
+	foreach(0..$qdcount -1) {
+	  ($newoff,$name,$type,$class) = $get->Question($bp,$newoff);
+	  my $line = '';
+	  foreach(0..$ancount -1) {
+	    ($newoff, $name,$type,$class,$ttl,$rdlength,@rdata) = $get->next($bp,$newoff);
+	    $line .= qq|<tr><td>$ip</td><td>$rdata[0]</td></tr>\n|;
+	    $ip = '&nbsp;';
+	  }
+	  next if $regexp && $line =~ /$regexp/i;
+	  print $line;
+	}
+      }
+      close $sock;
+      $html .= q|</table>
+</blockquote>
+|;
+    }
+    last PageGen;
+  }
+
+
 ######  VIEW DB
 
   if ($admin && $query{page} =~ /^viewdb/) {
@@ -987,6 +1107,11 @@ $html .= q|</body>
 </html>
 |;
 
-sendhtml(\$html,\%extraheaders);
+if ($OverRide) {
+  $OverRide = 0;
+   print $html;
+} else {
+  sendhtml(\$html,\%extraheaders);
+}
 
 1;

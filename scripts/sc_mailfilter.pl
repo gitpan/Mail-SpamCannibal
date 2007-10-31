@@ -2,7 +2,7 @@
 #
 # sc_mailfilter.pl
 #
-# version 1.08, 11-20-04
+# version 1.09, 10-30-07
 #
 #################################################################
 # WARNING! do not modify this script, make one with a new name. #
@@ -35,6 +35,7 @@ use Mail::SpamCannibal::ScriptSupport 0.09 qw(
 	mailcheck
 	list2NetAddr
 	DO
+	block4zonedump
 );
 use Mail::SpamCannibal::SMTPsend qw(
 	sendmessage
@@ -153,8 +154,37 @@ my %default = (
 	PGPLIM  => $CHAR_READ_LIMIT,
 );
 
-my $pidfile = $environment .'/'. get_script_name() .'.'. $$ .'.pid';
+my $sname = get_script_name();
+my $pidfile = $environment .'/'. $sname .'.'. $$ .'.pid';
 make_pidfile($pidfile);
+
+block4zonedump($environment);
+
+# give competing tasks some space so we don't bottleneck the db or DNS server
+#
+my $delay = 0;
+do {
+  my $dead = 0;
+  my $inc = -1;
+  opendir(D,$environment) or die "can't open $environment\n";
+  my @others = sort grep(/$sname\.\d+\.pid/, readdir(D));
+  closedir D;
+  foreach (@others) {
+    unless ($_ =~ /$sname\.(\d+)\./) {  # should never fail
+      die "should not fail\n";
+    }
+    $inc++;
+    if ($1 == $$) {
+      $delay = $inc;			# wait proportional to position in array
+      next;
+    }
+    $dead++ unless (kill 0, $1);	# ignore dead kids if left behind
+  }
+  $delay -= $dead;
+  $delay = 0 if $delay < 0;
+  sleep $delay
+        if $delay;
+} while $delay;
 
 # if validation is specified
 push @{$default{dbhome}}, $archive

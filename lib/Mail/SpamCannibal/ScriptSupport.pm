@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.44 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.45 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -19,8 +19,11 @@ use IPTables::IPv4::DBTarpit::Tools;
 
 use NetAddr::IP::Lite;
 use Net::DNS::ToolKit qw(
+	newhead
+	gethead
 	get16
 	ttlAlpha2Num
+	get_ns
 );
 
 use Net::DNS::ToolKit::Utilities qw(
@@ -28,10 +31,8 @@ use Net::DNS::ToolKit::Utilities qw(
 	rlook_rcv
 );
 
-use Net::DNS::Codes qw(
-	T_ANY
-	T_PTR
-);
+use Net::DNS::Codes qw(:all);
+
 use Mail::SpamCannibal::ParseMessage qw(
 	limitread
 	dispose_of
@@ -127,6 +128,7 @@ require Exporter;
 	BLcheck
 	BLpreen
 	mailcheck
+	xcidrl24
 	abuse_host
 	block4zonedump
 );
@@ -208,6 +210,7 @@ Mail::SpamCannibal::ScriptSupport - A collection of script helpers
   $rv = BLcheck(\%DNSBL,\%default);
   $rv = BLpreen(\%DNSBL,\%default);
   @err=mailcheck($fh,\%MAILFILTER,\%DNSBL,\%default,\@NAignor)
+  @err=xcidr24($tool,$tarpit,$evidence,$string,$ipaddr)
   $rv=zap_one($tool,$netaddr,$db,$verbose,$comment);
   zap_pair($tool,$netaddr,$pri,$sec,$debug,$verbose,$comment);
   block4zonedump($environment);
@@ -1449,7 +1452,7 @@ sub mailcheck {
       }
       unless ($match) {
 	@_ = (@discard, @lines);
-	$err = 'Subject: '. $err ."\n\n". array2string(\@_);
+	my $err = "Subject: matching header not found\n\n". array2string(\@_);
 	return(2,$err);
       }
     }
@@ -1535,6 +1538,7 @@ sub mailcheck {
   $spam = substr($spam,0,$savlim)
 	if length($spam) > $savlim;
 # tarpit this host address
+  my @err;
   if ($default->{DEBUG}) {
     return (2,"Subject: $spamsource would add to $tarpit\n\n$spam");
   } else {
@@ -1553,7 +1557,140 @@ sub mailcheck {
 	$tool->sync($tarpit);
       }
     }
+    if ($MAILFILTER->{XCIDR24} && $MAILFILTER->{XCIDR24}->{message}) {		# if /24 expansion requested
+      @err = xcidr24($tool,$tarpit,$evidence,$MAILFILTER->{XCIDR24}->{message},$spamsource,$MAILFILTER->{XCIDR24}->{agressive});
+    }
     $tool->closedb;
+  }
+  return @err;
+}
+
+=item * @err=xcidr24($tool,$tarpit,$evidence,$string,$ipaddr);
+
+Called from 'mailcheck'
+
+Test each record in the /24 represented by $ipaddr for:
+
+ 1)	missing PTR record
+ 2)	match to d+?d+?d+?d+
+ 3)	match to 12 digits i.e. 1.2.3.4 => 001002003004
+
+ If the pointer record is missing, the text:
+	no reverse DNS, MX host should have rDNS - RFC1912 2.1
+ will mark the record
+
+For a match to the forbidden regexp, $string will mark the record
+
+  input:	database tool pointer,
+		tarpit db name,
+		evidence db name,
+		record mark string
+		dot quad IP address
+
+  returns:	empty array on success,
+		error array (see 'mailcheck')
+
+=cut
+
+# pattern for ip address's of the form n+?n+?n+?n+ or 12 n's
+# as in 1.2.3.4 => 001002003004
+#
+my $ipattern = '\d+[a-zA-Z_\-\.]\d+[a-zA-Z_\-\.]\d+[a-zA-Z_\-\.]\d+|\d{12}';
+
+sub _xcidrev {
+  my($sock,$get,$put,$sadr,$name,$str) = @_;
+  my($buffer,$response);
+  my $bp = \$buffer;
+  my $offset = newhead($bp,
+	id(),
+	BITS_QUERY | RD,
+	1,0,0,0,
+  );
+  $offset = $put->Question($bp,$offset,$name,T_PTR,C_IN);
+  eval {
+	local $SIG{ALRM} = sub {die "timeout"};
+	alarm 10;			# 10 second timeout
+	my $wrote = syswrite $sock, $buffer, $offset;
+	my $urcv;
+	die "failed to get UDP message" unless
+		defined ($urcv = sysread($sock, $response, NS_PACKETSZ));
+	alarm 0;
+  };
+
+  if ($@) {
+    return 'no reverse DNS response, MX host should have rDNS - RFC1912 2.1';
+  } else {
+    $bp = \$response;
+    my ($newoff,$id,$qr,$opcode,$aa,$tc,$rd,$ra,$mbz,$ad,$cd,$rcode,
+	$qdcount,$ancount,$nscount,$arcount)
+	= gethead($bp);
+#print RcodeTxt->{$rcode},"\n";
+    if ($rcode == NXDOMAIN || $rcode == SERVFAIL) {
+      return 'no reverse DNS, MX host should have rDNS - RFC1912 2.1';
+    }
+    next if ($rcode != NOERROR);
+    my($type,$class,$ttl,$rdlength,@rdata);
+    foreach(0..$qdcount -1) {
+      ($newoff,$name,$type,$class) = $get->Question($bp,$newoff);	# waste question
+    }
+    my @names;
+    foreach(0..$ancount -1) {
+      ($newoff, $name,$type,$class,$ttl,$rdlength,@rdata) = $get->next($bp,$newoff);
+#print "$rdata[0]\n";
+      push @names, $rdata[0] if $rdata[0] && $rdata[0] !~ /$ipattern/o;
+    }
+    return '' if @names;
+    return $str;
+  }
+}
+  
+
+sub xcidr24 {
+  my($tool,$tarpit,$evidence,$string,$addr,$agressive) = @_;
+  return () unless $addr =~ /((\d+)\.(\d+)\.(\d+)\.)(\d+)/;
+  $string .= $addr;
+  my $cidr = $1;
+  my $revip = "${4}.${3}.${2}.in-addr.arpa";
+  my $name = "${5}.$revip";
+  my $rspam = $name;
+  my $saddr = inet_aton($addr);
+  my($get,$put,$parse) = new Net::DNS::ToolKit::RR;
+  my $sock = IO::Socket::INET->new(
+	PeerAddr	=> inet_ntoa(scalar get_ns()),
+	PeerPort	=> 53,
+	Proto		=> 'udp',
+	Type		=> IO::Socket::INET::SOCK_DGRAM,
+  ) or return (3,'could not open socket for rdns lookup');
+  my %results;
+  unless ($agressive || _xcidrev($sock,$get,$put,$saddr,$name,$string)) {
+    close $sock;
+    return ();
+  }
+  my $rv;
+  foreach (0..255) {
+    my $target = "${cidr}$_";
+    next if $target eq $rspam;
+    $saddr = inet_aton($target);
+    next if defined $tool->get($evidence,$saddr);	# skip on DB error or pre-existing spam record
+    $name = "${_}.$revip";
+    if ($rv = _xcidrev($sock,$get,$put,$saddr,$name,$string)) {
+      $results{$saddr} = $rv;
+    }
+  }
+  close $sock;
+
+  if (keys %results) {
+    foreach $saddr (sort keys %results) {
+      unless ($tool->put($evidence,$saddr,$results{$saddr})) {
+	$tool->sync($evidence);
+	unless ($tool->touch($tarpit,$saddr)) {
+	  $tool->sync($tarpit);
+	}
+      }
+    }
+    unless ($tool->touch($tarpit,SerialEntry())) {
+      $tool->sync($tarpit);
+    }
   }
   return ();
 }

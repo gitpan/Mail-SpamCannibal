@@ -152,12 +152,17 @@ my $MAILFILTER = {
 #	VALIDATE  => 1,
 
 
-# For generic PTR records containing:
-#	d+?d+?d+?d+ or 12 digits
-# test the entire /24 for compliance and mark all 
-# non-compliant records as "spammy"
+# For generic PTR records matching the regular expression
+# 'regexp', test the entire /24 for compliance and mark
+# all non-compliant records as "spammy"
 #
-# 'message'	is a string inserted in all matching
+# 'ignore'	array of perl regular expressions to ignore
+#		before testing with 'regexp' below, case insensitive
+#
+# 'regexp'	array of perl regular expression in single
+#		quotes that will be tested case insensitive
+#
+# 'message'	is a REQUIRED string inserted in all matching
 #		'generic' records to which the IP
 #		address of the spam record is appended
 #
@@ -171,7 +176,15 @@ my $MAILFILTER = {
 # [ OPTIONAL ]
 
 	XCIDR24	  => {
-	    message	=> "spam source, anonymous/un-named IP\nsee\n",
+#	    ignore	=> [
+#		'dls-only',
+#	    ],
+	    regexp	=> [
+		# d+?d+?d+?d+ or 12 digits
+		'\d+[a-zA-Z_\-\.]\d+[a-zA-Z_\-\.]\d+[a-zA-Z_\-\.]\d+|\d{12}',
+#		'dynamic',
+	    ],
+	    message	=> "spam source, anonymous/un-named IP\nsee:\n",
 	    aggressive	=> 0,	# recommend false
 	},
 

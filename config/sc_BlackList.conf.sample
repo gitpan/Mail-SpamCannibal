@@ -3,7 +3,7 @@
 # sc_BlackList.conf, multi_dnsbl.conf
 # Configuration for sc_BLcheck.pl, sc_BLpreen.pl, and Net::DNSBL::MultiDaemon
 #
-# version 1.15, 8-25-05
+# version 1.20, 11-16-07
 #
 my $DNSBL = {
 
@@ -143,6 +143,63 @@ my $DNSBL = {
 #
   'REJECT'	=> 'see: http://www.myhostname.com/',
 
+# This configuration parameter is OPTIONAL as are its parameters.
+# This is an AGGRESSIVE spam fighting measure. If present a test 
+# for GENERIC PTR records is performed to see if the returned PTR 
+# record matches any of the match array regexp's
+#
+# NOTE: this test is performed AFTER all of the DNSBL checks so it 
+# is invoked only if there are no other blocks in place.
+#
+# NOTE FURTHER: 	AGGRESSIVE -- AGGRESSIVE
+# generic PTR failures are added as permanent records to the zonefile
+# and are exported for zone transfers
+#
+# The parameters:
+#
+# ignore => [	an array of regular expressions to ignore 
+#		before testing 'regexp', case insensitive
+#	],
+#
+# regexp => [	an array of regular expressions that are considered
+#		to mark the PTR record as "generic" BE CAREFUL!
+#		case insensitive
+#	],
+#
+# Whether to test the entire class C for compliance with the regexp array
+#
+# message =>	false (disables) or message to which offending IP addy is appended
+#		i.e. "spam source, anonymous/un-named IP\nsee\n"
+#
+# Whether to place this entry in 'blcontrib' or 'evidence' (zonefile).
+# If "error" is present, the entry will be made in 'blcontrib' and 
+# will be checked periodically by the scripts 'BLclean and BLpreen'
+# If 'error' is missing, the entry will be placed in the PERMANENT
+# zonefile for export.
+#
+# error	  =>	'policy violation, unacceptable generic PTR record'
+#
+# see comments below for 'timeout' and 'expire'
+#
+# timeout =>	default 30 seconds
+#
+# expire  =>	default 7 days if BLpreen is run
+#
+# OPTIONAL
+
+  'GENERIC'	=> {
+#	ignore	  => [
+#		'dsl-only',
+#	],
+	regexp	  => [	# test for these regular expression (case insensitive)
+		'\d+[a-zA-Z_\-\.]\d+[a-zA-Z_\-\.]\d+[a-zA-Z_\-\.]\d+|\d{12}',
+#		'dynamic',
+	],
+	message	  => "spam source, anonymous/un-named IP\nsee\n",
+#	error	  => 'policy violation, unacceptable generic PTR record',
+	timeout	  => 10,
+  },
+
 # FOR A COMPREHENSIVE LIST OF ALL DNSBL ZONES, SEE:
 #	http://www.openrbl.org
 # click "zones"
@@ -257,23 +314,15 @@ my $DNSBL = {
 	timeout		=> '15',
   },
 
-  'relays.ordb.org'	=> {	# see http://www.ordb.org/faq/#usage_dns
-	accept	=> {
-		'127.0.0.2' => '',
-	},
-	error		=> 'for removal see: http://www.ordb.org/submit',
-	expire		=> '30d',
-	timeout		=> '15',
-  },
-
-  'bl.spamcop.net'	=> {	# see http://spamcop.net/fom-serve/cache/291.html
-	accept	=> {
-		'127.0.0.2' => '',
-	},
-	error		=> 'for removal see: http://www.spamcop.net/w3m?action=checkblock&ip=',
-	expire		=> '30d',
-	timeout		=> '15',
-  },
+# Way to aggressive for real world use
+#  'bl.spamcop.net'	=> {	# see http://spamcop.net/fom-serve/cache/291.html
+#	accept	=> {
+#		'127.0.0.2' => '',
+#	},
+#	error		=> 'for removal see: http://www.spamcop.net/w3m?action=checkblock&ip=',
+#	expire		=> '30d',
+#	timeout		=> '15',
+#  },
 
   'cbl.abuseat.org'	=> {	# see http://cbl.abuseat.org
 	accept  => {
@@ -284,7 +333,7 @@ my $DNSBL = {
 	timeout		=> '15',
   },
 
-  'sbl.spamhaus.org'	=> {	# see http://www.spamhaus.org
+  'zen.spamhaus.org'	=> {	# see http://www.spamhaus.org
 	accept	=> {
 		'127.0.0.2' => '',
 	},

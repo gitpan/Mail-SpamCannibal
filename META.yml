@@ -1,7 +1,7 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         Mail-SpamCannibal
-version:      0.82
+version:      0.83
 version_from: SpamCannibal.pm
 installdirs:  site
 requires:
@@ -11,8 +11,8 @@ requires:
     IPTables::IPv4::DBTarpit:      0.23
     MIME::Base64:                  2.00
     Net::DNS::Codes:               0.08
-    Net::DNS::ToolKit:             0.20
-    Net::DNSBL::MultiDaemon:       0.13
+    Net::DNS::ToolKit:             0.35
+    Net::DNSBL::MultiDaemon:       0.22
     Net::SMTP:                     2.10
     Net::Whois::IP:                0.35
     NetAddr::IP::Lite:             0.02

@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.45 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.50 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -26,7 +26,7 @@ use Net::DNS::ToolKit qw(
 	get_ns
 );
 
-use Net::DNS::ToolKit::Utilities qw(
+use Net::DNS::ToolKit::Utilities 0.05 qw(
 	rlook_send
 	rlook_rcv
 );
@@ -69,6 +69,7 @@ use Net::DNSBL::Utilities qw(
 	A1274
 	A1275
 	A1276
+	A1277
 	list_countries
 );
 *list2NetAddr = \&Net::DNSBL::Utilities::list2NetAddr;
@@ -128,7 +129,6 @@ require Exporter;
 	BLcheck
 	BLpreen
 	mailcheck
-	xcidrl24
 	abuse_host
 	block4zonedump
 );
@@ -194,6 +194,7 @@ Mail::SpamCannibal::ScriptSupport - A collection of script helpers
   ($aptr,$tptr,$auth_zone) = dns_ans(\$buffer);
   $nsptr = dns_ns(\$buffer);
   $hostname = dns_ptr(\$buffer);
+  @hosts = dns_ptr(\$buffer);
   $socket = rlook_send($IP,$timeout);
   $hostname = rlook_rcv($socket,$timeout);
   ($expire,$error,$dnresp,$timeout)=zone_def($zone,\%dnsbl);
@@ -210,7 +211,6 @@ Mail::SpamCannibal::ScriptSupport - A collection of script helpers
   $rv = BLcheck(\%DNSBL,\%default);
   $rv = BLpreen(\%DNSBL,\%default);
   @err=mailcheck($fh,\%MAILFILTER,\%DNSBL,\%default,\@NAignor)
-  @err=xcidr24($tool,$tarpit,$evidence,$string,$ipaddr)
   $rv=zap_one($tool,$netaddr,$db,$verbose,$comment);
   zap_pair($tool,$netaddr,$pri,$sec,$debug,$verbose,$comment);
   block4zonedump($environment);
@@ -265,6 +265,15 @@ Make sure and use the parens at the end of the function.
 
 1;
 __END__
+
+my $_suppress_warnings = sub {	# during debug
+  DNSBL_Entry();
+  TarpitEntry();
+  dns_udpresp();
+  dns_udpsend();
+  DO();
+  dns_ns();
+};
 
 ############################################
 ############################################
@@ -584,11 +593,14 @@ Unpack a 'blcontrib' record.
   output:	netaddr - our response code,
 		our error message,
 		netaddr - remote response code,
+		expire
 		dnsbl zone
 
 This undoes pack("a4 x A* x a4 x N x A*",@_);
 
 =cut
+
+# pack("a4 x A* x a4 x N x A*",$dnresp,$error,$netA,$expire,$zon);
 
 sub unpack_contrib {
   my ($ip,$rest) = unpack("a4 x a*",shift);
@@ -732,6 +744,7 @@ sub BLcheck {
   my $tarpit	= $default->{dbfile}->[0];
   my $archive	= $default->{dbfile}->[1];
   my $contrib	= $default->{txtfile}->[0];
+  my $evidence  = $default->{txtfile}->[1];
 
   my @NAignor;
   list2NetAddr($DNSBL->{IGNORE},\@NAignor)
@@ -749,6 +762,13 @@ sub BLcheck {
   my $numberoftries = 6;
 
   cntinit($DNSBL,\%count);
+
+  my $generic = 0;
+  if (exists $DNSBL->{GENERIC} && 'HASH' eq ref $DNSBL->{GENERIC}) {
+    $generic = 1;
+    $count{genericPTR} = 0;
+  }
+
   my %deadDNSBL;
   foreach(keys %count) {
     next unless $_ =~ /\./;			# only real domains
@@ -792,7 +812,7 @@ sub BLcheck {
       my $dnresp = $netA;
       _addTPentry($tool,$reason,$error,$IP,$expire,\%count,$zone,$ipA,$dnresp,$tarpit,$netA,$key,$contrib,$DEBUG,$VERBOSE);
       next Record;
-    }      
+    }
 
     my $cc;
     if ($BBC && 
@@ -881,7 +901,30 @@ sub BLcheck {
 	}
       }
     } # CheckZone
-    $count{Passed} += 1 unless $zapped;
+    unless ($zapped) {
+      if ($generic) {
+	if ($DNSBL->{GENERIC}->{error}) {	# this entry should be made in 'blcontrib'
+	  my ($expire,$error,$dnresp,$timeout) = zone_def('GENERIC',$DNSBL);
+	  my $ipA = '127.0.0.7';
+	  my $netA = A1277;
+	  $dnresp = $netA;
+	  my $reason = 'generic PTR reject';
+	  my $zone = 'genericPTR';
+# $IP and $key must be reconstituted by Xcidr routines
+	  @_ = ($tool,$reason,$error,$IP,$expire,\%count,$zone,$ipA,$dnresp,$tarpit,$netA,$key,$contrib,$DEBUG,$VERBOSE);
+	  $zapped = Xcidr24($tool,$tarpit,$evidence,$IP,$DNSBL->{GENERIC},\@_);
+	} elsif (($zapped = Xcidr24($tool,$tarpit,$evidence,$IP,$DNSBL->{GENERIC})) > 0 ) {
+	  $count{genericPTR} += 1;
+	}
+	if ($zapped > 0) {
+	  $zapped = 1;
+	} else {
+	  $count{Passed} += 1;
+	}
+      } else {
+        $count{Passed} += 1;
+      }
+    }
   } continue {
     print "\n" if $VERBOSE;
     if ($DEBUG) {
@@ -951,7 +994,8 @@ sub _addTPentry {
 	  } else {
 	    $error .= $IP		# append IP address if ends in http query string
 		if $error =~ /\?.+=$/ || $error =~ /\?$/;
-	    $error = $reason .', '. $error;
+	    $error = $reason .', '. $error
+		if $reason;
 	  }
 
 	  $expire += time;		# absolute expiration time
@@ -1053,6 +1097,7 @@ sub BLpreen {
 		  $DNSBL->{FORCE_PREEN};
   }
 
+  my($regexptr,$iptr) = _chkgenhash($DNSBL->{GENERIC});	# get generic stuff if present
 
 
   $tool->{SS_BLpreen_cache} = {		# cache for write back operations
@@ -1119,8 +1164,9 @@ sub BLpreen {
     my $dnsblIP = revIP($IP);			# get the reversed IP address
     my($orsp,$err,$trsp,$exp,$zon)=unpack_contrib($data);
     print $zon, ' ' if $VERBOSE;
+    my $zn = $zon eq 'genericPTR' ? 'GENERIC' : $zon;
     if (! ($orsp eq A1276 && $zon =~ /^[A-Z0-9]{2}$/) &&	# not a country
-	! exists $DNSBL->{"$zon"}				# zone has been removed from config
+	! exists $DNSBL->{"$zn"}				# zone has been removed from config
 	) {		
 
 #    unless (exists $DNSBL->{"$zon"}) {			# zone has been removed from config
@@ -1137,8 +1183,10 @@ sub BLpreen {
     }
 # get current zone info from config file
     my ($expire,$error,$dnresp,$timeout);
-    if ($zon =~ /.+\..+/) {
+    if ($zon =~ /.+\..+/ ) {
       ($expire,$error,$dnresp,$timeout) = zone_def($zon,$DNSBL);
+    } elsif ($zon eq 'genericPTR') {
+      ($expire,$error,$dnresp,$timeout) = zone_def('GENERIC',$DNSBL);
     }
 
 # BLOCKED?
@@ -1191,6 +1239,41 @@ sub BLpreen {
 	my $netA = $dnresp;
 	_updateTpentry($tool,$reason,$error,$IP,$expire,$ipA,$dnresp,$netA,$zon,$contrib,$key,$tarpit,$DEBUG,$VERBOSE);
       }
+    }
+# GENERIC PTR record
+    elsif ($zon eq 'genericPTR') {
+      unless ($regexptr) {
+	$zapped = 'generic zone removed';
+	zap_pair($tool,$key,$tarpit,$contrib,$DEBUG,$VERBOSE,'GENERIC removed');
+	next Record;
+      }
+      my $qbuf = question($dnsblIP.'.in-addr.arpa',T_PTR());
+      my $response = query(\$qbuf,$timeout);
+      if ($response) {				# possible to remove if response
+	my @hosts = dns_ptr(\$response);
+	my $flag = 0;
+	foreach my $name (@hosts) {
+	  if ($iptr && grep($name =~ /$_/i,@$iptr)) {			# skip if regexp is to be ignored
+	    $flag = 1;
+	    last;
+	  }
+          if ($name && ! grep($name =~ /$_/i, @$regexptr)) {
+	    $flag = 1;
+	    last;
+	  }
+	}
+	if ($flag) {
+	  $zapped = 'GENERIC cleared';
+	  zap_pair($tool,$key,$tarpit,$contrib,$DEBUG,$VERBOSE,'GENERIC cleared');
+	  next Record;
+	}
+      }
+      $validate = 1;
+      $dnresp = A1277;
+      my $ipA = '127.0.0.4';
+      my $netA = $dnresp;
+      my $reason = 'generic PTR reject';
+      _updateTpentry($tool,$reason,$error,$IP,$expire,$ipA,$dnresp,$netA,$zon,$contrib,$key,$tarpit,$DEBUG,$VERBOSE);
     }
 # Regular DNSBL
     else {					# check DNSBL zone
@@ -1311,7 +1394,8 @@ sub _updateTpentry {
 	} else {
 	  $error .= $IP		# append IP address if ends in http query string
 		if $error =~ /\?.+=$/;
-	  $error = $reason .', '. $error;
+	  $error = $reason .', '. $error
+		if $reason;
 	}
 
 	$expire += time;		# absolute expiration time
@@ -1557,48 +1641,59 @@ sub mailcheck {
 	$tool->sync($tarpit);
       }
     }
-    if ($MAILFILTER->{XCIDR24} && $MAILFILTER->{XCIDR24}->{message}) {		# if /24 expansion requested
-      @err = xcidr24($tool,$tarpit,$evidence,$MAILFILTER->{XCIDR24}->{message},$spamsource,$MAILFILTER->{XCIDR24}->{agressive});
+    if (exists $MAILFILTER->{XCIDR24}) {
+      my $count = Xcidr24($tool,$tarpit,$evidence,$spamsource,$MAILFILTER->{XCIDR24},undef,1); # should have updated evidence above
+      @err = ($count < 0) 
+	? (3,'could not open socket for rdns lookup')
+	: ();
     }
     $tool->closedb;
   }
   return @err;
 }
 
-=item * @err=xcidr24($tool,$tarpit,$evidence,$string,$ipaddr);
-
-Called from 'mailcheck'
-
-Test each record in the /24 represented by $ipaddr for:
-
- 1)	missing PTR record
- 2)	match to d+?d+?d+?d+
- 3)	match to 12 digits i.e. 1.2.3.4 => 001002003004
-
- If the pointer record is missing, the text:
-	no reverse DNS, MX host should have rDNS - RFC1912 2.1
- will mark the record
-
-For a match to the forbidden regexp, $string will mark the record
-
-  input:	database tool pointer,
-		tarpit db name,
-		evidence db name,
-		record mark string
-		dot quad IP address
-
-  returns:	empty array on success,
-		error array (see 'mailcheck')
-
-=cut
+#=item * $cnt=Xcidr24($tool,$tarpit,$evidence,$ipaddr,$confptr,\@_addTarry);
+#
+#Called from 'mailcheck' and 'BLcheck'
+#
+#Test each record in the /24 represented by $ipaddr for missing PTR or
+#a match to any item in the regex array
+#
+# If the pointer record is missing, the text:
+#	no reverse DNS, MX host should have rDNS - RFC1912 2.1
+# will mark the record
+#
+#For a match to the forbidden regexp, $string will mark the record
+#
+#See the configuration files sc_mailcheck.conf and sc_mailfilter.conf
+#for further details on the configuration parameters
+#
+#  input:	database tool pointer,
+#		tarpit db name,
+#		evidence db name,
+#		dot quad IP address
+#		ptr to config array
+#	(see sc_mailcheck.conf XCIDR24
+#	 and sc_BLcheck.conf GENERIC)
+#		undef for mail check or _addTpentry array ptr
+#					for BLcheck
+#		evidence just entered T/F (from mailcheck)
+#
+#  returns:	number of records entered in DB
+#		negative = error
+#		'could not open socket for rdns lookup'
+#
+#=cut
 
 # pattern for ip address's of the form n+?n+?n+?n+ or 12 n's
 # as in 1.2.3.4 => 001002003004
 #
-my $ipattern = '\d+[a-zA-Z_\-\.]\d+[a-zA-Z_\-\.]\d+[a-zA-Z_\-\.]\d+|\d{12}';
+#my $ipattern = '\d+[a-zA-Z_\-\.]\d+[a-zA-Z_\-\.]\d+[a-zA-Z_\-\.]\d+|\d{12}';
 
+# returns:	false	=> does not match regexp
+#		true	=> string to insert in DB
 sub _xcidrev {
-  my($sock,$get,$put,$sadr,$name,$str) = @_;
+  my($sock,$get,$put,$sadr,$name,$str,$regexptr,$iptr) = @_;
   my($buffer,$response);
   my $bp = \$buffer;
   my $offset = newhead($bp,
@@ -1607,7 +1702,9 @@ sub _xcidrev {
 	1,0,0,0,
   );
   $offset = $put->Question($bp,$offset,$name,T_PTR,C_IN);
-  eval {
+  my $retry = 1;
+  while ($retry-- > 0) {
+    eval {
 	local $SIG{ALRM} = sub {die "timeout"};
 	alarm 10;			# 10 second timeout
 	my $wrote = syswrite $sock, $buffer, $offset;
@@ -1615,10 +1712,11 @@ sub _xcidrev {
 	die "failed to get UDP message" unless
 		defined ($urcv = sysread($sock, $response, NS_PACKETSZ));
 	alarm 0;
-  };
-
+    };
+    last unless $@;
+  }
   if ($@) {
-    return 'no reverse DNS response, MX host should have rDNS - RFC1912 2.1';
+    return '';			# ignore DNS that does not answer... bad connection, to aggressive
   } else {
     $bp = \$response;
     my ($newoff,$id,$qr,$opcode,$aa,$tc,$rd,$ra,$mbz,$ad,$cd,$rcode,
@@ -1637,49 +1735,93 @@ sub _xcidrev {
     foreach(0..$ancount -1) {
       ($newoff, $name,$type,$class,$ttl,$rdlength,@rdata) = $get->next($bp,$newoff);
 #print "$rdata[0]\n";
-      push @names, $rdata[0] if $rdata[0] && $rdata[0] !~ /$ipattern/o;
+      return '' if $iptr && grep($rdata[0] =~ /$_/i,@$iptr);		# skip regexp if an ignored name
+      return '' if $rdata[0] && ! grep($rdata[0] =~ /$_/i, @$regexptr)
     }
-    return '' if @names;
     return $str;
   }
 }
-  
 
-sub xcidr24 {
-  my($tool,$tarpit,$evidence,$string,$addr,$agressive) = @_;
-  return () unless $addr =~ /((\d+)\.(\d+)\.(\d+)\.)(\d+)/;
-  $string .= $addr;
+# input:	generic hash pointer
+# return:	(regexptr,iptr,msgstring,agressive)
+#
+sub _chkgenhash {
+  my $gptr = shift;
+  my($iptr,$regexptr);
+  return () unless ref $gptr eq 'HASH' &&
+  	$gptr->{regexp} &&
+	'ARRAY' eq ref ($regexptr = $gptr->{regexp}) &&
+	@$regexptr > 0;
+  unless ($gptr->{ignore} &&
+	'ARRAY' eq ref ($iptr = $gptr->{ignore}) &&
+	@$iptr > 0) {
+    $iptr = undef;
+  }
+  my $agressive = $gptr->{agressive} || '';
+  my $string = $gptr->{message} || '';
+  $string = '' unless length($string) > 3;
+  return ($regexptr,$iptr,$string,$agressive);
+}
+
+sub Xcidr24 {
+  my($tool,$tarpit,$evidence,$addr,$gptr,$aTptr,$mc_evidence) = @_;
+  my($regexptr,$iptr,$string,$agressive) = _chkgenhash($gptr);
+  return 0 unless $regexptr;
+  return 0 unless $addr =~ /((\d+)\.(\d+)\.(\d+)\.)(\d+)/;
+  $agressive = $aTptr ? 0 : $gptr->{aggressive};
+  my $primarystring = 'policy violation, unacceptable generic PTR record';
+
   my $cidr = $1;
+  my $primary = $5;
   my $revip = "${4}.${3}.${2}.in-addr.arpa";
-  my $name = "${5}.$revip";
-  my $rspam = $name;
+  my $name = "${primary}.$revip";
   my $saddr = inet_aton($addr);
   my($get,$put,$parse) = new Net::DNS::ToolKit::RR;
+
+  my $prior = defined $tool->get($evidence,$saddr);	# prior evidence
+  unless ($mc_evidence) {
+    return 0 if $prior;
+  }
+
   my $sock = IO::Socket::INET->new(
 	PeerAddr	=> inet_ntoa(scalar get_ns()),
 	PeerPort	=> 53,
 	Proto		=> 'udp',
 	Type		=> IO::Socket::INET::SOCK_DGRAM,
-  ) or return (3,'could not open socket for rdns lookup');
-  my %results;
-  unless ($agressive || _xcidrev($sock,$get,$put,$saddr,$name,$string)) {
-    close $sock;
-    return ();
+  ) or return -3;
+
+  my($rv,%results);
+
+  if (!$prior && ($rv = _xcidrev($sock,$get,$put,$saddr,$name,$primarystring,$regexptr,$iptr,$aTptr))) {
+    $results{$saddr} = $rv;
   }
-  my $rv;
-  foreach (0..255) {
-    my $target = "${cidr}$_";
-    next if $target eq $rspam;
-    $saddr = inet_aton($target);
-    next if defined $tool->get($evidence,$saddr);	# skip on DB error or pre-existing spam record
-    $name = "${_}.$revip";
-    if ($rv = _xcidrev($sock,$get,$put,$saddr,$name,$string)) {
-      $results{$saddr} = $rv;
+
+  if ($string && ($rv || $agressive)) {
+    $string .= $addr;
+    foreach (0..255) {
+      my $target = "${cidr}$_";
+      next if $_ eq $primary;
+      $saddr = inet_aton($target);
+      next if defined $tool->get($evidence,$saddr);	# skip on DB error or pre-existing spam record
+      $name = "${_}.$revip";
+      if ($rv = _xcidrev($sock,$get,$put,$saddr,$name,$string,$regexptr,$iptr)) {
+        $results{$saddr} = $rv;
+      }
     }
   }
   close $sock;
 
-  if (keys %results) {
+  if ($rv = scalar keys %results) {
+    if ($aTptr) {	# results to 'blcontrib'
+      my($unused,$reason,$error,$IP,$expire,$cp,$zone,$ipA,$dnresp,$tarpit,$netA,$key,$contrib,$DEBUG,$VERBOSE) = @$aTptr;
+      foreach $key (sort keys %results) {
+	$IP = inet_ntoa($key);
+	next if defined $tool->get($contrib,$key);	# skip if already in DB for some other reason
+	_addTPentry($tool,$reason,$error,$IP,$expire,$cp,$zone,$ipA,$dnresp,$tarpit,$netA,$key,$contrib,$DEBUG,$VERBOSE);
+	$zone = 'ONLY_COUNT_ONE';			# disable further counts after the first one so only primary addition is counted
+      }
+      return $rv;
+    }			# results to evidence
     foreach $saddr (sort keys %results) {
       unless ($tool->put($evidence,$saddr,$results{$saddr})) {
 	$tool->sync($evidence);
@@ -1692,7 +1834,7 @@ sub xcidr24 {
       $tool->sync($tarpit);
     }
   }
-  return ();
+  return $rv;
 }
 
 =item * @err=abuse_host($fh,\%MAILFILTER,,\%localvars,\@NAignor)
@@ -1841,8 +1983,10 @@ WAIT:
     opendir(D,$env) or return;		# return if $env can not be opened
     my @dfiles = grep(/^dnsbls/,readdir(D));
     closedir D;
+    my $restart = 0;			# no restart
     foreach (@dfiles) {
       next unless $_ =~ /dnsbls\.\d+\.pid/;
+      $restart = 1;			# restart timer if zonedump found
       if (kill 0, $1) {		# if job is running
 	$doublecheck = 1;	# always double check a running job
 	sleep 60;		# wait a minute
@@ -1850,7 +1994,9 @@ WAIT:
       }
       unlink $env .'/'. $_;	# clean up dead pid files
     }
-    sleep 10;			# allow time for a restart
+    if ($restart) {
+      sleep 10;			# allow time for a restart
+    }
   }
 }
 

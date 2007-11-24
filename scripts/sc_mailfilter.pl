@@ -2,7 +2,7 @@
 #
 # sc_mailfilter.pl
 #
-# version 1.09, 10-30-07
+# version 1.10, 11-1-07
 #
 #################################################################
 # WARNING! do not modify this script, make one with a new name. #
@@ -158,8 +158,6 @@ my $sname = get_script_name();
 my $pidfile = $environment .'/'. $sname .'.'. $$ .'.pid';
 make_pidfile($pidfile);
 
-block4zonedump($environment);
-
 # give competing tasks some space so we don't bottleneck the db or DNS server
 #
 my $delay = 0;
@@ -185,6 +183,8 @@ do {
   sleep $delay
         if $delay;
 } while $delay;
+
+block4zonedump($environment);
 
 # if validation is specified
 push @{$default{dbhome}}, $archive

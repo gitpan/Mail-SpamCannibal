@@ -2,7 +2,7 @@
 #
 # sc_BLcheck.pl
 #
-# version 1.05, 5-17-07
+# version 1.06, 11-15-07
 #
 #################################################################
 # WARNING! do not modify this script, make one with a new name. #
@@ -91,17 +91,18 @@ usage('corrupted config file')
 my $CONFIG = new Mail::SpamCannibal::SiteConfig;
 
 # only open the db's we will need
-my ($environment,$tarpit,$archive,$contrib) = (
+my ($environment,$tarpit,$archive,$contrib,$evidence) = (
 	$CONFIG->{SPMCNBL_ENVIRONMENT},
 	$CONFIG->{SPMCNBL_DB_TARPIT},
 	$CONFIG->{SPMCNBL_DB_ARCHIVE},
 	$CONFIG->{SPMCNBL_DB_CONTRIB},
+	$CONFIG->{SPMCNBL_DB_EVIDENCE},
 );
 
 my %default = (
         dbhome  => $environment,
         dbfile  => [$tarpit,$archive],
-        txtfile => [$contrib],
+        txtfile => [$contrib,$evidence],
 	DEBUG	=> $DEBUG,
 	VERBOSE	=> $VERBOSE,
 );

@@ -1,5 +1,48 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.83  Wed Nov 21 13:06:35 PST 2007
+	This release includes a major upgrade to the way in which
+	IP's are added to an removed from the database. IP's whose
+	PTR record match the generic form 'ddd.ddd.ddd.ddd' were
+	targeted for optional inclusion in the permanent zonefile
+	in rev 0.83. This concept has been expanded in this release
+	to include automated addition to the zonefile (evidence
+	database) of IP's that match a configurable regular 
+	expression list for both mailfilter and BLcheck scripts.
+	In addition, for the BLcheck script the additions can be
+	alternatively made to the internal (non-zonefile blcontrib db)
+	which are also removable by BLpreen script.
+
+	Matching updates have been made to the helper routine
+	Net::DNSBL::MultiDaemon which prefilters connections to the
+	mail system before BLcheck runs.
+	
+	updated sc_Blacklist.conf.example to change 
+	sbl.spamhaus.org to zen.spamhaus.org
+	removed relays.ordb.org, commented out bl.spamcop.net
+	because it is way to aggressive.
+
+	move dnsbl blocking check to after ordered delay
+	in sc_mailfilter.pl
+
+	disable restart wait period if in sub 'block4zonedump'
+	when no zonedump pid file is found
+
+	fix typo in public_html/incl/delist.incl
+
+	subroutine xcidr24 is deprecated and removed, replaced
+	with Xcidr24 that has an enhanced API
+
+	GENERIC PTR record checking and CIDR24 checking
+	is added to sub BLcheck in ScriptSupport v0.48
+
+	configuration for sc_mailfilter.conf XCIDR24
+	and sc_BLcheck GENERIC is enhanced and added
+	respectively
+
+	change ignor, regexp GENERIC detection to ignore case
+	in ScriptSupport.pm v0.49
+
 0.82  Tue Oct 30 11:25:04 PDT 2007  
 	add bogon dnsbl to sc_BlackList
 	add page to return PTR records for an IP address

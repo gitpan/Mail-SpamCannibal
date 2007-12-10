@@ -3,7 +3,7 @@
 # sc_BlackList.conf, multi_dnsbl.conf
 # Configuration for sc_BLcheck.pl, sc_BLpreen.pl, and Net::DNSBL::MultiDaemon
 #
-# version 1.20, 11-16-07
+# version 1.21, 12-1-07
 #
 my $DNSBL = {
 
@@ -193,6 +193,15 @@ my $DNSBL = {
 #	],
 	regexp	  => [	# test for these regular expression (case insensitive)
 		'\d+[a-zA-Z_\-\.]\d+[a-zA-Z_\-\.]\d+[a-zA-Z_\-\.]\d+|\d{12}',
+	# 180.Red-80-34-112.staticIP.rima-tde.net
+	# ip-90.net-89-3-110.rev.numericable.fr
+	# 216.subnet125-161-2.speedy.telkom.net.id
+	# 122.sub-75-199-30.myvzw.com
+		'\d+\.(?i:sub|subnet|net|Red)\-?\d+[a-zA-Z_\-\.]\d+[a-zA-Z_\-\.]\d+',
+	# athedsl-07371.home.otenet.gr
+		'athedsl-\d+',
+	# i59F4FA6C.versanet.de
+		'i5[93][0-9a-fA-F]+\.versa',
 #		'dynamic',
 	],
 	message	  => "spam source, anonymous/un-named IP\nsee\n",
@@ -261,10 +270,10 @@ my $DNSBL = {
 # ip blocks 127, 10, 172, 192 or use the IGNORE blocks above to prevent     
 # rejects for these address blocks as they DO NOT HAVE worldwide RDNS       
 
-  'in-addr.arpa'        => {    # check for lack of reverse DNS
+  'in-addr.arpa'	=> {    # check for lack of reverse DNS
   # accept is not needed for reverse DNS checking
 	error	    => 'MX host should have rDNS - RFC1912 2.1',
-        timeout     => 5,
+	timeout     => 5,
   },
 
 # working, sample file entries

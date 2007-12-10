@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# zone_dump.pl version 1.06, 10-19-06
+# zone_dump.pl version 1.07, 12-1-07
 #
 # Copyright 2005 - 2006 Michael Robinton <michael@bizsystems.com>
 # rc.dnsbls is free software; you can redistribute it and/or 
@@ -52,8 +52,9 @@ my $rbldnstset = 0;
 my $rbldnscombined = 0;
 my $stub = 0;
 my $port = 0;
+my $now	 =0;
 
-while(($_ = shift @ARGV) && $_ =~ /^\-[dizrc]/) {
+while(($_ = shift @ARGV) && $_ =~ /^\-[dizrct]/) {
   if ($_ eq '-d') {
     $DEBUG = $_;
   }
@@ -75,6 +76,9 @@ while(($_ = shift @ARGV) && $_ =~ /^\-[dizrc]/) {
   elsif ($_ eq '-z') {
     $gzip = $_;
   }
+  elsif ($_ eq '-t') {
+    $now = time;
+  }
 # ignore invalid switches
 }
 my $destdir = $_;
@@ -86,6 +90,7 @@ Syntax:  $0 destination_dir timeout
     or	 $0 -i destination_dir timeout
     or	 $0 -c destination_dir timeout
     or	 $0 -z destination_dir timeout
+    or	 $0 -t destination_dir timeout
 
 	-c	cause an rbldns 'combined'
 		ip4set file to be written.
@@ -97,6 +102,10 @@ Syntax:  $0 destination_dir timeout
 
  deprecated -r	cause an rbldns ip4tset
 		file to be written
+
+	-t	print the time in minutes
+		to complete the zonedump
+		to STDERR
 
 	-z 	gzips the ip4tset output
 		file, expect 95% compression
@@ -299,5 +308,9 @@ open(OUT,'>'. $destdir .'/bl_records.tmp')
 print OUT $records;
 close OUT;
 rename $destdir .'/bl_records.tmp', $destdir .'/bl_records';
+
+if ($now) {
+  print STDERR 'zonedump ', (int((time - $now)/60)), " took minutes\n";
+}
 
 exit 0;

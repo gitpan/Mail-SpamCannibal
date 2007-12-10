@@ -1,5 +1,14 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.84  Mon Dec 10 12:59:52 PST 2007
+	add print function in 'zonedump.pl' to show the time
+	required to complete the zonedump.
+
+	add additional 'generic' patterns to sc_Blacklist.conf.example
+
+	add EXTRA_META tag to Makefile.PM for CPAN engine
+	thanks to Slaven Rezic for spotting it and providing the solution.
+
 0.83  Wed Nov 21 13:06:35 PST 2007
 	This release includes a major upgrade to the way in which
 	IP's are added to an removed from the database. IP's whose

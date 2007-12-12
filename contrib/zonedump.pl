@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 #
-# zone_dump.pl version 1.07, 12-1-07
+# zone_dump.pl version 1.08, 12-12-07
 #
-# Copyright 2005 - 2006 Michael Robinton <michael@bizsystems.com>
+# Copyright 2005 - 2007 Michael Robinton <michael@bizsystems.com>
 # rc.dnsbls is free software; you can redistribute it and/or 
 # modify it under the terms of the GPL software license.
 #
@@ -81,6 +81,12 @@ while(($_ = shift @ARGV) && $_ =~ /^\-[dizrct]/) {
   }
 # ignore invalid switches
 }
+
+if ($now) {
+  print STDERR scalar localtime($now);
+  print STDERR "\n";
+}
+
 my $destdir = $_;
 my $timeout = shift;
 
@@ -310,7 +316,8 @@ close OUT;
 rename $destdir .'/bl_records.tmp', $destdir .'/bl_records';
 
 if ($now) {
-  print STDERR 'zonedump ', (int((time - $now)/60)), " took minutes\n";
+  print STDERR scalar localtime();
+  print STDERR "\nzonedump took ", (int((time - $now)/60)), " minutes\n";
 }
 
 exit 0;

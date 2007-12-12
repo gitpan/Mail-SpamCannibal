@@ -5,7 +5,7 @@ use strict;
 #use warnings;
 use Carp;
 
-use vars qw(@ISA $VERSION);
+use vars qw(@ISA $modVERSION);
 
 require Exporter;
 require DynaLoader;
@@ -17,7 +17,7 @@ use AutoLoader;
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.
 
-$VERSION = do './BDBaccess.pm';
+$modVERSION = do './BDBaccess.pm';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()
@@ -51,7 +51,7 @@ sub AUTOLOAD {
     goto &$AUTOLOAD;
 }
 
-bootstrap Mail::SpamCannibal::BDBaccess::CTest $VERSION;
+bootstrap Mail::SpamCannibal::BDBaccess::CTest $modVERSION;
 
 # Preloaded methods go here.
 

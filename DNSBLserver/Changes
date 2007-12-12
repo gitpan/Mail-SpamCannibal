@@ -1,5 +1,8 @@
 Revision history for Perl extension Mail::SpamCannibal::DNSBLserver.
 
+0.48  Wed Dec 12 12:26:31 PST 2007
+	replace $VERSION with $modVERSION in CTest.pm
+
 0.47  Thu Mar 29 11:38:48 PDT 2007
 	add reporting of "qflag" to -T output
 

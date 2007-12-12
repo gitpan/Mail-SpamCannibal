@@ -90,7 +90,7 @@ foreach(keys %xmodules) {
 
 my %makeparms = (
    'EXTRA_META'	  => q|configure_requires:
-IPTables::IPv4::DBTarpit::Inst: 0
+    IPTables::IPv4::DBTarpit::Inst: 0
 |,
    'NAME'         => 'Mail::SpamCannibal',
    'VERSION_FROM' => 'SpamCannibal.pm',		# finds $VERSION

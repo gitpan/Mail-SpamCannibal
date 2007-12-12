@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Mail-SpamCannibal
-version:             0.84
+version:             0.85
 abstract:            ~
 license:             ~
 author:              ~
@@ -27,4 +27,4 @@ meta-spec:
     url:     http://module-build.sourceforge.net/META-spec-v1.3.html
     version: 1.3
 configure_requires:
-IPTables::IPv4::DBTarpit::Inst: 0
+    IPTables::IPv4::DBTarpit::Inst: 0

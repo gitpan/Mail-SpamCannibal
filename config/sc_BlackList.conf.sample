@@ -3,7 +3,7 @@
 # sc_BlackList.conf, multi_dnsbl.conf
 # Configuration for sc_BLcheck.pl, sc_BLpreen.pl, and Net::DNSBL::MultiDaemon
 #
-# version 1.21, 12-1-07
+# version 1.22, 12-12-07
 #
 my $DNSBL = {
 
@@ -202,6 +202,8 @@ my $DNSBL = {
 		'athedsl-\d+',
 	# i59F4FA6C.versanet.de
 		'i5[93][0-9a-fA-F]+\.versa',
+	# 5aca3a11.bb.sky.com
+		'5ac[a-f0-9]+.+sky',
 #		'dynamic',
 	],
 	message	  => "spam source, anonymous/un-named IP\nsee\n",

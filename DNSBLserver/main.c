@@ -1,6 +1,6 @@
 /* main.c
  *
- * Copyright 2003 - 2006, Michael Robinton <michael@bizsystems.com>
+ * Copyright 2003 - 2007, Michael Robinton <michael@bizsystems.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@
   -N   : same as -n, but sets host name (Note 1)
   -a   : NS Address xxx.xxx.xxx.xxx    [default: lookup via DNS]
  ...there can be more than one set of entrys
-  -n   : Another NS dul.domain.com (up to 5)
+  -n   : Another NS dul.domain.com (up to 15)
   -a   : eth0 NS Address yyy.yyy.yyy.yyy
   -a   : eth1 another NS Address (up to 10)
   -m   : 10 mark preference for MX entry (Note 2)

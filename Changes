@@ -1,5 +1,11 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.86  Thu Dec 13 18:08:23 PST 2007
+        increase the allowable number of nameservers
+	in DNSBLserver v0.49 to 15
+
+	update GENERIC pattern config/sc_BlackList.conf.sample
+
 0.85  Wed Dec 12 12:26:31 PST 2007
 	re-try on EXTRA_META tag syntax
 	add time tags to -t zonedump print function

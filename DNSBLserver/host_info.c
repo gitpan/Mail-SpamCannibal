@@ -28,7 +28,7 @@
 #define MAXipsize	INADDRSZ	/* packed network address		*/
 #define MAXipbuf	MAXeth
 
-#define MAXns		5		/* maximum number of name servers	*/
+#define MAXns		15		/* maximum number of name servers	*/
 #define MAXnsbuf	MAXns * MAXname
 
 char hostbuf[MAXns * MAXDNAME];		/* buffer space for real names	*/
@@ -336,24 +336,34 @@ report_ns()
     }  while((Aptr = next_A_record(Astart,Aptr)) != NULL);
   }
 }
-/* test routine 
 
+/*
 int
 main()
 {
   struct in_addr in;
-  char *hs[6] = { 
+  char *hs[16] = { 
 	"mx1.hotmail.com",
 	"ns2.bizsystems.net",
 	"gins1.grtimp.com",
 	"earthlink.net",
 	"gins2.grtimp.com",
-	"ns3.bizsystems.net"
+	"ns3.bizsystems.net",
+	"yahoo.com",
+	"facebook.com",
+	"myspace.com",
+	"paypal.com",
+	"att.com",
+	"youtube.com",
+	"monster.com",
+	"time.com",
+	"nytimes.com",
+	"washingtonpost.com"
   };
   
   int status, n;
 
-  for(n=0;n<6;n++) {
+  for(n=0;n<16;n++) {
     if (n == -1) {
       status = add_ns_info(NULL,0);
     }
@@ -376,4 +386,4 @@ main()
     printf("\t%s\n",inet_ntoa(in));
   }
 }
-*/
+ */

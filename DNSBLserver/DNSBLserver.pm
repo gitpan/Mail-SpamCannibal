@@ -1,6 +1,6 @@
 package Mail::SpamCannibal::DNSBLserver;
 use vars qw($VERSION);
-$VERSION = do { q|char version[] = "dnsbls 0.48, 12-12-07";| =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
+$VERSION = do { q|char version[] = "dnsbls 0.49, 12-13-07";| =~ /(\d+)\.(\d+)/; sprintf("%d.%02d",$1,$2)};
 # returns $VERSION which is non-zero
 __END__
 
@@ -135,7 +135,7 @@ switch is used with this utility. See "DNS query format" above.
   -N   : same as -n, but sets host name (Note 1)
   -a    : NS Address xxx.xxx.xxx.xxx    [default: lookup via DNS]
  ...there can be more than one set of entrys
-  -n    : Another NS dul.domain.com (up to 5)
+  -n    : Another NS dul.domain.com (up to 15)
   -a    : eth0 NS Address yyy.yyy.yyy.yyy
   -a    : eth1 another NS Address (up to 10)
   -m    : 10 mark preference for MX entry (Note 2)
@@ -176,7 +176,7 @@ Note 1:
   retrieved via a DNS query. Your resolver must work! Use the -N switch to set
   to SOA host name as well as the IP address reported for the dnsbls host.
   If not set in this manner, it will default to the host name.
-  Multiple NS entries may be made (up to 5), each with multiple IP addresses
+  Multiple NS entries may be made (up to 15), each with multiple IP addresses
   (up to 10). IP address entries must follow their NS entry and appear before
   the next subsequent NS entry. Continuation lines may be used as a convenience
   if the line length gets too long
@@ -218,7 +218,7 @@ address(es). If the IP address(es) are not specified on the command line with
 the -a option, they will be retrieved via a DNS query. Your resolver must
 work!
 
-Multiple NS or MX entries may be made (up to 5), each with multiple
+Multiple NS or MX entries may be made (up to 15), each with multiple
 IP addresses (up to 10 each). See the entry for option -a below.
 
 =item * -N ns.nsdomain.com

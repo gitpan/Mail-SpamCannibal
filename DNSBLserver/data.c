@@ -3,7 +3,7 @@
  * Adapted in part from LaBrea - Data.c 
  * by Tom Liston <tliston@premmag.com>, Copyright (C) 2001, 2002 
  *
- * Portions copyright 2003 - 2006, Michael Robinton <michael@bizsystems.com>
+ * Portions copyright 2003 - 2007, Michael Robinton <michael@bizsystems.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ char helpstring[] =
 "  -N	: same as -n, but sets host name (Note 1)\n"
 "  -a	: NS Address xxx.xxx.xxx.xxx	[default: lookup via DNS]\n"
 " ...there can be more than one set of entrys\n"
-"  -n	: Another NS dul.domain.com (up to 5)\n"
+"  -n	: Another NS dul.domain.com (up to 15)\n"
 "  -a	: eth0 NS Address yyy.yyy.yyy.yyy\n"
 "  -a	: eth1 another NS Address (up to 10)\n"
 "  -m	: 10 mark preference for MX entry (Note 2)\n"
@@ -96,7 +96,7 @@ char helpstring[] =
 "  retrieved via a DNS query. Your resolver must work! Use the -N switch to set\n"
 "  to SOA host name as well as the IP address reported for the dnsbls host.\n"
 "  If not set in this manner, it will default to the host name.\n"
-"  Multiple NS entries may be made (up to 5), each with multiple IP addresses\n"
+"  Multiple NS entries may be made (up to 15), each with multiple IP addresses\n"
 "  (up to 10). IP address entries must follow their NS entry and appear before\n"
 "  the next subsequent NS entry. Continuation lines may be used as a convenience\n"
 "  if the line length gets too long\n"

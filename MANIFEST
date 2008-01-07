@@ -136,8 +136,10 @@ t/ses_coded.t
 t/ses_mac.t
 t/ses_val.t
 t/ses_val.old.t
+t/ss_chkclct.t
 t/ss_codes.t
 t/ss_dbjobs.t
+t/ss_dumpIPs.t
 t/ss_netaddr.t
 t/ss_valid127.t
 t/ws_date.t

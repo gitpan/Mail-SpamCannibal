@@ -1,9 +1,8 @@
-#!/usr/bin/perl
-
+#
 # sc_BlackList.conf, multi_dnsbl.conf
 # Configuration for sc_BLcheck.pl, sc_BLpreen.pl, and Net::DNSBL::MultiDaemon
 #
-# version 1.22, 12-12-07
+# version 1.25, 1-6-08
 #
 my $DNSBL = {
 
@@ -57,6 +56,18 @@ my $DNSBL = {
 # is deleted, it will be recreated with a new time tag at the beginning.
 #
   'STATS'	=>	'/usr/local/spamcannibal/blcheck_stats.txt',
+
+# the OPTIONAL name of a file that will contain a hash (in 'Dumper' format)
+# of all the IP's that have connected.
+#
+#	$allIPs = {
+#		'1.2.3.4'	=> '',
+#		'3.4.5.6'	=> '',
+#	# and so on...
+#	};
+#
+#
+#  'ALLIPS'	=>	'/usr/local/spamcannibal/allips.txt',
 
 # force the sc_BLpreen script to check every entry in the blcontrib
 # database every time it runs. This uses a lot of cpu time and 
@@ -204,11 +215,36 @@ my $DNSBL = {
 		'i5[93][0-9a-fA-F]+\.versa',
 	# 5aca3a11.bb.sky.com
 		'5ac[a-f0-9]+.+sky',
-#		'dynamic',
+	# bd049dda.virtua.com.br
+		'bd[a-f0-9]+\.virtua\.com',
+	# 96.29.broadband7.iol.cz
+		'\d+\.\d+\.broadband',
+	# 10001260969.0000027323.acesso.oni.pt
+		'\d{11}\.\d{10}\.acesso',
+	# c951b999.virtua.com.br
+		'c[0-9a-f]{4,}\.virtua',
+	# u15271157.onlinehome-server.com
+	# s218047990.onlinehome.us
+		'(?:(u|s))\d+\.onlinehome',
+	# d193-24-154.home3.cgocable.net
+		'd\d+-\d+-\d+\.home\d+\.cgocable',
+	# CableLink167-178.telefonia.InterCable.net
+		'CableLink\d+-\d+\.tele',
+	# ner-as30564.alshamil.net.ae
+	# dxb-as76197.alshamil.net.ae
+	# auh-as43491.alshamil.net.ae
+	# ner-b14727.alshamil.net.ae
+		'(?:(auh|dxb|ner))-\w+\.alshamil',
+	# p2175-ipbf516souka.saitama.ocn.ne.jp
+	# p2087-ipbfp701kobeminato.hyogo.ocn.ne.jp
+	# p4084-ipbfp502kyoto.kyoto.ocn.ne.jp
+	# p4034-ipadfx01sizuokaden.shizuoka.ocn.ne.jp
+		'p\d+-ip.+ocn\.ne\.jp',
 	],
-	message	  => "spam source, anonymous/un-named IP\nsee\n",
+	message	  => "spam source, anonymous/un-named IP\nsee:\n",
 #	error	  => 'policy violation, unacceptable generic PTR record',
 	timeout	  => 10,
+	comment	  => 'anonymous mail system, generic PTR',
   },
 
 # FOR A COMPREHENSIVE LIST OF ALL DNSBL ZONES, SEE:
@@ -272,10 +308,11 @@ my $DNSBL = {
 # ip blocks 127, 10, 172, 192 or use the IGNORE blocks above to prevent     
 # rejects for these address blocks as they DO NOT HAVE worldwide RDNS       
 
-  'in-addr.arpa'	=> {    # check for lack of reverse DNS
+  'in-addr.arpa'        => {    # check for lack of reverse DNS
   # accept is not needed for reverse DNS checking
 	error	    => 'MX host should have rDNS - RFC1912 2.1',
-	timeout     => 5,
+        timeout     => 5,
+	comment	    => 'no PTR record',
   },
 
 # working, sample file entries
@@ -288,9 +325,11 @@ my $DNSBL = {
 	error		=> 'bogus address',
 	expire		=> '30d',
 	timeout		=> '30',
+	comment		=> '127.0.0.2, bogus address',
+	url		=> 'http://www.cymru.com/Bogons/#dns',
   },
 
-  'dnsbl.sorbs.net'	=> {	# see http://www.dnsbl.sorbs.net/using.html
+  'dnsbl.sorbs.net'	=> {
 	accept	=> {	# list of codes for which we tarpit
 		'127.0.0.2'  =>	'open http proxie',
 		'127.0.0.3'  =>	'open socks proxie',
@@ -308,9 +347,11 @@ my $DNSBL = {
 	error		=> 'for removal see: http://www.dnsbl.sorbs.net/cgi-bin/lookup?js&IP=',
 	expire		=> '30d',
 	timeout		=> '15',
+	comment		=> '127.0.0.2,3,4,5,7,8,9,10,11',
+	url		=> 'http://www.au.sorbs.net/using.shtml',
   },
 
-  'dnsbl.njabl.org'	=> {	# see http://dnsbl.njabl.org/use.html
+  'dnsbl.njabl.org'	=> {
 	accept	=> {	# list of codes for which we tarpit
 		'127.0.0.2'  =>	'open relays',
 		'127.0.0.3'  =>	'dial-up/dynamic IP ranges',
@@ -323,6 +364,8 @@ my $DNSBL = {
 	error		=> 'for removal see: http://www.dnsbl.njabl.org/cgi-bin/lookup.cgi?query=',
 	expire		=> '30d',
 	timeout		=> '15',
+	comment		=> '127.0.0.2,3,4,5,8,9',
+	url		=> 'http://dnsbl.njabl.org/use.html',
   },
 
 # Way to aggressive for real world use
@@ -335,40 +378,30 @@ my $DNSBL = {
 #	timeout		=> '15',
 #  },
 
-  'cbl.abuseat.org'	=> {	# see http://cbl.abuseat.org
-	accept  => {
-		'127.0.0.2' => '',
-	},
-	error		=> 'for removal see: http://cbl.abuseat.org/lookup.cgi?.submit=lookup&ip=',
-	expire		=> '30d',
-	timeout		=> '15',
-  },
-
-  'zen.spamhaus.org'	=> {	# see http://www.spamhaus.org
+  'zen.spamhaus.org'	=> {	# includes cbl.abuseat.org
 	accept	=> {
-		'127.0.0.2' => '',
+		'127.0.0.2' => 'rejected www.spamhaus.org',
+		'127.0.0.4' => 'spamhaus CBL',
+		'127.0.0.5' => 'spamhaus NJABL proxies',
+		'127.0.0.10' => 'spamhaus PBL should not deliver mail',
+		'127.0.0.11' => 'spamhaus PBL should not deliver mail',
 	},
 	error		=> 'for removal see http://abuse.net/sbl.phtml?IP=',
 	expire		=> '30d',
 	timeout		=> '15',
+	comment		=> 'rejected IP 127.0.0.2,4,5,10,11',
+	url		=> 'http://www.spamhaus.org/faq/answers.lasso?section=DNSBL%20Usage#30',
   },
 
-  'dynablock.njabl.org'	=> {	# see http://dnsbl.njabl.org/use.html
-	accept => {
-		'127.0.0.3' => 'dynamic IP address not allowed',
-	},
-	error		=> 'see http://www.dnsbl.njabl.org/cgi-bin/lookup.cgi?query=',
-	expire		=> '30d',
-	timeout		=> '15',
-  },
-
-  'list.dsbl.org'       => {    # see http://dsbl.org
+  'list.dsbl.org'       => {
 	accept => {
 		'127.0.0.2' => '', 
 	},
 	error		=> 'for removal see http://dsbl.org/listing?',
 	expire		=> '30d',
 	timeout		=> '15',
+	comment		=> 'rejected IP 127.0.0.2',
+	url		=> 'http://dsbl.org/usage',
   },
 
 #  'spews.dnsbl.net.au'	=> {	# see http://www.spews.org/

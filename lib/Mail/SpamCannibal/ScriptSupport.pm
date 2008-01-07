@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.50 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.52 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -128,6 +128,8 @@ require Exporter;
 	matchNetAddr
 	BLcheck
 	BLpreen
+	checkclct
+	dumpIPs
 	mailcheck
 	abuse_host
 	block4zonedump
@@ -173,6 +175,8 @@ Mail::SpamCannibal::ScriptSupport - A collection of script helpers
 	list2NetAddr
 	matchNetAddr
 	BLcheck
+	checkclct
+	dumpIPs
 	BLpreen
 	mailcheck
 	abuse_host
@@ -209,6 +213,8 @@ Mail::SpamCannibal::ScriptSupport - A collection of script helpers
   $rv=list2NetAddr(\@inlist,\@NAobject);
   $rv = matchNetAddr($ip,\@NAobject);
   $rv = BLcheck(\%DNSBL,\%default);
+  $hashref = checkclct($DNSBL);
+  $rv = dumpIPs($DNSBL, $allipsHASHptr);
   $rv = BLpreen(\%DNSBL,\%default);
   @err=mailcheck($fh,\%MAILFILTER,\%DNSBL,\%default,\@NAignor)
   $rv=zap_one($tool,$netaddr,$db,$verbose,$comment);
@@ -262,6 +268,15 @@ Returns the packed internet address equivalent to inet_aton('127.0.0.3').
 Make sure and use the parens at the end of the function.
 
 =cut
+
+# moved here from autoload section because of 8 character naming limitation
+#
+sub rbldns_combined {
+  my($self,$type) = @_;
+  return undef unless $type eq 'ip4set' or $type eq 'ip4tset';
+  return '$DATASET '. $type .' @
+';
+}
 
 1;
 __END__
@@ -763,6 +778,8 @@ sub BLcheck {
 
   cntinit($DNSBL,\%count);
 
+  my $allips = checkclct($DNSBL);		# set allips hash if we are collecting IP addresses
+
   my $generic = 0;
   if (exists $DNSBL->{GENERIC} && 'HASH' eq ref $DNSBL->{GENERIC}) {
     $generic = 1;
@@ -789,7 +806,14 @@ sub BLcheck {
   while ($run && ($key = $tool->getrecno($archive,$cursor))) {
 # get each entry in the archive
     my $IP = inet_ntoa($key);
-    print "Checking $IP " if $VERBOSE;
+    if ($allips) {				# conditionally collect IP addresses
+      if (exists $allips->{"$IP"}) {
+	++$allips->{"$IP"};
+      } else {
+	$allips->{"$IP"} = 1;
+      }
+      print "Checking $IP " if $VERBOSE;
+    }
     if (matchNetAddr($IP,\@NAignor)) {		# skip if ignored
       print "ignored " if $VERBOSE;
       $count{WhiteList} += 1;			# bump white list count
@@ -947,6 +971,10 @@ sub BLcheck {
 
   write_stats($stats,\%count,$statinit);
   $tool->closedb;
+  if ($allips) {			# if tracking IP addresses, dump them to file
+    my $rv = dumpIPs($DNSBL,$allips);
+#    print STDERR "rv=$rv\n";
+  }
   return '';
 }
 
@@ -1033,6 +1061,72 @@ zone => $zone response => $ipA
 	    }
 	  }
 }
+
+=item * $hashref = checkclct($DNSBL);
+
+Return undef or a hashref for collecting IP's.
+
+  input:	config file hash ref
+  output:	IP collection hash ref
+
+Used by BLcheck
+
+=cut
+
+sub checkclct {
+  my $DNSBL = shift;
+  return undef unless exists $DNSBL->{ALLIPS};
+  my $allips;
+  if ($DNSBL->{ALLIPS} && -e $DNSBL->{ALLIPS}) {
+    $allips = DO($DNSBL->{ALLIPS});
+  }
+  $allips = {} unless $allips;
+  my $caller = caller;
+  return $allips;
+}
+
+=item * $rv = dumpIPs($DNSBL, $allipsHASHptr);
+
+Dump the %allips hash in a Data::Dumper compatible format
+to the file pointed to by 'ALLIPS' in config.
+
+  input:	config pointer,
+		pointer to ALLIPS hash
+  returns:	false on success or error message
+
+Used by BLcheck
+
+=cut
+
+sub dumpIPs {
+  my($DNSBL,$allips) = @_;
+  return 'allips does not exist or is not a HASH'
+	unless $allips && ref $allips eq 'HASH';
+  return 'no output file specified'
+	unless exists $DNSBL->{ALLIPS};
+  local *IPS;
+  my $file = $DNSBL->{ALLIPS} .'.tmp';
+  return "could not open $file for write"
+	unless $DNSBL->{ALLIPS} &&
+	open(IPS,'>'. $file);
+  my $count = @_ = sort keys %$allips;
+  $_ = q|#
+# last updated |. (scalar localtime()) . q|
+# |. $count .q| IP addresses
+#
+my $allips = {
+|;
+  print IPS $_;
+  foreach(@_) {
+    print IPS "\t'$_'\t=> ", $allips->{"$_"}, ",\n";
+  }
+  print IPS '};
+';
+  close IPS;
+  rename $file, $DNSBL->{ALLIPS};	# atomic move
+  return undef;
+}
+
 
 =item * $rv = BLpreen(\%DNSBL,\%default);
 
@@ -2166,6 +2260,7 @@ sub rbldns_compress {
   return $line;
 }
 
+
 =item * $firstline = $object->rbldns_combined($type);
 
 Write the first line of an B<rbldns> combined dataset of type 
@@ -2174,15 +2269,6 @@ B<ip4set | ip4tset>.
   input:	type, one of ip4set or ip4tset
   returns:	dataset statement for ip4set
 	    or	undef on error
-
-=cut
-
-sub rbldns_combined {
-  my($self,$type) = @_;
-  return undef unless $type eq 'ip4set' or $type eq 'ip4tset';
-  return '$DATASET '. $type .' @
-';
-}
 
 =item * $last_combined = rbldns_address();
 
@@ -2291,6 +2377,8 @@ sub rbldnst_done {
 	list2NetAddr
 	matchNetAddr
 	BLcheck
+	checkclct
+	dumpIPs
 	BLpreen
 	mailcheck
 	abuse_host

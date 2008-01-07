@@ -1,5 +1,15 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.88  Mon Jan  7 00:52:28 PST 2008
+	update ScriptSupport 0.52 so that BLcheck 'counts' the number
+	of times an IP is found during its check process
+
+0.87  Sat Dec 22 14:23:40 PST 2007
+	update GENERIC pattern config/sc_Blacklist.conf.sample
+
+	add routines in ScriptSupport 0.51 to collect IP addresses
+	and store them in a configurable file when sc_Blcheck.pl runs
+
 0.86  Thu Dec 13 18:08:23 PST 2007
         increase the allowable number of nameservers
 	in DNSBLserver v0.49 to 15

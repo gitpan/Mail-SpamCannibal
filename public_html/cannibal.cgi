@@ -5,9 +5,9 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 2.10, 9-18-07
+# version 2.11, 2-4-08
 #
-# Copyright 2003 - 2007, Michael Robinton <michael@bizsystems.com>
+# Copyright 2003 - 2008, Michael Robinton <michael@bizsystems.com>
 #   
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@ use Mail::SpamCannibal::ScriptSupport qw(
 	lookupIP
 	validIP
 	valid127
+	is_GENERIC
 );
 use Net::DNS::Codes qw(:all);
 
@@ -291,10 +292,10 @@ onMouseOver="return(show('lookup |. $IP .qq|'));" onMouseOut="return(off());">$I
 
 	my $socket = rlook_send($IP,$timeout);
 	my $wtxt = &Mail::SpamCannibal::WhoisIP::whoisIP($IP);
-	my $hostname = rlook_rcv($socket,$timeout);
-	if ($hostname) {
-	  $html .= "\n&nbsp;&nbsp;$hostname";
-	}
+	my @hostname = rlook_rcv($socket,$timeout);
+	foreach (@hostname) {
+	  $html .= "\n&nbsp;&nbsp;" . $_ . "<br>";
+	};
 	$html .= "<pre>". $wtxt ."</pre>\n";
       }
     }
@@ -324,6 +325,7 @@ onMouseOver="return(show('lookup |. $IP .qq|'));" onMouseOut="return(off());">$I
 </b>
 </blockquote>
 |;
+    $html .= $pagerror if $pagerror;
     html_cat(\$html,'contact',$CONFIG,\%ftxt);
     last PageGen;
   }
@@ -332,6 +334,22 @@ onMouseOver="return(show('lookup |. $IP .qq|'));" onMouseOut="return(off());">$I
 
   if ($query{page} =~ /^sendmsg/) {
     die "email contact not configured" unless $CONFIG->{email};
+    my($sc,$bc,$socket,@hostname);
+    my $IP = ($query{IP} && $query{IP} =~ /\d+\.\d+\.\d+\.\d+/)
+	? $& : '';
+
+    if ($IP) {
+      require Mail::SpamCannibal::SiteConfig;
+      $sc = $CONFIG->{SiteConfig} || do { 
+	require Mail::SpamCannibal::SiteConfig;
+	new Mail::SpamCannibal::SiteConfig;
+      };
+      $bc = $sc->{SPMCNBL_CONFIG_DIR} . '/sc_BlackList.conf';
+      $bc = DO($bc) || die "could not load blacklist config file... $bc";
+      $bc = ($bc->{GENERIC} && $bc->{GENERIC}->{blockcontact})
+	? $bc->{GENERIC} : 0;				# $bc points to GENERIC hash
+    }
+
     foreach (qw(
         top
 	bgcolor
@@ -348,6 +366,28 @@ onMouseOver="return(show('lookup |. $IP .qq|'));" onMouseOut="return(off());">$I
       $html .= q|
 Automated send not allowed.
 |;
+    } elsif ( ! $IP) {
+      $html .= q|
+Invalid IP address.
+| . $query{IP} .q|
+|;
+    } elsif ( $bc && do {
+	$socket = rlook_send($IP,$timeout);
+	@hostname = rlook_rcv($socket,$timeout);
+	is_GENERIC($bc,@hostname)} )
+    {
+      $pagerror = $IP .q| not eligible for removal: GENERIC PTR
+<blockquote>
+|;
+      foreach (@hostname) {
+	$pagerror .= $_ . q|<br>
+|;
+      }
+      $pagerror .= q|</blockquote>
+|;
+      $query{page} = 'contact';
+      $html = '';
+      next PageGen;
     } else {
       require Mail::SpamCannibal::SMTPsend;
       if ($CONFIG->{altMXhosts}) {
@@ -459,16 +499,20 @@ function wIP(ip) {
     <td class=cold><a href="#top" class=cold onMouseOver="return(show('tarpit |. $IP .q|'));" onMouseOut="return(off());"
   onClick="self.location = location.pathname + '?page=spamlst&host=' + '|. $IP .q|'; return false;">&#164;</a></td></tr></table><td>add to tarpit</td>|;
 	}
-	my $hostname = rlook_rcv($socket,$timeout);
+	my @hostname = rlook_rcv($socket,$timeout);
 	$html .= '</td></tr></table>';
-	if ($hostname) {
+	if (@hostname) {
+	  my $hostname = '';
+	  foreach(@hostname) {
+	    $hostname .= $_ . "<br>\n";
+	  }
 	  $html .= q|<table cellspacing=0 cellpadding=0 border=0><tr><td width=10>&nbsp;</td><td>|. $hostname .q|</td>|;
 	}
 	else {
 	  $html .= q|<table cellspacing=0 cellpadding=0 border=0><tr><td width=10>&nbsp;</td>|;
 	}
 	if ($admin) {
-	  $html .= q|<td width=10>&nbsp;</td><td><table cellspacing=0 cellpadding=1 border=1><tr><td class=hot><a
+	  $html .= q|<td width=10>&nbsp;</td><td valign=top><table cellspacing=0 cellpadding=1 border=1><tr><td class=hot><a
 href="#top" class=hot onMouseOver="return(show('PTR records'));" onMouseOut="return(off());"
 onClick="document.rdnsblk.lookup.value='|. $IP .q|'; document.rdnsblk.submit(); return false;">&nbsp;PTR's&nbsp;</a></td>
 </tr></table></td>

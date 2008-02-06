@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.52 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.53 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -132,6 +132,7 @@ require Exporter;
 	dumpIPs
 	mailcheck
 	abuse_host
+	is_GENERIC
 	block4zonedump
 );
 
@@ -180,6 +181,7 @@ Mail::SpamCannibal::ScriptSupport - A collection of script helpers
 	BLpreen
 	mailcheck
 	abuse_host
+	is_GENERIC
 	block4zonedump
   );
 
@@ -219,6 +221,7 @@ Mail::SpamCannibal::ScriptSupport - A collection of script helpers
   @err=mailcheck($fh,\%MAILFILTER,\%DNSBL,\%default,\@NAignor)
   $rv=zap_one($tool,$netaddr,$db,$verbose,$comment);
   zap_pair($tool,$netaddr,$pri,$sec,$debug,$verbose,$comment);
+  $rv = is_GENERIC($conf->{GENERIC},@hostnames);
   block4zonedump($environment);
 
 =head1 METHODS
@@ -1830,31 +1833,10 @@ sub _xcidrev {
       ($newoff, $name,$type,$class,$ttl,$rdlength,@rdata) = $get->next($bp,$newoff);
 #print "$rdata[0]\n";
       return '' if $iptr && grep($rdata[0] =~ /$_/i,@$iptr);		# skip regexp if an ignored name
-      return '' if $rdata[0] && ! grep($rdata[0] =~ /$_/i, @$regexptr)
+      return '' if $rdata[0] && ! grep($rdata[0] =~ /$_/i, @$regexptr);
     }
     return $str;
   }
-}
-
-# input:	generic hash pointer
-# return:	(regexptr,iptr,msgstring,agressive)
-#
-sub _chkgenhash {
-  my $gptr = shift;
-  my($iptr,$regexptr);
-  return () unless ref $gptr eq 'HASH' &&
-  	$gptr->{regexp} &&
-	'ARRAY' eq ref ($regexptr = $gptr->{regexp}) &&
-	@$regexptr > 0;
-  unless ($gptr->{ignore} &&
-	'ARRAY' eq ref ($iptr = $gptr->{ignore}) &&
-	@$iptr > 0) {
-    $iptr = undef;
-  }
-  my $agressive = $gptr->{agressive} || '';
-  my $string = $gptr->{message} || '';
-  $string = '' unless length($string) > 3;
-  return ($regexptr,$iptr,$string,$agressive);
 }
 
 sub Xcidr24 {
@@ -2056,6 +2038,50 @@ sub abuse_host {
 
   return ();
 }
+
+=item * $rv = is_GENERIC($conf->{GENERIC},@hostnames)
+
+Check if a list of hostnames are all generic
+
+  input:	hash pointer to 'GENERIC',
+		hostname list
+  returns:	true is generic
+		false is not
+
+=cut
+
+sub is_GENERIC {
+  my($gp,@hostname) = @_;
+  my($regexptr,$iptr) =  _chkgenhash($gp);
+  return 0 unless $regexptr;					# not configured
+  foreach my $name (@hostname) {
+    return 0 if $iptr && grep($name =~ /$_/i,@$iptr);		# skip if regexp is to be ignored
+    return 0 if $name && ! grep($name =~ /$_/i, @$regexptr);
+  }
+  return 1;
+}
+
+# input:	generic hash pointer
+# return:	(regexptr,iptr,msgstring,agressive)
+#
+sub _chkgenhash {
+  my $gptr = shift;
+  my($iptr,$regexptr);
+  return () unless ref $gptr eq 'HASH' &&
+  	$gptr->{regexp} &&
+	'ARRAY' eq ref ($regexptr = $gptr->{regexp}) &&
+	@$regexptr > 0;
+  unless ($gptr->{ignore} &&
+	'ARRAY' eq ref ($iptr = $gptr->{ignore}) &&
+	@$iptr > 0) {
+    $iptr = undef;
+  }
+  my $agressive = $gptr->{agressive} || '';
+  my $string = $gptr->{message} || '';
+  $string = '' unless length($string) > 3;
+  return ($regexptr,$iptr,$string,$agressive);
+}
+
 
 =item * block4zonedump($environment);
 
@@ -2382,11 +2408,12 @@ sub rbldnst_done {
 	BLpreen
 	mailcheck
 	abuse_host
+	is_GENERIC
 	block4zonedump
 
 =head1 COPYRIGHT
 
-Copyright 2003 - 2007, Michael Robinton <michael@bizsystems.com>
+Copyright 2003 - 2008, Michael Robinton <michael@bizsystems.com>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

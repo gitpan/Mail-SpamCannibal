@@ -1,5 +1,20 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.89  Tue Feb  5 13:58:57 PST 2008
+	add is_GENERIC function to ScriptSupport v0.53
+	add CONTACT refusal to public_html/cannibal.cgi
+	add 'blockcontact' configuration param to GENERIC
+	set permissions on sc_BlackList.conf to 0644
+
+	The above changes allow the contact page to check the 
+	submitted IP address against the GENERIC blacklist 'regexp'
+	and refuse to honor the CONTACT submission. Instead, the 
+	submittor gets the CONTACT page back again with the PTR
+	record(s) displayed for the submitted page along with the
+	message that the IP is not eligible for removal because
+	of its GENERIC status. This functionality is controlled
+	by the 'blockcontact' key in sc_BlackList.conf
+
 0.88  Mon Jan  7 00:52:28 PST 2008
 	update ScriptSupport 0.52 so that BLcheck 'counts' the number
 	of times an IP is found during its check process

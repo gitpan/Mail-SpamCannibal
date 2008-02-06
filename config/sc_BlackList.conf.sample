@@ -196,6 +196,11 @@ my $DNSBL = {
 #
 # expire  =>	default 7 days if BLpreen is run
 #
+# Block the web users ability to send a contact
+# message if the IP's PTR record is GENERIC
+#
+# blockcontact => true blocks
+#
 # OPTIONAL
 
   'GENERIC'	=> {
@@ -245,6 +250,7 @@ my $DNSBL = {
 #	error	  => 'policy violation, unacceptable generic PTR record',
 	timeout	  => 10,
 	comment	  => 'anonymous mail system, generic PTR',
+	blockcontact => 1,
   },
 
 # FOR A COMPREHENSIVE LIST OF ALL DNSBL ZONES, SEE:

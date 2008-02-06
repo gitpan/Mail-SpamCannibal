@@ -140,6 +140,7 @@ t/ss_chkclct.t
 t/ss_codes.t
 t/ss_dbjobs.t
 t/ss_dumpIPs.t
+t/ss_is_generic.t
 t/ss_netaddr.t
 t/ss_valid127.t
 t/ws_date.t

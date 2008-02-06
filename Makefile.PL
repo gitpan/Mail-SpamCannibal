@@ -266,6 +266,7 @@ install_sc_permissions	:
 	chmod 0600 $(SPAMCANNIBAL_HOME)/private/*
 	chmod 0640 $(SPAMCANNIBAL_HOME)/config/*
 	chmod 0644 $(SPAMCANNIBAL_HOME)/config/sc_web*
+	chmod 0644 $(SPAMCANNIBAL_HOME)/config/sc_Black*
 	chmod 04755 $(SPMCNBL_SCRIPT_DIR)/sc_sesswrap
 	chmod 01700 $(SPMCNBL_SCRIPT_DIR)/sc_session.pl
 	chmod 0700 $(SPMCNBL_SCRIPT_DIR)/sc_remote.pl

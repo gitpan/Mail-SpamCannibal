@@ -1,5 +1,14 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.90  Tue Feb 12 14:04:38 PST 2008
+	update ScriptSupport::mailcheck v0.54 to return the message received
+	in debug mode when no headers are detected since it is usuall SPAM
+	targeted at the spam@ address of the processing host.
+
+	update config/sc_BlackList.conf.sample to include the DIALUP
+	ranges from http://www.sdsc.edu/~jeff/spam/dialup_zones.txt
+	in the GENERIC rejection list
+
 0.89  Tue Feb  5 13:58:57 PST 2008
 	add is_GENERIC function to ScriptSupport v0.53
 	add CONTACT refusal to public_html/cannibal.cgi

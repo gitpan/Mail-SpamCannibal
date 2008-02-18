@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.53 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.54 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -1680,16 +1680,31 @@ sub mailcheck {
     }
   }
 
-  undef @discard;
+#  undef @discard;
 
 # extract headers
   my @headers;
+#  if ($MAILFILTER->{DIRTY}) {
+#    return (1,'no dirty headers')
+#	unless rfheaders(\@lines,\@headers);
+#  } else {
+#    return (1,'no headers')
+#	unless headers(\@lines,\@headers);
+#  }
+
+  my $hr;			# header result
   if ($MAILFILTER->{DIRTY}) {
-    return (1,'no dirty headers')
-	unless rfheaders(\@lines,\@headers);
+    $hr = rfheaders(\@lines,\@headers)
+	? 0
+	: 'Subject: no dirty headers';
   } else {
-    return (1,'no headers')
-	unless headers(\@lines,\@headers);
+    $hr = headers(\@lines,\@headers)
+	? 0
+	: 'Subject: no headers';
+  }
+  if ($hr) {
+    push @discard, @lines;
+    return (1,$hr ."\n\n". array2string(\@discard));
   }
 
 # extract MTA's

@@ -1,5 +1,17 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.91  Tue Feb 26 16:38:09 PST 2008
+	update list of generic patterns in config/sc_BlackList.conf
+
+	update Copyright notice date
+
+	add intermediate time stamp write to contrib/zonedump.pl v1.09
+	so that the the zone file creation and conversion times are
+	both shown with the -t option.
+
+	add IP "GOTO" capability for 'view db' in addition to the record
+	number GOTO in public_html/cannibal.cgi v2.12
+
 0.90  Tue Feb 12 14:04:38 PST 2008
 	update ScriptSupport::mailcheck v0.54 to return the message received
 	in debug mode when no headers are detected since it is usuall SPAM

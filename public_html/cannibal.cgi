@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 2.11, 2-4-08
+# version 2.12, 2-20-08
 #
 # Copyright 2003 - 2008, Michael Robinton <michael@bizsystems.com>
 #   
@@ -1024,6 +1024,8 @@ function lIP(ip) {
     $html .= q|</tr>
 </table>
 |;
+
+    my $ip = '';
     unless ((my $db = $query{datab}) && 
 	(my $rectop = $records{"$query{datab}"})) {	# no database view requested
       $html .= q|<input type=hidden name=recno value="">
@@ -1033,14 +1035,66 @@ function lIP(ip) {
 
     } else {						# database view requested
 
+      my($count,@IPs);
       my $recno = $query{recno} || 1;
+
+      if ($recno =~ /(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/ ||
+	  $recno =~ /(\d{1,3}\.\d{1,3}\.\d{1,3})/ ||
+	  $recno =~ /(\d{1,3}\.\d{1,3})/ ||
+	  $recno =~ /(\d{1,3})\./
+      ) {					# search for IP
+	$ip = $1;
+	$count = $ip =~ tr/\.//;		# rationalize IP address
+	while($count < 3) {
+	  $count++;
+	  $ip .= '.0';
+	}
+	my $naddr = inet_aton($ip);
+	my $rmax = $rectop;
+	my $rmin = 1;
+
+	while (1) {
+	  $recno = int(($rmax + $rmin)/2);
+	  if(ref $CONFIG->{bdbDAEMON}) {	# remote?
+	    $count = retrieve(2,$recno,$db,\@IPs,@{$CONFIG->{bdbDAEMON}});
+	  } else {
+	    $count = retrieve(2,$recno,$db,\@IPs,$CONFIG->{bdbDAEMON},0);
+	  }
+	  unless ($count) {			# database is empty
+	    $html .= q|<input type=hidden name=recno value="">
+</form>
+|;
+	    last PageGen;
+	  }
+# check if found
+	  last if $count == 1;
+	  last if $naddr eq $IPs[0];
+	  if ($naddr eq $IPs[1]) {
+	    $recno -= 1
+		if $recno > 1;
+	    last;
+	  }
+# not found, bracketed?
+	  last if $naddr gt $IPs[0] && $naddr lt $IPs[1];		 
+# try again
+	  if ($naddr lt $IPs[0]) {		# move toward rmin
+	    $rmax = $recno -1;
+	  } else {				# move toard rmax
+	    $rmin = $recno +1;
+	  }
+	  last unless $rmax > $rmin && $rmin > 0 && $rmax <= $rectop;
+	}
+      }
+      elsif ($recno =~ /\D/) {			# contains invalid character
+	$recno = 1;
+      }
+
 # bound record number
       $recno = $rectop - 254
 	if $recno > $rectop - 254;
       $recno = 1
 	if $recno < 1;
 
-      my($count,@IPs);
       if(ref $CONFIG->{bdbDAEMON}) {	# remote?
 	$count = retrieve(255,$recno,$db,\@IPs,@{$CONFIG->{bdbDAEMON}});
       } else {
@@ -1054,7 +1108,9 @@ function lIP(ip) {
 	last PageGen;
       }
 
-      $html .= q|<table border=0><tr><td class=bld align=center colspan=6>database: |. $db .q|</td></tr>
+      $html .= q|<table border=0><tr valign=middle><td>&nbsp;</td>
+<td class=bld align=center colspan=4>database: |. $db .q|</td>
+<td align=center><font size=-1>rec# or dd<b>.[</b>dd<b>.</b>dd<b>.</b>dd]</font></td></tr>
 <tr>
 <td><table cellspacing=0 cellpadding=2 border=1><tr><td align=center class=gry><a href="#top"
       onClick="return(dbvs('|. $db .q|','1'));"
@@ -1074,7 +1130,12 @@ function lIP(ip) {
 <td><input type=text name=recno></td>
 </tr></table>
 </form>
-&nbsp;<font size="-1">record number |. $recno .q|</font>
+&nbsp;<font size="-1">record number |. $recno;
+
+      if ($ip) {
+	$html .= '&nbsp;&nbsp;&nbsp;IP '. $ip;
+      }
+      $html .= q|</font>
 <form name=ViewDB action="" method=POST target=alookup>
 <input type=hidden name=page value=lookup>
 <input type=hidden name=lookup value="">

@@ -2,7 +2,7 @@
 # sc_BlackList.conf, multi_dnsbl.conf
 # Configuration for sc_BLcheck.pl, sc_BLpreen.pl, and Net::DNSBL::MultiDaemon
 #
-# version 1.27, 2-12-08
+# version 1.28, 2-26-08
 #
 my $DNSBL = {
 
@@ -245,6 +245,10 @@ my $DNSBL = {
 	# p4084-ipbfp502kyoto.kyoto.ocn.ne.jp
 	# p4034-ipadfx01sizuokaden.shizuoka.ocn.ne.jp
 		'p\d+-ip.+ocn\.ne\.jp',
+	# dge55.neoplus.adsl.tpnet.pl
+		'[a-z]+\d+\.neoplus\.adsl\.tpnet\.pl',
+	# zo226.internetdsl.tpnet.pl
+		'[a-z]+\d+\.internetdsl\.tpnet\.pl',
 	],
 ####
 # include DIALUP ranges here
@@ -1269,10 +1273,10 @@ my $DNSBL = {
 # ip blocks 127, 10, 172, 192 or use the IGNORE blocks above to prevent     
 # rejects for these address blocks as they DO NOT HAVE worldwide RDNS       
 
-  'in-addr.arpa'        => {    # check for lack of reverse DNS
+  'in-addr.arpa'	=> {    # check for lack of reverse DNS
   # accept is not needed for reverse DNS checking
 	error	    => 'MX host should have rDNS - RFC1912 2.1',
-        timeout     => 5,
+	timeout     => 5,
 	comment	    => 'no PTR record',
   },
 

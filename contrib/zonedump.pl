@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 #
-# zone_dump.pl version 1.08, 12-12-07
+# zone_dump.pl version 1.09, 2-18-08
 #
-# Copyright 2005 - 2007 Michael Robinton <michael@bizsystems.com>
+# Copyright 2005 - 2008 Michael Robinton <michael@bizsystems.com>
 # rc.dnsbls is free software; you can redistribute it and/or 
 # modify it under the terms of the GPL software license.
 #
@@ -52,7 +52,7 @@ my $rbldnstset = 0;
 my $rbldnscombined = 0;
 my $stub = 0;
 my $port = 0;
-my $now	 =0;
+my $now	 = 0;
 
 while(($_ = shift @ARGV) && $_ =~ /^\-[dizrct]/) {
   if ($_ eq '-d') {
@@ -225,6 +225,14 @@ foreach(1..$retry) {
 die $error if $error;
 
 ##### have a zone file, get the record count 
+my $interim;
+if ($now) {
+  $interim = time;
+  print STDERR "zone creation   ", (int(($interim - $now)/60)), " minutes\n";
+  print STDERR scalar localtime($interim);
+  print STDERR "\n";
+}
+
 
 open(IN,$zonein)
 	or die "failed to open new zonefile\n";
@@ -316,8 +324,9 @@ close OUT;
 rename $destdir .'/bl_records.tmp', $destdir .'/bl_records';
 
 if ($now) {
+  print STDERR "file conversion ",(int((time - $interim)/60)), " minutes\n";
   print STDERR scalar localtime();
-  print STDERR "\nzonedump took ", (int((time - $now)/60)), " minutes\n";
+  print STDERR "\nzone dump took  ", (int((time - $now)/60)), " minutes\n";
 }
 
 exit 0;

@@ -2,7 +2,7 @@
 # sc_BlackList.conf, multi_dnsbl.conf
 # Configuration for sc_BLcheck.pl, sc_BLpreen.pl, and Net::DNSBL::MultiDaemon
 #
-# version 1.28, 2-26-08
+# version 1.34, 3-22-08
 #
 my $DNSBL = {
 
@@ -208,7 +208,7 @@ my $DNSBL = {
 #		'dsl-only',
 #	],
 	regexp	  => [	# test for these regular expression (case insensitive)
-		'\d+[a-zA-Z_\-\.]\d+[a-zA-Z_\-\.]\d+[a-zA-Z_\-\.]\d+|\d{12}',
+		'\d+[a-z_\-\.]\d+[a-z_\-\.]\d+[a-z_\-\.]\d+|\d{12}',
 	# 180.Red-80-34-112.staticIP.rima-tde.net
 	# ip-90.net-89-3-110.rev.numericable.fr
 	# 216.subnet125-161-2.speedy.telkom.net.id
@@ -249,8 +249,126 @@ my $DNSBL = {
 		'[a-z]+\d+\.neoplus\.adsl\.tpnet\.pl',
 	# zo226.internetdsl.tpnet.pl
 		'[a-z]+\d+\.internetdsl\.tpnet\.pl',
-	],
-####
+	# vz7228.evanzo-server.de
+		'vz\d+\.evanzo-server',  
+	# srv399.flexwebhosting.nl 
+		'srv\d+\.flexweb',
+	# host-51.pl1211120.fiber.net
+		'host-\d+\.pl[\d-]+\.fiber',
+	# cp30.heritagewebdesign.com
+		'cp\d+\.heritagewebdesign',
+	# server1932015470.serverpool.info
+		'server\d+\.serverpool',
+	# 87.7a.1343.static.theplanet.com  
+		'[a-z0-9]{1,2}\.[a-z0-9]{1,2}\.[a-z0-9]{4}\.static\.theplanet',
+	# dsl.static.85-105-55739.ttnet.net.tr
+		'dsl\.static\.\d{1,3}\-\d{1,3}\-\d+\.ttnet\.net\.tr',
+	# adsl.hnpt.com.vn
+		'adsl\.hnpt\.com\.vn',
+	# ds.activeserve.com
+	# ds1125.activeserve.com
+		'ds\d*\.activeserv',
+	# ds00225.lunarpages.com
+	# dm00143.lunarpages.com
+	# dl00107.lunarpages.com
+		'd[a-z]+\d+\.lunar',
+	# lwva046.servidoresdns.net
+	# lwba067.servidoresdns.net
+	# llgc491.servidoresdns.net, etc...
+		'l[a-z]+\d+\.servidores',
+	# ip216.ct.co.cr
+		'ip\d+\.ct\.co\.cr',
+	# ip3.bb27.pacific.net.hk
+		'ip\d+\.bb\d+\.pacific\.net\.hk',
+	# srv205.hosteur.com
+		'srv\d+\.hosteur\.com',
+	# static180-10.staticcal.vsnl.net.in
+		'static\d+-\d+\.staticcal\.vsnl\.net\.in',
+	# 31.208.iconpln.net.id
+		'\d+\.\d+\.iconpln\.net\.id',
+	# blade106.LA.inty.net
+		'blade\d+\.LA\.inty',
+	# dd7224.kasserver.com
+		'dd\d+\.kasserver',
+	# ns6034.ovh.net
+		'ns\d+\.ovh\.net',
+	# segment-124-30.sify.net
+		'segment-124-30\.sify\.net',
+	# reserved-235183.rol.raiffeisen.net
+		'reserved-\d+\.rol\.raiffeisen',
+	# reverse.digipower.vn
+		'reverse\.digipower',
+	# fpt15.vdrs.net
+		'fpt\d+\.vdrs',
+	# 4.caba36.xdsl.nauticom.net
+	# 4.ksyr6.xdsl.nauticom.net 
+	# 4.slvr5.xdsl.nauticom.net
+	# 4.pchl15.xdsl.nauticom.net
+	# 4.gibs28.xdsl.nauticom.net
+	# 4.pnnr10.xdsl.nauticom.net
+	# 4.srvr6.xdsl.nauticom.net
+	# 4.wkln14.xdsl.nauticom.net
+		'\d+\.[a-z]+\d+\.xdsl\.nauticom',
+	# golf403.server4you.de
+	# foxtrot501.server4you.de
+	# delta368.server4you.de
+	# charlie406.server4you.de
+		'(?:foxtrot|golf|delta|charlie)\d+\.server4you',
+	# av11634.comex.ru
+		'av\d+\.comex\.ru',
+	# servidor52.suempresa.com
+		'servidor\d+\.suempresa',
+	# pcl6.ibercom.com
+		'pcl\d.ibercom\.com',
+	# pc-209-131.scpe.powergate.ca
+		'pc-\d+-\d+\.scpe\.powergate',
+	# 7491c.genwebserver.com
+		'\d+[a-z]?\.genwebserver\.com',
+	# ss402.t-com.hr
+	# ls405.t-com.hr
+		'[a-z]+\d+.*(?:t-com|htnet)\.hr',  
+	# uidzr185193.sattnet.cz
+		'uidzr\d+\.sattnet',
+	# as33-93.omantel.net.om
+		'as\d+-\d+\.omantel\.net\.om',
+	# h1221044.stratoserver.net
+	# h1221044.serverkompetenz.net
+		'h\d+\.(?:stratoserver|serverkompetenz)',
+	# hm784-1.locaweb.com.br
+		'hm[0-9\-]+\.locaweb\.com\.br',
+	# vs2231.areaserver.it
+		'v(?:host|s)\d+\.areaserver\.it',
+	# eul0600331-pip.eu.verio.net
+	# euw0600145-pip.eu.verio.net
+		'eu[a-z]\d+-[a-z]+\.eu\.verio',
+	# pc-250.net-218.de.magix.net
+		'pc\-\d+\.net\-\d+\.de\.magix',
+	# pc030.shinwahk.com.hk
+	# pc149.wahkwong.com.hk
+	# pc204.transfield.com
+		'pc\d+\.(?:shinwahk|wahkwong|transfield)',
+	# esc38.midphase.com
+		'esc\d+\.midphase',
+	# 107.74.80-QoS-user.in-addr.arpa
+		'\d+\.\d+\.\d+-qos-user\.in-addr',
+	# x403b0982.ip.e-nt.net
+	# xd8390802.ip.e-nt.net
+		'x[0-9a-f]+\.ip\.e-nt',
+	# mutlb161169.smarttadsl.com   
+	     '[a-z]+\d+\.smarttadsl\.com',				     
+	# boxXX.bluehost.com
+	# 20-227.bluehost.com
+		'(?:\d+-\d+|box\d+)\.bluehost\.com',
+	# st77.startlogic.com
+		'st\d+\.startlogic\.com',
+        # hicks202-14.optonline.net
+        # bab62-156.optonline.net
+                '(?:bab|hicks)\d+-\d+\.optonline',
+        # vp238178.static.uac1.hknet.com
+                'vp\d+\.static\.uac1\.hknet',
+        # server50855.uk2net.com
+                'server\d+\.uk2net',
+####GENERIC
 # include DIALUP ranges here
 # from: http://www.sdsc.edu/~jeff/spam/dialup_zones.txt
 ####
@@ -1205,6 +1323,7 @@ my $DNSBL = {
 		y\.pppool\.de
 		z\.pppool\.de
 	),
+	],
 	message	  => "spam source, anonymous/un-named IP\nsee:\n",
 #	error	  => 'policy violation, unacceptable generic PTR record',
 	timeout	  => 10,

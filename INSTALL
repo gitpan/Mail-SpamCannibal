@@ -76,7 +76,10 @@ Recompiling Linux 2.4x kernel with IPTABLES
     big deal.
 
 libnet-1.x.x
-    http://www.packetfactory.net/libnet
+    http://www.packetfactory.net/libnet/
+    ftp://ftp.sunfreeware.com/pub/freeware/intel/10/
+    http://www.filewatcher.com/m/libnet-1.1.2.1.tar.gz.1021236.0.0.html
+    Google "libnet mirrors"
 
       Installation:
       -------------

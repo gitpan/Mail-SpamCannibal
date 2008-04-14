@@ -1,5 +1,8 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.92  Mon Apr 14 10:28:56 PDT 2008
+	Add info about where to find LIBNET to the INSTALL document
+
 0.91  Tue Feb 26 16:38:09 PST 2008
 	update list of generic patterns in config/sc_BlackList.conf
 

@@ -28,8 +28,8 @@ zonedump()
   extern int parent, unlinkOK, zone_request, fdTCPlisten, fdUDP, fdTCP;
   
   FILE * fd;
-  char zonepath[512];
-  int retry = 3, zresult = -8;
+  int retry = 3, zresult = -8, wbsize = 256 * 1024;
+  char zonepath[512], wbuf[wbsize];
   struct stat fs;
   
   rtn = mybuffer;
@@ -81,10 +81,13 @@ zonedump()
     goto ZoneExit;
   }
 
+  setvbuf(fd,wbuf,_IOFBF,wbsize);
+  
   if (zone_request != 0)			/* if not test mode		*/
-	zresult = zonefile(fd);
+	zresult = zonefile(fd);			/* fd closed in zonfile.c	*/
+  else
+	fclose(fd);
 
-  fclose(fd);
   if (zresult < 0) {
     if (retry-- > 0) {
       LogPrint("retry zone dump");

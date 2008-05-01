@@ -229,10 +229,15 @@ my $DNSBL = {
 	# c951b999.virtua.com.br
 		'c[0-9a-f]{4,}\.virtua',
 	# u15271157.onlinehome-server.com
-	# s218047990.onlinehome.us
-		'(?:(u|s))\d+\.onlinehome',
-	# d193-24-154.home3.cgocable.net
-		'd\d+-\d+-\d+\.home\d+\.cgocable',
+	# s218047990.onlinehome.us   
+	# s15260633.onlinehome-server.info
+	# s15201305.rootmaster.info 
+	# s189723449.online.de
+	# s193844553.websitehome.co.uk
+	# p15200949.pureserver.info  
+		'[usp]\d+\.(?:online|rootmaster|website|pureserver)',
+ 	# d193-24-154.home3.cgocable.net
+		'd\d+-\d+-\d+\.(?:commercial|home\d+)\.cgocable',
 	# CableLink167-178.telefonia.InterCable.net
 		'CableLink\d+-\d+\.tele',
 	# ner-as30564.alshamil.net.ae
@@ -309,11 +314,12 @@ my $DNSBL = {
 	# 4.srvr6.xdsl.nauticom.net
 	# 4.wkln14.xdsl.nauticom.net
 		'\d+\.[a-z]+\d+\.xdsl\.nauticom',
-	# golf403.server4you.de
-	# foxtrot501.server4you.de
-	# delta368.server4you.de
-	# charlie406.server4you.de
-		'(?:foxtrot|golf|delta|charlie)\d+\.server4you',
+        # golf403.server4you.de
+        # foxtrot501.server4you.de
+        # delta368.server4you.de
+        # charlie406.server4you.de
+        # hotel688.server4you.de
+                '(?:foxtrot|golf|delta|charlie|hotel)\d+\.server4you',
 	# av11634.comex.ru
 		'av\d+\.comex\.ru',
 	# servidor52.suempresa.com
@@ -361,13 +367,69 @@ my $DNSBL = {
 		'(?:\d+-\d+|box\d+)\.bluehost\.com',
 	# st77.startlogic.com
 		'st\d+\.startlogic\.com',
-        # hicks202-14.optonline.net
-        # bab62-156.optonline.net
-                '(?:bab|hicks)\d+-\d+\.optonline',
-        # vp238178.static.uac1.hknet.com
-                'vp\d+\.static\.uac1\.hknet',
-        # server50855.uk2net.com
-                'server\d+\.uk2net',
+	# hicks202-14.optonline.net
+	# bab62-156.optonline.net
+		'(?:bab|hicks)\d+-\d+\.optonline',
+	# vp238178.static.uac1.hknet.com
+		'vp\d+\.static\.uac1\.hknet',
+	# server50855.uk2net.com
+		'server\d+\.uk2net',
+	# hosted.by.hostbasket.com
+	# hb1144.hostbasket.com
+		'(?:hb\d+|hosted\.by)\.hostbasket',
+	# somehost.affinity.com
+	# lvs01-n04.chi.affinity.com
+		'(?:somehost|lvs01-n\d+\.chi)\.affinity',
+	# vps707.inmotionhosting.com
+		'vps\d+\.inmotionhosting',
+	# net203-190-078.mclink.it
+		'net\d+-\d+-\d+\.mclink',
+	# b4D14.static.pacific.net.au
+		'b[a-z0-9]+\.static\.pacific\.net\.au',
+	# e193.en25.com
+		'e\d+\.en25\.com',
+	# unknown.hostforweb.com
+		'unknown\.hostforweb',
+	# bzq-219-209-176.pop.bezeqint.net
+		'bzq-\d+\-\d+-\d+\.pop\.bezeqint',
+	# 220941.ds.nac.net
+		'\d+\.ds\.nac\.net',
+	# v2802.vps.masterhost.ru
+		'v\d+\.vps\.masterhost',
+        # eu2167f.lyceu.net
+                'eu[a-f0-9]+\.lyceu',
+        # mgfmd8215.inet.sofast.net
+                'mgfmd\d+\.inet\.sofast',
+        # can52.de
+                'can\d+\.de',
+        # remote201-100.gua.net
+                'remote\d+-\d+\.gua',
+        # 9.240.gye.satnet.net
+                '\d+\.\d+\.gye\.satnet',
+        # acv30.rev.netart.pl
+        # amf149.rev.netart.pl
+                '(?:acv|amf)\d+\.rev.netart',
+        # ipx11896.ipxserver.de
+                'ipx\d+\.ipxserver\.de',
+        # dedi2.ukhost4u.com
+                'dedi\d+\.ukhost4u',
+        # cde264.emirates.net.ae
+                'cde\d+\.emirates\.net\.ae',
+        # ip-3-3.sn2.eutelia.it
+                'ip-\d+-\d+\.sn\d+\.eutelia',
+        # ip54575b80.direct-adsl.nl
+                'ip[a-f0-9]+\.direct-adsl',
+        # p13.pontoserver.com
+                'p\d+\.pontoserver',
+        # 52-027.al.cgocable.ca
+        # 52-12.sg.cgocable.ca
+                '\d+-\d+\.(?:al|sg)\.cgocable\.ca',
+        # vps5.lunarservers.com
+                'vps\d*\.lunar(?:servers|pages)',
+        # line163-198.escape.com.ar
+                'line\d+-\d+\.escape\.com\.ar',
+        # outgoing-5813725564.csloxinfo.com
+                'outgoing-\d+\.csloxinfo',
 ####GENERIC
 # include DIALUP ranges here
 # from: http://www.sdsc.edu/~jeff/spam/dialup_zones.txt

@@ -1,5 +1,17 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.94  Wed Apr 30 16:43:57 PDT 2008
+	add code to retrieve record by "record number" to sc_admin.pl v1.06
+
+	map ONLY_COUNT_ONE to GENERIC in ScriptSupport.pm v0.55
+
+0.93  Wed Apr 16 13:40:03 PDT 2008
+	DNSBLserver/zonedump.c
+	create 256k buffer for zonedump fd write
+
+	add #include <stdlib.h> to main.c in DNSBLserver v0.51 and
+	BDBaccess v0.23 for compatability with newer Clib versions
+
 0.92  Mon Apr 14 10:28:56 PDT 2008
 	Add info about where to find LIBNET to the INSTALL document
 

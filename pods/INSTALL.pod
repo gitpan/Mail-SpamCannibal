@@ -102,8 +102,11 @@ performance on an aging 486 with not much memory. It's not a big deal.
 =head1 libnet-1.x.x
 
 L<http://www.packetfactory.net/libnet/>
+
 L<ftp://ftp.sunfreeware.com/pub/freeware/intel/10/>
+
 L<http://www.filewatcher.com/m/libnet-1.1.2.1.tar.gz.1021236.0.0.html>
+
 Google "libnet mirrors"
 
   Installation:

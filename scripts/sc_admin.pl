@@ -2,7 +2,7 @@
 #
 # sc_admin.pl
 #
-# version 1.05, 1-25-05
+# version 1.06, 4-30-08
 #
 #################################################################
 # WARNING! do not modify this script, make one with a new name.	#
@@ -58,6 +58,7 @@ Syntax:	sc_admin.pl db_name (action) [dot.quad.ip.addr] [stuff]
 	     [.]
 
   sc_admin.pl  db_name	get	dot.quad.ip.addr
+  sc_admin.pl  db_name  recno   record number
   sc_admin.pl  db_name insert	dot.quad.ip.addr stuff...
   sc_admin.pl  db_name delete	dot.quad.ip.addr
   sc_admin.pl  db_name zap	key (unconstrained delete)
@@ -142,6 +143,9 @@ elsif ($action =~ /^clear/) {	# clear db
 elsif ($action =~ /^search/) {	# search db
   Search();
 }
+elsif ($action =~ /^recno/) {	# get record number X
+  Recno();
+}
 else {
   syntax;
 }
@@ -212,6 +216,27 @@ sub Get {
   $tool->closedb;
 }
 
+sub Recno {
+  my $tool = db_open();
+  my($saddr,$data) = $tool->getrecno($dbname,$addr);
+
+  unless ($saddr || $data) {
+	print db_strerror($DBTP_ERROR),"\n";
+	die "Could not get record $addr\n";
+  }
+
+  if (	$dbname eq $DBCONFIG->{SPMCNBL_DB_TARPIT} ||
+	$dbname eq $DBCONFIG->{SPMCNBL_DB_ARCHIVE} ) {
+	get_t_a($saddr,$data);
+  }
+  elsif ($dbname eq $DBCONFIG->{SPMCNBL_DB_CONTRIB}) {
+	print_contrib($saddr,$data);
+  }
+  elsif ($dbname eq $DBCONFIG->{SPMCNBL_DB_EVIDENCE}) {
+	print_e($saddr,$data);
+  }
+  $tool->closedb;
+}
 
 sub Insert {
   my $saddr = getip($addr);

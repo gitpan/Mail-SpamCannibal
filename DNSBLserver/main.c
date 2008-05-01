@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>

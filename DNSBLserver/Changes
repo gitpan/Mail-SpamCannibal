@@ -1,5 +1,8 @@
 Revision history for Perl extension Mail::SpamCannibal::DNSBLserver.
 
+0.50  Wed Apr 16 13:40:03 PDT 2008
+	create 256k buffer for zonedump fd write
+
 0.49  Thu Dec 13 18:08:23 PST 2007
 	increase the allowable number of name servers to 15
 

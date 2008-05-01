@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.54 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.55 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -1261,7 +1261,9 @@ sub BLpreen {
     my $dnsblIP = revIP($IP);			# get the reversed IP address
     my($orsp,$err,$trsp,$exp,$zon)=unpack_contrib($data);
     print $zon, ' ' if $VERBOSE;
+    $zon = 'genericPTR' if $zon eq 'ONLY_COUNT_ONE';
     my $zn = $zon eq 'genericPTR' ? 'GENERIC' : $zon;
+
     if (! ($orsp eq A1276 && $zon =~ /^[A-Z0-9]{2}$/) &&	# not a country
 	! exists $DNSBL->{"$zn"}				# zone has been removed from config
 	) {		

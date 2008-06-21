@@ -4,7 +4,7 @@ package Mail::SpamCannibal::IP2ccFlag;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = do { my @r = (q$Revision: 0.01 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.02 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 =head1 NAME
 
@@ -14,23 +14,23 @@ Mail::SpamCannibal::IP2ccFlag - by IP, get Country Code & flag.gif
 
   use Mail::SpamCannibal::IP2ccFlag;
 
-  ($cc,$flag_file) = &Mail::SpamCannibal::IP2ccFlag::get($ipaddy,$flag_path);
+  ($cc,$flag_file,$ctry_name)=&Mail::SpamCannibal::IP2ccFlag::get($ipaddy,$flag_path);
 
 =head1 DESCRIPTION get
 
-This function fetches the 2 character Country Code and the relative pathname
-for the country flag gif. The function returns an empty array if the country
+This function fetches the 2 character Country Code, the relative pathname
+for the country flag.gif, and the country name. The function returns an empty array if the country
 can not be determined or if the dependent modules are not present or the
 flags directory is not present. 
 
 The flags directory must be writable by the caller if you plan to allow
 Geo::CountryFlags to automatically fetch flags on demand (normal mode).
 
-* ($cc,$flag_file) = get($ipaddy,$flag_path);
+* ($cc,$flag_file,$ctry_name)=get($ipaddy,$flag_path);
 
   input:	IPv4 dot quad address,
 		[optional] flag directory
-  returns:	CC, path2flagfile.gif
+  returns:	CC, path2flagfile.gif, countryname
 	    or	()
 
 The default flag directory is "./flags"
@@ -56,7 +56,11 @@ sub get {
 	or return ();
   (my $flag = Geo::CountryFlags->new()->get_flag($cc,$fp))
 	or return ();
-  return ($cc,$flag);
+  my $ctry = '';
+  if (eval {require Geo::CountryFlags::ISO}) {
+    $ctry = Geo::CountryFlags::ISO::value($cc) || '';
+  }
+  return ($cc,$flag,$ctry);
 }
 
 =head1 DEPENDENCIES
@@ -71,7 +75,7 @@ sub get {
 
 =head1 COPYRIGHT
 
-Copyright 2003, Michael Robinton <michael@bizsystems.com>
+Copyright 2003 - 2008, Michael Robinton <michael@bizsystems.com>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

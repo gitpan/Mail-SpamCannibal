@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 2.12, 2-20-08
+# version 2.14, 6-20-08
 #
 # Copyright 2003 - 2008, Michael Robinton <michael@bizsystems.com>
 #   
@@ -449,8 +449,9 @@ document.lookup.lookup.value = '$IP';
 	  $CONFIG->{bdbDAEMON} = $sc->{SPMCNBL_ENVIRONMENT} .'/bdbread';
 	}
 
-	my $cc = (@_ = Mail::SpamCannibal::IP2ccFlag::get($IP))
-		? qq|&nbsp;&nbsp;$_[0]</td><td><img src="$_[1]" alt="$_[0]" height=22 border=1>| : '';
+	my @ccs;
+	my $cc = (@ccs = Mail::SpamCannibal::IP2ccFlag::get($IP))
+		? qq|&nbsp;&nbsp;$ccs[0]</td><td><img src="$ccs[1]" alt="$_[0]" height=22 border=1>| : '';
 	my $substr = qq|<a href="#top" onClick="return(wIP('$IP'));" onMouseover="return(show('whois $IP'));" onMouseOut="return(off());">$IP</a>|;
 	$html .= q|<script language=javascript1.1>
 function wIP(ip) {
@@ -518,7 +519,7 @@ onClick="document.rdnsblk.lookup.value='|. $IP .q|'; document.rdnsblk.submit(); 
 </tr></table></td>
 |;
 	}
-	$html .= q|</tr></table>
+	$html .= q|</td><td width=50>&nbsp;</td><td valign=top>|. $ccs[2] .q|</tr></table>
 |. $results .q|
 </form>
 |;
@@ -820,8 +821,8 @@ self.close();
       my @zap = split(/\n/,$query{remove});
       my $cnt = 0;
       foreach (@zap) {
-	next unless $_ =~ /^\d+\.\d+\.\d+\.\d+/;
-	my $ip = $&;
+	next unless $_ =~ /^\s*(\d+\.\d+\.\d+\.\d+)/;
+	my $ip = $1;
 	next if $_ =~ /\stimeout\s/;				# skip if this is a timeout
 	$_ =  sesswrap("$admin delete $sess $expire $ip");
 	unless ($_ =~ /^OK/) { 

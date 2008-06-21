@@ -1,5 +1,17 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.95  Thu Jun 19 17:33:10 PDT 2008
+	change extension in robots.txt from alldnsblusers.html
+	to alldnsblusers.shtml
+
+	modify cannibal.cgi to accept Delete List arguments
+	that start with leading spaces
+
+	add "country name" as the third parameter returned by 
+	IP2ccFlag.pm v0.02
+
+	add "country name" to html output for ADMIN lookup page
+
 0.94  Wed Apr 30 16:43:57 PDT 2008
 	add code to retrieve record by "record number" to sc_admin.pl v1.06
 

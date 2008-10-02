@@ -164,6 +164,18 @@ $SpamCannibalStats	= '/etc/mail/sc_stats/sc_mdf_stats.txt';
 	'192.168.20',
 );
 
+
+# if you want the white list filled from the SpamCannibal IGNORE list
+# specify the path to the sc_BlackList.conf file. It will be appended to
+# any IP's listed above
+#
+$Relay_Blacklistfile	= '/usr/local/spamcannibal/config/sc_BlackList.conf';
+
+# Relay Whitelist cache file directory
+# must be writable by the 'mimedefang' owner
+#
+$Relay_WhiteCache	= '/etc/mail/sc_stats';
+
 # a hash of domains => primary.mail.server
 # where real users might be found
 # WARNING:	ip addresses of hosts in this list that have these
@@ -176,12 +188,83 @@ $SpamCannibalStats	= '/etc/mail/sc_stats/sc_mdf_stats.txt';
         'anotherdomain.com'     => 'mail1.mydomain.com',
 );
 
+# Relay domain list -- domains for which we are responsible
+# This list is used to check for bogus HELO
+# list is valid domains from inner mail concentrator /etc/mail/sendmail.vh
+@Relay_domain_list = qw|
+	myhosted.domain.com
+	another.hosted.domain.com
+	personal.domain.com
+	another.valid.domain.net
+|;
+
+# Primary mail host for each domain above
+# you can set this array up manually or 
+# ins a for loop as below. Used in filter_recipient
+# below to verify the the recipient is valid
+#
+$Relay_innerhost = 'inner.mailhost.com';
+
+# add large domain lists to checklist
+foreach (@Relay_domain_list) {
+  $Relay_checklist{$_} = $Relay_innerhost;
+}
+
+use Net::DNSBL::Utilities qw(
+	list2NetAddr
+	matchNetAddr
+	DO
+);
+
+my $havecache = 0;
+
+if (	$Relay_WhiteCache &&
+	-d $Relay_WhiteCache ) {
+  $havecache = 1;
+  my $metime = (stat($0))[9];
+  my $sctime = ($Relay_Blacklistfile && -e $Relay_Blacklistfile)
+	? (stat($Relay_Blacklistfile))[9]
+	: 0;
+  my $cshtim = (-e $Relay_WhiteCache .'/relaywhitelist.cache')
+	? (stat($Relay_WhiteCache .'/relaywhitelist.cache'))[9]
+	: 1;
+  if ($metime > $cshtim || $sctime > $cshtim) {
+    my $scSptr = DO($Relay_Blacklistfile);		# spamcannibal Stuff pointer
+    $scSptr = $scSptr->{IGNORE} if $scSptr;
+    $scSptr = [] unless $scSptr;			# must point to some array
+    push @Relay_whitelist, @$scSptr;
+    local *CACHE;
+    if (open (CACHE,'>'. $Relay_WhiteCache .'/relaywhitelist.cache')) {
+      print CACHE << 'EOF';
+my $cache = [qw(
+EOF
+      foreach (@Relay_whitelist) {
+	print CACHE "\t$_\n";
+      }
+      print CACHE q|)];
+|;
+      close CACHE;
+    } else {
+      die "could not open ${Relay_WhiteCache}/relaywhitelist.cache for write";
+    }
+  } else {
+    $havecache = DO($Relay_WhiteCache .'/relaywhitelist.cache');
+    die "could not open ${Relay_WhiteCache}/relaywhitelist.cache for read"
+	unless $havecache;
+    @Relay_whitelist = @$havecache;
+  }
+}
+
+@NAwhitelist = ();  
+list2NetAddr(\@Relay_whitelist,\@NAwhitelist);
+
 # check for and pass white listed mail relay sources
 #
 sub filter_relay {
   my($ip,$name) = @_;
-  if (grep($ip =~ /^$_/,@Relay_whitelist)) {
-    sc_profile('Passed');
+#  if (grep($ip =~ /^$_/,@Relay_whitelist)) {
+  if (matchNetAddr($ip,\@NAwhitelist)) {
+    sc_profile('WhiteList');
     return ('ACCEPT_AND_NO_MORE_FILTERING','ok')
   }
   return ('CONTINUE','ok');
@@ -206,6 +289,7 @@ my $ipattern = '\d+[a-zA-Z_\-\.]\d+[a-zA-Z_\-\.]\d+[a-zA-Z_\-\.]\d+|\d{12}';
 # mark known odd domain patterns
 my @dyn_ok_domains = qw(
 	dsl-only
+	Disetronic
 );
 
 my @known_bad_domains = (	# these are dynamic patterns for specific domains
@@ -225,7 +309,9 @@ sub filter_sender {
   if ($helo =~ /\d+\.\d+\.\d+\.\d+/) {	# claims to be an IP address
     my $heloIP = $&;
 # discard if it claims to be one of our white listed IP addresses
-    return(sc_profile('bogus_helo','REJECT',"bogus HELO $helo")) if grep(/$heloIP/,@Relay_whitelist);
+#    return(sc_profile('bogus_helo','REJECT',"bogus HELO $helo")) if grep(/$heloIP/,@Relay_whitelist);
+    return(sc_profile('bogus_helo','REJECT',"bogus HELO $helo")) if matchNetAddr($heloIP,\@NAwhitelist);
+
   } else {
     return(sc_profile('bogus_helo','REJECT',"bogus HELO $helo")) if grep($helo =~ /$_$/i,keys %Relay_checklist);
   }
@@ -273,6 +359,8 @@ sub filter_recipient {
     return (sc_profile('invalid_recip','REJECT',$msg)) if $rv eq 'REJECT';
   }
 # else always return OK, even on failed connection
+	md_syslog('warning',"DEBUG $recip: mailer=$rcpt_mailer, host=$rcpt_host, addr=$rcpt_addr\n");
+
   return ('CONTINUE','ok');
 }
 
@@ -431,6 +519,7 @@ sub filter_begin () {
 	action_tempfail("Problem running virus-scanner");
 	md_syslog('warning', "Problem running virus scanner: code=$code, category=$category, action=$action");
     }
+
 }
 
 #***********************************************************************

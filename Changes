@@ -1,5 +1,14 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.96  Thu Oct  2 12:42:55 PDT 2008
+	major upgrade to contrib/mimedefang-filter
+	changes allow mimedefang to import the IGNORE whitelist
+	from the scBlackList.conf file and cache the contents
+
+	add CPAN automated tester cutout to Makefile.pl
+
+	update GENERIC PTR list in config/sc_BlackList.conf.sample
+
 0.95  Thu Jun 19 17:33:10 PDT 2008
 	change extension in robots.txt from alldnsblusers.html
 	to alldnsblusers.shtml

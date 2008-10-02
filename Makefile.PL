@@ -14,7 +14,12 @@ use ExtUtils::MakeMaker;
 use Config;
 use vars qw($CONFIG);
 use Cwd qw(abs_path);
-use IPTables::IPv4::DBTarpit::Inst qw(:all);
+unless (require IPTables::IPv4::DBTarpit) {
+  print STDERR "Missing OS dependent module IPTables::IPv4::DBTarpit\n";
+  exit 0;
+}
+require IPTables::IPv4::DBTarpit::Inst;
+import IPTables::IPv4::DBTarpit::Inst qw(:all);
 
 my $conf = 'config.db';
 my $home = abs_path('./');

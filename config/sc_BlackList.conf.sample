@@ -2,7 +2,7 @@
 # sc_BlackList.conf, multi_dnsbl.conf
 # Configuration for sc_BLcheck.pl, sc_BLpreen.pl, and Net::DNSBL::MultiDaemon
 #
-# version 1.35, 6-19-08
+# version 1.36, 10-2-08
 #
 my $DNSBL = {
 
@@ -237,7 +237,7 @@ my $DNSBL = {
 	# p15200949.pureserver.info  
 		'[usp]\d+\.(?:online|rootmaster|website|pureserver)',
  	# d193-24-154.home3.cgocable.net
-		'd\d+-\d+-\d+\.(?:commercial|home\d+)\.cgocable',
+		'd\d+-\d+-\d+\.(?:commercial|home)\d*\.cgocable',
 	# CableLink167-178.telefonia.InterCable.net
 		'CableLink\d+-\d+\.tele',
 	# ner-as30564.alshamil.net.ae
@@ -253,6 +253,7 @@ my $DNSBL = {
 	# dge55.neoplus.adsl.tpnet.pl
 		'[a-z]+\d+\.neoplus\.adsl\.tpnet\.pl',
 	# zo226.internetdsl.tpnet.pl
+        # uc0.internetdsl.tpnet.pl
 		'[a-z]+\d+\.internetdsl\.tpnet\.pl',
 	# vz7228.evanzo-server.de
 		'vz\d+\.evanzo-server',  
@@ -314,15 +315,20 @@ my $DNSBL = {
 	# 4.srvr6.xdsl.nauticom.net
 	# 4.wkln14.xdsl.nauticom.net
 		'\d+\.[a-z]+\d+\.xdsl\.nauticom',
-	# golf403.server4you.de
+        # paris063.server4you.de
+        # echo678.server4you.de
+        # golf403.server4you.de
 	# foxtrot501.server4you.de
 	# delta368.server4you.de
 	# charlie406.server4you.de
 	# hotel688.server4you.de
 	# alpha551.server4you.de
-        # london135.server4you.de
-        # kilo050.server4you.de
-                '(?:kilo|london|air|balder|alpha|foxtrot|golf|delta|charlie|hotel)\d+\.server4you',
+	# london135.server4you.de
+	# kilo050.server4you.de
+	# air940.server4you.net
+	# balder030.server4you.net
+	# bravo666.server4you.de
+		'(?:paris|echo|bravo|air|balder|kilo|london|air|balder|alpha|foxtrot|golf|delta|charlie|hotel)\d+\.server4you',
 	# av11634.comex.ru
 		'av\d+\.comex\.ru',
 	# servidor52.suempresa.com
@@ -394,7 +400,9 @@ my $DNSBL = {
 	# unknown.hostforweb.com
 		'unknown\.hostforweb',
 	# bzq-219-209-176.pop.bezeqint.net
-		'bzq-\d+\-\d+-\d+\.pop\.bezeqint',
+	# bzq-219-33-14.isdn.bezeqint.net
+	# bzq-219-117-58.static.bezeqint.net
+		'bzq-\d+\-\d+-\d+\.(?:isdn|pop|static)\.bezeqint',
 	# 220941.ds.nac.net
 		'\d+\.ds\.nac\.net',
 	# v2802.vps.masterhost.ru
@@ -411,7 +419,8 @@ my $DNSBL = {
 		'\d+\.\d+\.gye\.satnet',
 	# acv30.rev.netart.pl
 	# amf149.rev.netart.pl
-		'(?:acv|amf)\d+\.rev.netart',
+	# aki239.rev.netart.pl
+		'(?:aki|acv|amf)\d+\.rev.netart',
 	# ipx11896.ipxserver.de
 		'ipx\d+\.ipxserver\.de',
 	# dedi2.ukhost4u.com
@@ -435,9 +444,9 @@ my $DNSBL = {
 		'outgoing-\d+\.csloxinfo',
 	# brasilis-f4-055.static.ctbctelecom.com.br
 		'brasilis-[a-f0-9]+-\d+\.static\.ctbctelecom',
-        # 149-19.islandssimi.is 
-        # 194-215.bc.cgocable.ca
-                '\d+-\d+\.(?:islandssimi\.is|bc\.cgocable\.ca)',
+	# 149-19.islandssimi.is 
+	# 194-215.bc.cgocable.ca
+		'\d+-\d+\.(?:islandssimi\.is|bc\.cgocable\.ca)',
 	# host133.singtel.com.tw
 		'host\d+\.(?:singtel|asia-ms|snv-consulting|dtc\.co|ays\.c|best-ita|sri-siam|botun\.go|kapook|phatrasec|elife\.co|matichon|chickyclub|nineweb|tarad|depthfirst|isc\.co\.th|grammy|e-life|yourconnect|customer-room)',
 	# cp240.mysite4now.com
@@ -456,98 +465,276 @@ my $DNSBL = {
 	# a.icfintl.com.tw
 		'\b[a-z]\.icfintl\.com\.tw',
 	# air308.startdedicated.com
-		'air\d+\.(?:startdedicated|server4you)',
+	# balder020.startdedicated.com
+		'(?:air|balder)\d+\.startdedicated',	       
 	# static-b4-250-228.telepac.pt
 		'static-[a-f0-9]+-\d+-\d+\.telepac\.pt',
-        # net130-234.estmn.ru
-                'net\d+-\d+\.estmn\.ru',
-        # rbi0187.giga-dns.com
-                'rbi[0-9x]+\.giga-dns',
-        # zx32.rapidns.com
-                'x\d+\.rapidns\.com',
-        # wireless-214-230.wyom.net
-                'wireless-\d+-\d+\.wyom\.net',
-        # dun-pm-158-30.t2.net
-                'dun-pm-\d+-\d+\.t2\.net',
-        # d51530682.access.telenet.be
-                'd[a-f0-9]+\.access\.telenet\.be',
-        # gw55.partner-work.dk
-                'gw\d+\.partner-work\.dk',
-        # ip3-vg2.iplannetworks.net
-                'ip\d-vg\d\.iplannetworks',
-        # host27-182-static.141-217-b.business.telecomitalia.it
+	# net130-234.estmn.ru 
+	# net135-162.4web.pl
+	# net138-180.mclink.it
+		'net\d+-\d+\.(?:estmn\.ru|4web\.pl|mclink\.it)',
+ 	# rbi0187.giga-dns.com
+		'rbi[0-9x]+\.giga-dns',
+	# zx32.rapidns.com
+		'x\d+\.rapidns\.com',
+	# wireless-214-230.wyom.net
+		'wireless-\d+-\d+\.wyom\.net',
+	# dun-pm-158-30.t2.net
+		'dun-pm-\d+-\d+\.t2\.net',
+	# d51530682.access.telenet.be
+		'd[a-f0-9]+\.access\.telenet\.be',
+	# gw55.partner-work.dk
+		'gw\d+\.partner-work\.dk',
+	# ip3-vg2.iplannetworks.net
+	# customer243-72.iplannetworks.net
+		'(?:customer\d+-\d+|ip\d-vg\d)\.iplannetworks',
+	# host27-182-static.141-217-b.business.telecomitalia.it
 		'host\d+-\d+-static\.\d+-\d+-[a-f]+\.business\.telecomitalia',
-        # rs25s3.datacenter.cha.cantv.net
-                'rs\d+s\d+\.datacenter\.cha\.cantv',
-        # 0706ds1-ro.0.fullrate.dk
-                '\d+ds\d+-ro\.\d+\.fullrate\.dk',
-        # hs-339.dedicated.hostalia.com
-                'hs-\d+\.dedicated\.hostalia',
-        # eb01.ebhost9.com
-        # g.eb02.ebhost9.com
-                '[a-z]?\.?eb\d+\.ebhost\d+\.com',
-        # h003.liveservers.net
-                'h\d+\.liveservers',
-        # wpc2136.amenworld.com
-        # wpc0182.host7x24.com
-                'wpc\d+\.(?:amenworld|host7x24)',
-        # sls-gb7p11.dca2.superb.net
-                'sls-g[a-f]\d+p\d+\.dca\d+\.superb',
-        # khi77.pie.net.pk
-                'khi\d+\.pie\.net\.pk',
-        # 209-142.static.alkar.net
-                '\d+-\d+\.static\.alkar',
-        # server33.dedicatedusa.com 
-                'server\d+\.dedicated',
-        # 934045.t-wp.de
-                '\b\d+\.t-wp\.de',
-        # cp107.agava.net
-                '\bcp\d+(?:-\d+|)\.agava',
-        # cC3011FF5.inet.catch.no
-                '[a-f0-9]{9,}\.inet\.catch\.no',
-        # reverse.doruk.net.tr
-                'reverse\.doruk\.net\.tr',
-        # server109f.appriver.com
-        # server109f.exghost.com
-                'server\d+[a-z]\.(?:appriver|exghost)',   
-        # fr44.aha.ru
-                '\bfr\d+\.aha\.ru',
-        # autom-38-007.ladpc.co.il
-                'autom-\d+-\d+\.ladpc\.co\.il',
-        # shabnet4-236.shabakah.net
-                'shabnet\d+-\d+\.shabakah',
-        # static-55-49.worldinternetworkcorporation.com
-                'static-\d+-\d+\.worldinternetworkcorporation',
-        # pm1007.do09.net
-                'pm\d+\.do\d\d\.net',
-        # pm49-134.do02.net
-                'pm\d+-\d+\.do\d\d\.net',
-        # 454a246f.cst.lightpath.net
-                '[a-f0-9]{8,}\.cst\.lightpath',
-        # v1108.rev.tld.pl
-                'v\d+\.rev\.tld\.pl',
-        # cablelink39-106.intercable.net
-                'cablelink\d+-\d+\.intercable',
-        # c201234176-11.impsat.com.co
-                'c\d+-\d+\.impsat\.com\.co',
-        # cdc0004.cdcservices.com
-                'cdc\d+\.cdcservices.com',
-        # serverpoint.com
-                '\bserverpoint\.com',
-        # 3terra.com
-                '\b3terra\.com',
-        # vhost-181.lt20.net
-                'vhost-\d+\.lt20',
-        # public2-cosh5-6-cust67645.cosh.broadband.ntl.com
-                'public\d+-cosh\d+-\d+-cust\d+\.cosh\.broadband\.ntl',
-        # e83.friendfinder.com
-                'e\d+\.friendfinder',
-        # adslfixo-b4-115-121.telepac.pt
-                'adslfixo-[a-z0-9]+-\d+-\d+\.telepac\.pt',
-        # emfe1.cc.iup.edu
-                'emfe\d+\.cc\.iup\.edu',
-        # tw112-static194.tw1.com
-                'tw\d+-static\d+\.tw1\.com',
+	# rs25s3.datacenter.cha.cantv.net
+		'rs\d+s\d+\.datacenter\.cha\.cantv',
+	# 0706ds1-ro.0.fullrate.dk
+		'\d+ds\d+-ro\.\d+\.fullrate\.dk',
+	# hs-339.dedicated.hostalia.com
+		'hs-\d+\.dedicated\.hostalia',
+	# eb01.ebhost9.com
+	# g.eb02.ebhost9.com
+		'[a-z]?\.?eb\d+\.ebhost\d+\.com',
+	# h003.liveservers.net
+		'h\d+\.liveservers',
+	# wpc2136.amenworld.com
+	# wpc0182.host7x24.com
+		'wpc\d+\.(?:amenworld|host7x24)',
+	# sls-gb7p11.dca2.superb.net
+		'sls-g[a-f]\d+p\d+\.dca\d+\.superb',
+	# khi77.pie.net.pk
+		'khi\d+\.pie\.net\.pk',
+	# 209-142.static.alkar.net
+		'\d+-\d+\.static\.alkar',
+	# server33.dedicatedusa.com 
+		'server\d+\.dedicated',
+	# 934045.t-wp.de
+		'\b\d+\.t-wp\.de',
+	# cp107.agava.net
+		'\bcp\d+(?:-\d+|)\.agava',
+	# cC3011FF5.inet.catch.no
+		'[a-f0-9]{9,}\.inet\.catch\.no',
+	# reverse.doruk.net.tr
+		'reverse\.doruk\.net\.tr',
+	# server109f.appriver.com
+	# server109f.exghost.com
+		'server\d+[a-z]\.(?:appriver|exghost)',   
+	# fr44.aha.ru
+		'\bfr\d+\.aha\.ru',
+	# autom-38-007.ladpc.co.il
+		'autom-\d+-\d+\.ladpc\.co\.il',
+	# shabnet4-236.shabakah.net
+		'shabnet\d+-\d+\.shabakah',
+	# static-55-49.worldinternetworkcorporation.com
+		'static-\d+-\d+\.worldinternetworkcorporation',
+	# pm1007.do09.net
+		'pm\d+\.do\d\d\.net',
+	# pm49-134.do02.net
+		'pm\d+-\d+\.do\d\d\.net',
+	# 454a246f.cst.lightpath.net
+		'[a-f0-9]{8,}\.cst\.lightpath',
+	# v1108.rev.tld.pl
+		'v\d+\.rev\.tld\.pl',
+	# cablelink39-106.intercable.net
+		'cablelink\d+-\d+\.intercable',
+	# c201234176-11.impsat.com.co
+		'c\d+-\d+\.impsat\.com\.co',
+	# cdc0004.cdcservices.com
+		'cdc\d+\.cdcservices.com',
+	# serverpoint.com
+		'\bserverpoint\.com',
+	# 3terra.com
+		'\b3terra\.com',
+	# vhost-181.lt20.net
+		'vhost-\d+\.lt20',
+	# public2-cosh5-6-cust67645.cosh.broadband.ntl.com
+		'public\d+-cosh\d+-\d+-cust\d+\.cosh\.broadband\.ntl',
+	# e83.friendfinder.com
+		'e\d+\.friendfinder',
+	# adslfixo-b4-115-121.telepac.pt
+		'adslfixo-[a-z0-9]+-\d+-\d+\.telepac\.pt',
+	# emfe1.cc.iup.edu
+		'emfe\d+\.cc\.iup\.edu',
+	# tw112-static194.tw1.com
+		'tw\d+-static\d+\.tw1\.com',
+	# ip-111-54.sn1.eutelia.it
+		'ip-\d+-\d+\.sn1\.eutelia\.it',
+	# ns.km30305-08.keymachine.de 
+		'ns\.km[0-9-]+\.keymachine',
+	# imsantv35.netvigator.com
+		'\bimsantv\d+\.netvigator',
+	# asy13.as06.apl1.superonline.com
+		'asy\d+\.as\d+\.apl\d+\.superonline',
+	# 46-82.netblk-66-60-82.yada.net
+		'\d+-\d+\.netblk-\d+-\d+-\d+\.yada\.net',
+	# sd-2076.dedibox.fr
+		'sd-\d+\.dedibox\.fr',
+	# ip81-net194.0tr.net
+		'ip\d+-net\d+\.0tr\.net',
+	# static111100.bendcable.com
+		'static\d+\.bendcable',
+	# ip33.mosline.ru
+		'ip\d+\.mosline\.ru',
+	# sd1568.sivit.org
+		'sd\d+\.sivit\.org',
+	# s0AE6.static.pacific.net.au
+		's[a-f0-9]+\.static\.pacific\.net\.au',
+	# server515h.exghost.com
+		'server\d+[a-z]?\.(?:appriver|exghost)\.com',
+	# net151-15.e-kirov.ru
+		'net\d+-\d+\.e-kirov\.ru',
+	# siterightnow.com
+		'\bsiterightnow\.com',
+	# static-105-90.blueline.mg
+		'static-\d+-\d+\.blueline\.mg',
+	# ds2073.appliedi.net
+		'ds\d+\.appliedi\.net',
+	# 254.satnet-113-217.gye.satnet.net
+		'\d+\.satnet-\d+-\d+\.gye\.satnet',
+	# dsl51B7DE02.fixip.t-online.hu
+		'dsl[a-f0-9]+\.fixip\.t-online\.hu',
+	# mbl-65-179-2.dsl.net.pk
+		'mbl-\d+-\d+-\d+\.dsl\.net\.pk',
+	# 6476213-41.impsat.com.co
+		'\b\d+-\d+\.impsat\.com\.co',
+	# zz149009.cipherkey.net
+		'zz\d+\.cipherkey\.net',
+	# sg242.montanavision.com
+		'\bsg\d+\.montanavision\.com',
+	# powered.by.qweb.nl
+		'powered\.by\.qweb\.nl',
+	# dedi117.your-server.de
+		'dedi\d+\.your-server\.de',
+	# x02.smokipipi.info
+		'x\d+\.smokipipi\.info',
+	# net135-11.velcom.com
+		'net\d+-\d+\.velcom',
+	# ip111.correctansw.com
+		'ip\d+\.correctansw\.com',
+	# dor005-18514-rtr-adsl-10.altohiway.com
+		'[a-z]+\d+-\d+-rtr-adsl-\d+\.altohiway',
+	# 154-177.hutchtel.net
+		'\d+-\d+\.hutchtel\.net',
+	# ts7b1.islc.net
+		'ts7b\d+\.islc\.net',
+	# 50-31.dedicado.com.uy
+		'\d+-\d+\.dedicado\.com\.uy',
+	# c9067440.static.spo.virtua.com.br
+		'[a-f0-9]+\.static\.spo\.virtua\.com\.br',
+	# aworklan041102.netvigator.com
+		'aworklan\d+\.netvigator',
+	# wda-sta-aa34.velocom.net.ar
+		'wda-sta-[a-f0-9]+\.velocom\.net\.ar',
+	# access-117.91.rev.fr.colt.net
+		'access-\d+\.\d+\.rev\.fr\.colt',
+	# vhost28.theplanet.com
+		'vhost\d+\.theplanet\.com',
+	# dtcwin046.dattaweb.com
+		'dtcwin\d+\.dattaweb\.com',
+	# bosmailout05.eigbox.net
+		'bosmailout\d+\.eigbox\.net',
+	# 72-100.netamu.getthewave.com
+	# 201-001.vdavda.com
+	# 201-016.qnet.it
+	# 201-048.oblo.biz
+	# 201-064.cubenet.it
+	# 201-096.nbfactory.com
+		'\d+-\d+\.(?:netamu\.getthewave\.com|vdavda\.com|qnet\.it|oblo\.biz|cubenet\.it|nbfactory\.com)',
+	# iport6.tm.net.my
+		'iport\d+\.tm\.net\.my',
+	# rwp44.pie.net.pk
+		'[^.]rwp44\.pie\.net\.pk',
+		'(?:touchstone\w+|SNLPakistan|NADRA)\.rwp44\.pie\.net\.pk',
+	# ncp.edu.pk
+		'[^.]ncp\.edu\.pk',
+		'pcncp\d+\.ncp\.edu\.pk',
+	# 170.195.nc.uz
+		'\d+\.\d+\.nc\.uz',
+	# fc8170220.aspadmin.net
+		'fc\d+\.aspadmin\.net',
+	# plughost02.plugin.com.br
+	# ip7.plugin.com.br  
+		'(?:plughost|ip)\d+\.plugin\.com\.br',
+	# s010.hostway.ro
+		'\bs\d+\.hostway\.ro',
+	# ks32727.kimsufi.com
+		'\bks\d+\.kimsufi\.com',
+	# dpc6714259019.direcpc.com
+		'dpc\d+\.direcpc\.com',
+	# ip130.MYYOLIVE.COM
+	# ip80.PUSHBUT.COM   
+	# ip159.MYYOONLINE.COM
+	# ip186.NEWALRIGHT.COM
+	# ip193.bestphotolog.com
+		'ip\d+\.(?:myyolive|pushbut|myyoonline|newalright|bestphotolog)\.com',
+	# w401.widhost.net
+		'w\d+\.widhost\.net',
+	# h157.ty.estore.co.jp
+		'h\d+\.ty\.estore\.co\.jp',
+	# lis432.esoterica.pt
+		'\blis\d+\.esoterica\.pt',
+	# dslstatic-236-19.ideaone.net
+		'dlstatic-\d+-\d+\.ideaone\.net',
+	# ippp18.itc.com.ar
+	# dppp18.itc.com.ar  
+	# nat161.itc.com.ar
+		'(?:[id]ppp|\bnat)\d+\.itc\.com\.ar',
+	# maxtnt01-559.abepa.fast.net
+		'maxtnt\d+-\d+\.abepa\.fast\.net',
+	# vn1132.fireboxhosting.com
+		'vn\d+\.fireboxhosting',  
+	# nameservices.net
+		'[^.]nameservices\.net',
+	# IPADDR-085.esc3.net
+		'ipaddr-\d+\.esc3\.net',
+	# s87.loopia.se
+		'\bs\d+\.loopia\.se',
+	# rt9bb246-84-113.routit.net
+		'rt[a-f0-9]+-\d+-\d+\.routit\.net',
+	# web32.extendcp.co.uk
+		'web\d+\.extendcp\.co\.uk',
+	# ce192-207.infosys.ru
+		'ce\d+-\d+\.infosys\.ru',
+	# 200-32-64.static.impsat.net.ve
+		'\d+-\d+-\d+\.static\.impsat\.net',
+	# 7web.ru						
+		'[^.]7web\.ru',
+	# server206-122.live-servers.net
+		'server\d+-\d+\.live-servers',
+	# host-14-co41-70-merca.net.co
+		'host-\d+-co\d+-\d+-merca\.net\.co',
+	# staticnet721916host255.idstelcom.com
+		'staticnet\d+host\d+\.idstelecom\.com',
+	# cp-out2.libero.it
+		'cp\out\d+\.libero\.it',
+	# 160150.datafon.net.tr
+		'[^\w.]\d+\.datafon\.net\.tr',
+	# vds1105.sivit.org
+		'vds\d+\.sivit\.org',
+	# h191043.upc-h.chello.nl
+		'h\d+\.upc-h\.chello\.nl',
+	# server171-han.de-nserver.de
+		'server\d+-han\.de-nserver\.de',
+	# s556.evanzo-server.de
+		's\d+\.evanzo-server\.de',
+	# p51-245.cmet.net
+		'p\d+-\d+\.cmet\.net',
+	# vds-751893.amen-pro.com
+		'vds-\d+\.amen-pro\.com',
+	# l64-88-10.cn.ru
+		'l\d+-\d+-\d+\.cn\.ru', 
+	# ip77.gsag.com
+		'ip\d+\.gsag\.com',
+	# ip165-53.mono.lv
+		'ip\d+-\d+\.mono\.lv',
+	# a0004.abansys.com
+		'\ba\d+\.abansys\.com',
+	# h0001.hostytec.com
+		'\bh\d+\.hostytec\.com',
 ####GENERIC
 # include DIALUP ranges here
 # from: http://www.sdsc.edu/~jeff/spam/dialup_zones.txt

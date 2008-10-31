@@ -2,7 +2,7 @@
 # sc_BlackList.conf, multi_dnsbl.conf
 # Configuration for sc_BLcheck.pl, sc_BLpreen.pl, and Net::DNSBL::MultiDaemon
 #
-# version 1.36, 10-2-08
+# version 1.37, 10-17-08
 #
 my $DNSBL = {
 
@@ -735,6 +735,54 @@ my $DNSBL = {
 		'\ba\d+\.abansys\.com',
 	# h0001.hostytec.com
 		'\bh\d+\.hostytec\.com',
+        # not-yet-assigned.draculahosting.com
+                'not-yet-assigned\.draculahosting',
+        # ded730-lin-170-30.netsonic.net                         
+                'ded\d+-[a-z0-9]+-\d+-\d+\.netsonic',                         
+        # fe18.tasp.pt
+                '\bfe\d+\.tasp\.pt',
+        # c113.netron.cz
+                '\bc\d+\.netron\.cz',
+        # eco1059.ncsrv.de
+                '(?:eco|biz|serv|d\d\-)\d+\.ncsrv\.de',
+        # host-197.FGUPNICSTR.macomnet.net
+                'host-\d+\.fgupnicstr\.macomnet',
+        # leased-line-249-68.telecom.by
+                'leased-line-\d+-\d+\.telecom\.by',
+        # cl36.gs01.gridserver.com
+                'cl\d+\.gs\d+\.gridserver\.com',
+        # node214-200.network.is.nl
+                'node\d+-\d+\.network\.is\.nl',
+        # ool-60384eab.static.optonline.net 
+                'ool-[a-f0-9]+\.static\.optonline\.net',
+        # dsl-48-169.qld1.net.au
+                'dsl-\d+-\d+\.qld1\.net\.au',
+        # 66.11.leased.lanck.net
+                '\d+-\d+\.leased\.lanck\.net',
+        # vs242065.vserver.de
+                'vs\d+\.vserver\.de',
+        # p71.tc2.snt.ru
+                '\bp\d+\.tc\d+\.snt\.ru',
+        # prowin11.amenworld.com
+                'prowin\d+\.(?:amenworld|host7x24)\.com',
+        # web03.marcaria.com
+                'web\d+\.marcaria\.com',
+        # 6.fib171.gye.satnet.net
+                '\d+\.fib\d+\.gye\.satnet\.net',
+        # 160150.datafon.net.tr
+                '[^.]*\d+\.datafon\.net\.tr',
+        # c142-78.ntt.ru
+                ',\bc\d+-\d+\.ntt\.ru',
+        # hdx146.celeo.ne
+                'hdx\d+\.celeo\.net',
+        # 161-m.netfirms.com
+                '[^.]\d+-m\.netfirms\.com',
+        # w2003p-18-ar.wavenet.com.ar
+                'w\d+p-\d+-ar\.wavenet\.com\.ar',
+        # 22216.unitednetworx.com
+                '[^.]\d+\.unitednetworx\.com',
+        # sls-ag4p10.superbservers.com
+                'sls-a[a-z]\dp\d+\.superbservers\.com',
 ####GENERIC
 # include DIALUP ranges here
 # from: http://www.sdsc.edu/~jeff/spam/dialup_zones.txt

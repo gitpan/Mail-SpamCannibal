@@ -1,5 +1,12 @@
 Revision history for Perl extension Mail::SpamCannibal::DNSBLserver.
 
+0.52  Wed Oct 15 14:19:29 PDT 2008
+	require Net::DNS::ToolKit version 0.40 or higher
+
+	convert configuration to autoconf
+
+0.51  ??
+
 0.50  Wed Apr 16 13:40:03 PDT 2008
 	create 256k buffer for zonedump fd write
 

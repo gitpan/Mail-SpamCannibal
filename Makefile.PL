@@ -14,6 +14,11 @@ use ExtUtils::MakeMaker;
 use Config;
 use vars qw($CONFIG);
 use Cwd qw(abs_path);
+
+unless ($Config{osname} =~ /linux/i) {
+  print STDERR "unsupported operating system $Config{osname}\n";
+  exit 0;
+}
 unless (require IPTables::IPv4::DBTarpit) {
   print STDERR "Missing OS dependent module IPTables::IPv4::DBTarpit\n";
   exit 0;
@@ -100,14 +105,14 @@ my %makeparms = (
    'NAME'         => 'Mail::SpamCannibal',
    'VERSION_FROM' => 'SpamCannibal.pm',		# finds $VERSION
    'PREREQ_PM'	  => {
-			'IPTables::IPv4::DBTarpit' => '0.23',
+			'IPTables::IPv4::DBTarpit' => '0.40',
 			'Geo::IP::PurePerl'	=> '1.10',
 			'Data::Password::Manager'  => '0.01',
 			'Sys::Hostname::FQDN'	=> '0.06',
-			'Net::DNS::Codes'	=> '0.08',
-			'Net::DNS::ToolKit'	=> '0.35',
+			'Net::DNS::Codes'	=> '0.09',
+			'Net::DNS::ToolKit'	=> '0.41',
 			'NetAddr::IP::Lite'	=> '0.02',
-			'Net::DNSBL::MultiDaemon' => '0.22',
+			'Net::DNSBL::MultiDaemon' => '0.23',
 			'Net::SMTP'		=> '2.10',
 			'Net::Whois::IP'	=> '0.35',
 			'MIME::Base64'		=> '2.00',

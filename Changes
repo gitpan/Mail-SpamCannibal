@@ -1,5 +1,11 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+0.97  Wed Oct 15 14:19:29 PDT 2008
+	require Net-DNS-ToolKit verion 0.41
+	here and in DNSBLserver 0.52
+
+	convert DNSBLserver configuration to autoconf
+
 0.96  Thu Oct  2 12:42:55 PDT 2008
 	major upgrade to contrib/mimedefang-filter
 	changes allow mimedefang to import the IGNORE whitelist

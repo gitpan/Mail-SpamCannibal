@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 2.14, 6-20-08
+# version 2.15, 10-17-08
 #
 # Copyright 2003 - 2008, Michael Robinton <michael@bizsystems.com>
 #   
@@ -593,6 +593,7 @@ function wDelete() {
 type=hidden name=page value=delete><input type=hidden name=remove value='|. $IP .q|'></td></tr>|.
 	    $related .q|
 </table></blockquote></form>
+<center><a href="#top">TOP</a></center>
 |;
 	  }
 	}

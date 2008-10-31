@@ -16,12 +16,13 @@ use ExtUtils::MakeMaker;
 
 use Config;
 use vars qw($CONFIG);
-use Cwd qw(abs_path);
+use Cwd qw(abs_path getcwd);
 IPTables::IPv4::DBTarpit::SiteConfig;
 use IPTables::IPv4::DBTarpit::Inst qw(:all);
 
 my $conf = 'config.db';
 my $home = abs_path('./');
+my $pwd = getcwd();
 my $localconf = $home .'/'. $conf;
 
 # what to do with dialog if called from MAKE or parent Makefile
@@ -90,10 +91,10 @@ WriteMakefile(
 	# Un-comment this if you add C files to link with later:
     'OBJECT'		=> "CTest.o $objects", # link all the C files too
     'PREREQ_PM'		=> { 'IPTables::IPv4::DBTarpit::Tools' => '0.11',
-			     'Net::DNS::Codes'	 => '0.06',
-			     'Net::DNS::ToolKit' => '0.07',
+			     'Net::DNS::Codes'	 => '0.08',
+			     'Net::DNS::ToolKit' => '0.40',
 			   },
-    'clean'		=> { FILES	=> "$daemon *.bs *.o *~ tmp* mysiteconf.h config.log"},
+    'clean'		=> { FILES	=> "$daemon *.bs *.o *~ tmp* config.h config.status config.log auto*"},
     'HTMLLIBPODS'	=> {},
 );
 
@@ -155,7 +156,7 @@ clean_CTest     :
 # # siteconf CCname Cfile_ext OBJext EXEext "Cflags" "LDflags"
 # #
 # mysiteconf.h :
-#       ./siteconf "$(CC)" ".c" "$(OBJ_EXT)" "$(EXE_EXT)" "$(CCFLAGS)"
+#       |. $pwd .q|/siteconf "$(CC)" ".c" "$(OBJ_EXT)" "$(EXE_EXT)" "$(CCFLAGS)"
 # "$(LDFLAGS)"
 # |;
 #   my $inherited = shift->SUPER::top_targets(@_);
@@ -174,9 +175,11 @@ sub MY::top_targets {
 
 # siteconf CCname Cfile_ext OBJext EXEext "Cflags" "LDflags"
 
-mysiteconf.h :
-	./siteconf "$(CC)" ".c" "$(OBJ_EXT)" "$(EXE_EXT)" "$(CCFLAGS)" "$(LDFLAGS)"
+#mysiteconf.h :
+#	|. $pwd .q|/siteconf "$(CC)" ".c" "$(OBJ_EXT)" "$(EXE_EXT)" "$(CCFLAGS)" "$(LDFLAGS)"
 
+config.h :
+	$(SHELL) configure
 |;
   my $inherited = shift->SUPER::top_targets(@_);
   $inherited =~ s/(pure_all\s+::.+)/$1 $daemon README/;
@@ -190,7 +193,7 @@ $daemon|.q|		: |. $objects .q|
 host_info.o	: host_info.c
 	$(CC) -c $(INC) $(CCFLAGS) $(OPTIMIZE) host_info.c
 
-main.o		: main.c data.c godaemon.c misc.c mysiteconf.h zonedump.c defines.h host_info_func.h util_pid_func.h netio_func.h ns_func.h c_version.h
+main.o		: main.c data.c godaemon.c misc.c config.h zonedump.c defines.h host_info_func.h util_pid_func.h netio_func.h ns_func.h c_version.h
 	$(CC) -c $(INC) $(CCFLAGS) $(OPTIMIZE) main.c
 
 netio.o		: netio.c ns.h

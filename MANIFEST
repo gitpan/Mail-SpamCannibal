@@ -197,6 +197,9 @@ DNSBLserver/README
 DNSBLserver/WHATARE.c.files
 DNSBLserver/config/dnsbls.conf.sample
 DNSBLserver/bswap32.h
+DNSBLserver/config.h.in
+DNSBLserver/configure
+DNSBLserver/configure.ac
 DNSBLserver/data.c
 DNSBLserver/defines.h
 DNSBLserver/extra_docs/draft-ietf-dnsext-axfr-clarify-05.txt
@@ -221,7 +224,6 @@ DNSBLserver/ns.h
 DNSBLserver/ns_func.h
 DNSBLserver/rc.dnsbls
 DNSBLserver/sc_zoneload
-DNSBLserver/siteconf
 DNSBLserver/util_pid.c
 DNSBLserver/util_pid_func.h
 DNSBLserver/zonedump.c

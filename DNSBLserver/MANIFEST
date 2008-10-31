@@ -8,6 +8,9 @@ DNSBLserver.pm
 CTest.pm
 CTest.xs
 bswap32.h
+config.h.in
+configure
+configure.ac
 data.c
 defines.h
 godaemon.c
@@ -24,7 +27,6 @@ ns.h
 ns_func.h
 rc.dnsbls
 sc_zoneload
-siteconf
 util_pid.c
 util_pid_func.h
 zonedump.c

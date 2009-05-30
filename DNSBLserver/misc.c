@@ -2,7 +2,7 @@
  *
  * Portions of this file are adapted from LaBrea by Tom Liston <tliston@premmag.com>, Copyright (C) 2001, 2002
  #
- * Copyright 2003, Michael Robinton <michael@bizsystems.com>
+ * Copyright 2003 - 2009, Michael Robinton <michael@bizsystems.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ pid_t zonechild = 0;
 
 void
 LogPrint(char *output) {
-  extern int oflag, testflag;
+  extern int oflag;
   time_t current;
   char tbuf[17];
 

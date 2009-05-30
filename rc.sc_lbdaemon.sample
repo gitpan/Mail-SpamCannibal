@@ -3,7 +3,7 @@
 # rc.sc_lbdaemon
 # version 1.04, 2-9-04
 #
-# Copyright 2003, 2004, Michael Robinton <michael@bizsystems.com>
+# Copyright 2003 - 2004, Michael Robinton <michael@bizsystems.com>
    
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -189,7 +189,7 @@ Michael Robinton <michael@bizsystems.com>
 
 =head1 COPYRIGHT
 
-Copyright 2003, Michael Robinton <michael@bizsystems.com>
+Copyright 2003 - 2004, Michael Robinton <michael@bizsystems.com>
 This script is free software; you can redistribute it and/or
 modify it under the terms of the GPL software license.
 

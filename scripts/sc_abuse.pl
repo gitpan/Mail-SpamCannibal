@@ -2,7 +2,7 @@
 #
 # sc_abuse.pl
 #
-# version 1.07, 10-5-05
+# version 1.08, 11-16-08
 #
 #################################################################
 # WARNING! do not modify this script, make one with a new name. #
@@ -10,7 +10,7 @@
 # SpamCannibal.                                                 #
 #################################################################
 #
-# Copyright 2003 - 2005 Michael Robinton <michael@bizsystems.com>
+# Copyright 2003 - 2008 Michael Robinton <michael@bizsystems.com>
    
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ use Mail::SpamCannibal::ScriptSupport 0.09 qw(
 	mailcheck
 	list2NetAddr
 	abuse_host
-	DO
+	doINCLUDE
 
 	matchNetAddr
 );
@@ -118,7 +118,7 @@ while ($_ = shift @ARGV) {
 
 usage ('no config file') unless $config;
 
-my $MAILFILTER = DO($config);
+my $MAILFILTER = doINCLUDE($config);
 usage ('could not load config file')
 	unless $MAILFILTER;
 
@@ -129,7 +129,7 @@ usage ('corrupted config file')
 	&& ref $MAILFILTER->{MXhosts} eq 'ARRAY'
 	&& @{$MAILFILTER->{MXhosts}};
 
-my $DNSBL = DO($MAILFILTER->{BLCONFIG});
+my $DNSBL = doINCLUDE($MAILFILTER->{BLCONFIG});
 usage ('could not load BlackList file')
 	unless $DNSBL;
 

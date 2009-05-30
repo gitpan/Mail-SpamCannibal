@@ -1,6 +1,6 @@
 /* netio.c
  *
- * Copyright 2003, Michael Robinton <michael@bizsystems.com>
+ * Copyright 2003 - 2009, Michael Robinton <michael@bizsystems.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -159,7 +159,7 @@ accept_tcp(int fd)
 {
   extern struct sockaddr_in client;
   socklen_t len;
-  int newfd, on = 1;
+  int newfd;
 
   len = sizeof(client);
   if ((newfd = accept(fd,(struct sockaddr *)(&client),&len)) < 0)

@@ -47,6 +47,12 @@ Creating the SpamCannibal user
       you fill in the rest......
 
 Recompiling Linux 2.4x kernel with IPTABLES
+    Most newer kernels do NOT need this step. What is needed is the
+    iptables-devel headers, see the next section.
+
+    You can check the "config" file in your /boot directory or linux kernel
+    directory to see if the NF_QUEUE directives are activated.
+
     http://www.kernel.org/
 
     Recompile your kernel to include iptables.
@@ -75,12 +81,20 @@ Recompiling Linux 2.4x kernel with IPTABLES
     affecting performance on an aging 486 with not much memory. It's not a
     big deal.
 
+iptables-devel
+    iptables-devel headers are required for SpamCannibal. Either download
+    the iptables-devel package for your system or rebuild iptables (the
+    version installed on your system) and make and install the developer
+    portion.
+
+      iptables -V will tell you the version.
+
+    iptables source downloads available from:
+
+      L<http://www.netfilter.org/downloads.html>
+
 libnet-1.x.x
-    http://www.packetfactory.net/libnet/
-
-    ftp://ftp.sunfreeware.com/pub/freeware/intel/10/
-
-    http://www.filewatcher.com/m/libnet-1.1.2.1.tar.gz.1021236.0.0.html
+    http://libnet.sourceforge.net/
 
     Google "libnet mirrors"
 
@@ -95,6 +109,8 @@ libnet-1.x.x
        - optional -
       5. make supp
       6. make util
+
+    For RPM's, Google "libnet RPM's" and check for your distro.
 
 Adding PGP support
     Select one of the PGP packages from the download page.

@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# zone_dump.pl version 1.09, 2-18-08
+# zone_dump.pl version 1.10, 11-16-08
 #
 # Copyright 2005 - 2008 Michael Robinton <michael@bizsystems.com>
 # rc.dnsbls is free software; you can redistribute it and/or 
@@ -18,8 +18,8 @@ use Proc::PidUtil 0.07 qw(
         make_pidfile
         zap_pidfile
 );
-use Mail::SpamCannibal::ScriptSupport 0.36 qw(
-	DO
+use File::SafeDO qw(
+	doINCLUDE
 );
 
 
@@ -142,7 +142,7 @@ foreach(split(' ',$Config{sig_name})) {
   ++$usr2;
 }
 
-my $DNSBLS = DO($CONFIG->{SPAMCANNIBAL_HOME} .'/config/dnsbls.conf') 
+my $DNSBLS = doINCLUDE($CONFIG->{SPAMCANNIBAL_HOME} .'/config/dnsbls.conf') 
 	or exit 1;
 
 my $dbenv = $DNSBLS->{environment} || $CONFIG->{SPMCNBL_ENVIRONMENT} 

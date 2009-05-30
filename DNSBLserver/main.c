@@ -1,6 +1,6 @@
 /* main.c
  *
- * Copyright 2003 - 2007, Michael Robinton <michael@bizsystems.com>
+ * Copyright 2003 - 2009, Michael Robinton <michael@bizsystems.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,6 +49,8 @@
 #include "util_pid_func.h"
 #include "zonedump.c"
 #include "ns_func.h"
+#include "misc_func.h"
+#include "netio_func.h"
 
 /*
   -z   : Zone Name: bl.domain.com      [default: this hostname]
@@ -116,7 +118,6 @@ int main(int argc, char **argv) {
 
 int realMain(int argc, char **argv)
 {
-  extern DBTPD dptp;
   extern int h_name_ctr;	/* name service buffer ring pointer	*/
   extern char * local_name;
   extern int mxmark[];
@@ -124,8 +125,8 @@ int realMain(int argc, char **argv)
   extern struct in_addr stdResp, stdRespBeg, stdRespEnd, serial_rec;
   
   char getoptstr[] = "L:z:a:n:N:s:u:y:x:m:t:c:e:g:br:i:j:k:p:dlvPVTZ?ho";
-  char c, * nsname = NULL, * addip = NULL, * pidpathname;
-  int nstore = 0, Mptr = 0, mxsave = 0, aflag = 0, status, testflag = 0, gflag = 1;
+  char c, * nsname = NULL, * pidpathname;
+  int nstore = 0, Mptr = 0, mxsave = 0, aflag = 0, status = 0, testflag = 0, gflag = 1;
   int flags, maxfd, ready;
   struct stat sbuf;
   struct in_addr in;
@@ -167,7 +168,7 @@ int realMain(int argc, char **argv)
       	local_name = optarg;
       case 'n':
 	if (nsname != NULL && aflag == 0) {
-	  if(status = add_ns_info(nsname,aflag))
+	  if((status = add_ns_info(nsname,aflag)))
 		goto Error_nsname;
 	}
 	mxmark[Mptr] = mxsave;	/* stash any mx mark	*/
@@ -188,12 +189,12 @@ int realMain(int argc, char **argv)
 	}
 	aflag = 1;
 	if (nstore == 0) {
-	  if(status = add_ns_info(nsname,aflag))
+	  if ((status = add_ns_info(nsname,aflag)))
 		goto Error_nsname;
 	  mxmark[Mptr] = mxsave;
 	  nstore = 1;
 	}
-	if((inet_aton(optarg, &in)) == 0) {
+	if ((inet_aton(optarg, &in)) == 0) {
 	  status = 0;		/* double duh...	*/
 	  rtn = mybuffer;
 	  sprintf(rtn, "Error: -n, illegal characters or leading 0's in dotquad address");
@@ -292,7 +293,7 @@ int realMain(int argc, char **argv)
   }
 /*	add any dangling name service entries	*/
   if (nsname != NULL && aflag == 0) {
-    if (status = add_ns_info(nsname,aflag)) {
+    if ((status = add_ns_info(nsname,aflag))) {
 Error_nsname:
       rtn = mybuffer;
       sprintf(rtn, "Error: %d, could not add host info to cache",status);
@@ -480,7 +481,7 @@ Error_nsname:
 
       if (FD_ISSET(fdUDP, &rset)) {	/* UDP first while db is open	*/
         if (dbtp.dbenv == NULL) {	/* initialize the database interface	*/
-          if ((status = dbtp_init(&dbtp,dbhome,-1))) {
+          if ((status = dbtp_init(&dbtp,(u_char *)dbhome,-1))) {
     BDBerror:
             rtn = mybuffer;
             sprintf(rtn,str30,status,db_strerror(status));
@@ -519,7 +520,7 @@ Error_nsname:
 	  
 	/* re-open database connection, if closed	*/
 	  if (dbtp.dbenv == NULL) {
-	    if ((status = dbtp_init(&dbtp,dbhome,-1)))
+	    if ((status = dbtp_init(&dbtp,(u_char *)dbhome,-1)))
 	  	goto BDBerror;
 	  }
 	  	  

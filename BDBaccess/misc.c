@@ -2,7 +2,7 @@
  *
  * Portions of this file are adapted from LaBrea by Tom Liston <tliston@premmag.com>, Copyright (C) 2001, 2002
  #
- * Copyright 2003, Michael Robinton <michael@bizsystems.com>
+ * Copyright 2003 - 9, Michael Robinton <michael@bizsystems.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 
 void
 LogPrint(char *output) {
-  extern int oflag, testflag;
+  extern int oflag;
   if(oflag)
     puts(output);
   else
@@ -110,7 +110,7 @@ void
 SigChild(int sig)
 {
   extern int datalog;
-  extern char mybuffer[];
+
   pid_t rv;
   if (sig == SIGCHLD) {
     while((rv = waitpid(-1, NULL, WNOHANG)) > 0)

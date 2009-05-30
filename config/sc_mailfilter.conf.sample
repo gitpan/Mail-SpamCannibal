@@ -1,11 +1,18 @@
 #!/usr/bin/perl
 
 # sc_mailfilter.conf
-# version 1.07, 10-31-07
+# version 1.08, 11-16-08
 # Configuration for sc_mailfilter.pl, sc_abuse.pl
 
 my $MAILFILTER = {
 
+## additional KEYS may be included with an INCLUDE statement of the form:
+#
+#  INCLUDE => 'path/to/file.conf',
+#
+#  this file may include an INCLUDE statement, as may the next, etc...
+#
+#
 # Location of the "sc_BlackList.conf" file. The "IGNORE" array is used
 # to exclude listed hosts.
 #

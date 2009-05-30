@@ -1,5 +1,19 @@
 Revision history for Perl extension Mail::SpamCannibal::BDBreader
 
+0.24  Tue May 12 18:49:41 PDT 2009
+	edited CTest.xs, main.c, netio.c, misc_func.h, godaemon.c,
+	 and util_pid.c to kill warnings from newer gcc versions
+
+	in dsocket.t & rsocket.t change "kill 15" to "kill 9" in tests 
+	that won't die under newer version of perl and make utilities
+
+	fixed typo in test 5 of t/util_pid.t that failed with potential
+	false positive.
+
+0.23  Wed Apr 16 13:40:03 PDT 2008
+        add #include <stdlib.h> to main.c in DNSBLserver v0.51 and
+        BDBaccess v0.23 for compatability with newer Clib versions
+
 0.22  Wed Dec 12 12:26:31 PST 2007
 	remove $VERSION in CTest.pm, replace with $modVERSION
 

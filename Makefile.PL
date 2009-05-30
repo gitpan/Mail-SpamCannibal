@@ -69,6 +69,7 @@ my %xmodules = (
   'Geo::IP::PurePerl'			=> 'Geo-IP-PurePerl',
   'Geo::CountryFlags'			=> 'Geo-CountryFlags',
   'Data::Password::Manager'		=> 'Data-Password-Manager',
+  'File::SafeDO'			=> 'File-SafeDO',
   'IPTables::IPv4::DBTarpit'		=> 'IPTables-IPv4-DBTarpit',
   'IPTables::IPv4::DBTarpit::Tools'	=> 'IPTables-IPv4-DBTarpit-Tools',
   'IPTables::IPv4::DBTarpit::Inst'	=> 'IPTables-IPv4-DBTarpit-Inst',
@@ -105,14 +106,15 @@ my %makeparms = (
    'NAME'         => 'Mail::SpamCannibal',
    'VERSION_FROM' => 'SpamCannibal.pm',		# finds $VERSION
    'PREREQ_PM'	  => {
-			'IPTables::IPv4::DBTarpit' => '0.40',
+			'IPTables::IPv4::DBTarpit' => '0.42',
 			'Geo::IP::PurePerl'	=> '1.10',
+			'File::SafeDO'		=> '0.12',
 			'Data::Password::Manager'  => '0.01',
 			'Sys::Hostname::FQDN'	=> '0.06',
 			'Net::DNS::Codes'	=> '0.09',
 			'Net::DNS::ToolKit'	=> '0.41',
 			'NetAddr::IP::Lite'	=> '0.02',
-			'Net::DNSBL::MultiDaemon' => '0.23',
+			'Net::DNSBL::MultiDaemon' => '0.26',
 			'Net::SMTP'		=> '2.10',
 			'Net::Whois::IP'	=> '0.35',
 			'MIME::Base64'		=> '2.00',
@@ -373,6 +375,27 @@ sub MY::htmlifypods {
   my $inherited = shift->SUPER::htmlifypods(@_) .q|
 	./fixuplinks.pl $(INST_HTMLLIBDIR)
 |;
+}
+
+sub MY::const_config {
+  package MY;
+  $inherited = shift->SUPER::const_config(@_);
+  return q|LANG=en_US
+SUPPORTED=en_US:en
+|. $inherited;
+}
+
+eval {	require IPTables::IPv4::DBTarpit::Inst ||
+	die "no IPTables installed"; };
+
+if ($@) {
+  print STDERR q|
+##########################################################
+IPTables::IPv4::DBTarpit missing or not properly installed
+##########################################################
+
+|;
+  exit 0;
 }
 
 WriteMakefile(%makeparms);

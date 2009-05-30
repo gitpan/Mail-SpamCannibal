@@ -5,7 +5,7 @@ use strict;
 #use diagnostics;
 use vars qw($VERSION);
 
-$VERSION = do { my @r = (q$Revision: 0.97 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 1.00 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 sub DESTROY {};
 
@@ -254,9 +254,26 @@ Utility module to lookup an IP address owner anywhere in the world
 
 =back
 
+=head1 BUGS
+
+  During perl Makefile.PL I have the following errors:
+
+  WARNING: HTMLSCRIPTPODS is not a known parameter.
+  WARNING: INST_HTMLLIBDIR is not a known parameter.
+  WARNING: EXTRA_META is not a known parameter.
+  WARNING: INSTALLHTMLSITELIBDIR is not a known parameter.
+  WARNING: HTMLLIBPODS is not a known parameter.
+
+  These warnings are normal for version ExtUtils-MakeMaker-6.44 
+  (Feb 28, 2008) and later. Usually these can be safely ignored 
+  since the missing "internals" only affect the expansion of 
+  documents into SpamCannibal's web tree and the SpamCannibal 
+  installer also has a built-in workaround to compensate for the 
+  missing internals of the newer ExtUtils-MakeMaker.
+
 =head1 COPYRIGHT
 
-Copyright 2003 - 2008, Michael Robinton <michael@bizsystems.com>
+Copyright 2003 - 2009, Michael Robinton <michael@bizsystems.com>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -1,5 +1,57 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+1.00  Sat May 30 10:34:23 PDT 2009
+	Bug note added about missing internal MakeMaker parameter names
+
+0.99  Wed May 13 11:27:15 PDT 2009
+	fixed type in the Quick Install document
+
+	moved some debug code in ScriptSupport.pm that makes AutoSplit
+	unhappy in newer versions of perl.
+
+	enforce LANG - en_US in Makefile.PL
+
+	in BDBaccess 0.24
+	edited CTest.xs, main.c, netio.c, misc_func.h, godaemon.c,
+	and util_pid.c to kill warnings from newer gcc versions
+
+	in dsocket.t & rsocket.t change "kill 15" to "kill 9" in tests 
+	that won't die under newer version of perl and make utilities
+
+	fixed typo in test 5 of t/util_pid.t that failed with potential
+	false positive.
+
+	in DNSBLserver 0.54
+	edit CText.xs, godaemon.c, hostinfo.c, hostinfo_func.h, main.c,
+	misc.c, misc_func.h, mung_macros.c, metio.c, ns.c, ns_func.h,
+	zonedump.c, and zonefile.c to eliminate warnings from new gcc
+	versions.
+
+	correct typo error in t/util_pid.t that caused false positve failure
+	enforce LANG - en_US in Makefile.PL
+
+0.98  Sun Nov 16 17:31:58 PST 2008
+	update ScriptSupport v0.57 to consolidate CheckTxt into a single
+	function in BLcheck and BLpreen. update to support INCLUDE keys
+	in config files.
+
+	add 'acceptany' criteria for DNSBL
+
+  NOTE: the following scripts have been updated to support
+	INCLUDE file keys. If you plan to use this feature,
+	you must update your scripts.
+
+	rc.sc_dbwatch
+	contrib/mimedefang-filter
+	contrib/zonedump.pl
+	public_html/cannibal.cgi
+	scripts/sc_BLcheck.pl
+	scripts/sc_BLpreen.pl
+	scripts/sc_abuse.pl
+	scripts/sc_mailfilter.pl
+	DNSBLserver/rc.dnsbls
+	DNSBLserver/sc_zoneload
+
 0.97  Wed Oct 15 14:19:29 PDT 2008
 	require Net-DNS-ToolKit verion 0.41
 	here and in DNSBLserver 0.52
@@ -89,7 +141,7 @@ Revision history for Perl extension Mail::SpamCannibal
 	and store them in a configurable file when sc_Blcheck.pl runs
 
 0.86  Thu Dec 13 18:08:23 PST 2007
-        increase the allowable number of nameservers
+	increase the allowable number of nameservers
 	in DNSBLserver v0.49 to 15
 
 	update GENERIC pattern config/sc_BlackList.conf.sample

@@ -1,6 +1,6 @@
 /* CText.xs
  *
- * Copyright 2003, Michael Robinton <michael@bizsystems.com>
+ * Copyright 2003 - 2009, Michael Robinton <michael@bizsystems.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,6 +46,12 @@
 
 /* for t_short	*/
 #include <unistd.h>
+
+/* for my_cmp_serial	*/
+#include "ns_func.h"
+
+/* for t_main	*/
+#include "misc_func.h"
 
 /* Global Variables from main.c */
   extern DBTPD dbtp;
@@ -102,9 +108,6 @@ mydb_dump(int secondary)
   DBT key, data;
   int status;
   u_int32_t cursor = 1;
-  DBC * dbcp;
-  int i, c; 
-  char * cp;
   char dumpbuf[1000];		/* arbitrary buffer */
 
   if (secondary)
@@ -124,7 +127,7 @@ mydb_dump(int secondary)
       printf("%16s => %s\n", inet_ntoa(in),dumpbuf);
     }
     else
-      printf("%16s => %10ld\n", inet_ntoa(in), *(u_int32_t *)data.data);
+      printf("%16s => %10ld\n", inet_ntoa(in), (long int)*(u_int32_t *)data.data);
     key.data = &cursor;
     key.size = sizeof(cursor);
     cursor++;
@@ -341,7 +344,7 @@ t_main(...)
 	extern int opterr;
     CODE:
 	if (items > 20) {
-	    RETVAL = 0;
+	    i = 0;
 	} else {
 	    for (i=0; i < items; i++)
 	    {
@@ -365,16 +368,18 @@ int
 t_pidrun()
     CODE:
 	RETVAL = (int)pidrun;
+    OUTPUT:
+	RETVAL
 
 void
 t_savpid(path)
-	unsigned char * path
+	char * path
     CODE:
 	savpid(path);
 
 void
 t_chk4pid(path)
-	unsigned char * path
+	char * path
     PREINIT:
 	SV * out;
     PPCODE:
@@ -466,7 +471,6 @@ t_getrecno(which, cursor)
 	U32 cursor
     PREINIT:
 	SV * netaddr, * tmp;		/* older perl does not know about newSVuv */
-	U32 datasize;
 	int ai;
     PPCODE:
 	if (which)
@@ -559,9 +563,9 @@ t_cmp_serial(s1,s2)
 
 int
 t_name_skip(buf)
-	unsigned char * buf
+	char * buf
     PREINIT:
-	unsigned char * out;
+	char * out;
     CODE:
 	out = name_skip(buf);
 	RETVAL = (int)(out - buf);
@@ -742,6 +746,9 @@ t_zonefile(fd)
 	FILE * fd
     CODE:
 	RETVAL = zonefile(fd);
+
+    OUTPUT:
+	RETVAL
 
 void
 t_ratelimit(run,nsec,nusec,tsec,tusec,dmax,csum,psum)

@@ -1,6 +1,6 @@
 /* util_pid.c
  *
- * Copyright 2003, Michael Robinton <michael@bizsystems.com>
+ * Copyright 2003 - 2009, Michael Robinton <michael@bizsystems.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <unistd.h>
+#include <string.h>
 
 /*	int kill(pid_t pid, int sig)
  *	pid_t getpid(void)
@@ -76,7 +77,8 @@ chk4pid(char * fpath)
 {
   extern pid_t pidrun;
   FILE *fd;
-
+  int discard;
+  
   pidrun = 0;
   if (fpath == NULL)
     fpath = pidpath();
@@ -84,7 +86,7 @@ chk4pid(char * fpath)
   if ((fd = fopen(fpath, "r")) == NULL)
     return(fpath);
 
-  fscanf(fd,"%d",&pidrun);
+  discard = fscanf(fd,"%d",&pidrun);
   (void)fclose(fd);
 
 /* return '0' = running */
@@ -93,4 +95,3 @@ chk4pid(char * fpath)
 
   return(NULL);
 }
- 

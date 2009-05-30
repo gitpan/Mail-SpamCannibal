@@ -1,5 +1,18 @@
 Revision history for Perl extension Mail::SpamCannibal::DNSBLserver.
 
+0.54  Tue May 12 19:20:35 PDT 2009
+	edit CText.xs, godaemon.c, hostinfo.c, hostinfo_func.h, main.c,
+	misc.c, misc_func.h, mung_macros.c, metio.c, ns.c, ns_func.h,
+	zonedump.c, and zonefile.c to eliminate warnings from new gcc
+	versions.
+
+	correct typo error in t/util_pid.t that caused false positve failure
+
+	enforce LANG = en_US in Makefile.PL
+
+0.53  Sun Nov 16 17:27:03 PST 2008
+	update rc.dnsbls to support INCLUDE keys
+
 0.52  Wed Oct 15 14:19:29 PDT 2008
 	require Net::DNS::ToolKit version 0.40 or higher
 

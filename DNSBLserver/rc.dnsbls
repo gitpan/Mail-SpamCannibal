@@ -6,7 +6,7 @@ eval 'exec $perl -w -S $0 ${1+"$@"}'
 my $perl = '/usr/bin/perl';
 
 #
-# rc.dnsbls version 0.11, 9-17-06
+# rc.dnsbls version 0.12, 11-16-08
 #
 # Copyright 2003 - 2006, Michael Robinton <michael@bizsystems.com>
 # rc.dnsbls is free software; you can redistribute it and/or 
@@ -15,7 +15,10 @@ my $perl = '/usr/bin/perl';
 use strict;
 use IPTables::IPv4::DBTarpit::Inst qw(hard_fail);
 use IPTables::IPv4::DBTarpit::Tools qw(inet_aton);
-use Mail::SpamCannibal::ScriptSupport qw(valid127);
+use Mail::SpamCannibal::ScriptSupport qw(
+	valid127
+	doINCLUDE
+);
 use Net::DNS::ToolKit qw(ttlAlpha2Num);
 
 my $CONFIG;
@@ -53,7 +56,7 @@ hard_fail('could not find dnsbls configuration file')
 
 exit 1 if eval q|system($perl, '-w', $DNSBLS)|;
 
-$DNSBLS = do $DNSBLS;
+$DNSBLS = doINCLUDE($DNSBLS);
 
 # host & ns are tested seperately
 my @required = qw(

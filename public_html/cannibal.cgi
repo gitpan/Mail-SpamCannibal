@@ -5,7 +5,7 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 2.15, 10-17-08
+# version 2.16, 11-16-08
 #
 # Copyright 2003 - 2008, Michael Robinton <michael@bizsystems.com>
 #   
@@ -33,7 +33,7 @@ use Mail::SpamCannibal;				# just for version number
 use IPTables::IPv4::DBTarpit;			# just for version number
 use Mail::SpamCannibal::IP2ccFlag;
 use Mail::SpamCannibal::ScriptSupport qw(
-	DO
+	doINCLUDE
 	lookupIP
 	validIP
 	valid127
@@ -79,7 +79,7 @@ use Mail::SpamCannibal::Session qw(
 	sesswrap
 );
 
-my $CONFIG = DO '../config/sc_web.conf';
+my $CONFIG = doINCLUDE '../config/sc_web.conf';
 
 die "could not load config file"
 	unless $CONFIG;
@@ -345,7 +345,7 @@ onMouseOver="return(show('lookup |. $IP .qq|'));" onMouseOut="return(off());">$I
 	new Mail::SpamCannibal::SiteConfig;
       };
       $bc = $sc->{SPMCNBL_CONFIG_DIR} . '/sc_BlackList.conf';
-      $bc = DO($bc) || die "could not load blacklist config file... $bc";
+      $bc = doINCLUDE($bc) || die "could not load blacklist config file... $bc";
       $bc = ($bc->{GENERIC} && $bc->{GENERIC}->{blockcontact})
 	? $bc->{GENERIC} : 0;				# $bc points to GENERIC hash
     }

@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Mail-SpamCannibal
-version:             0.97
+version:             1.00
 abstract:            ~
 license:             ~
 author:              ~
@@ -9,12 +9,13 @@ distribution_type:   module
 requires:     
     Data::Password::Manager:       0.01
     Digest::MD5:                   2.00
+    File::SafeDO:                  0.12
     Geo::IP::PurePerl:             1.10
-    IPTables::IPv4::DBTarpit:      0.40
+    IPTables::IPv4::DBTarpit:      0.42
     MIME::Base64:                  2.00
     Net::DNS::Codes:               0.09
     Net::DNS::ToolKit:             0.41
-    Net::DNSBL::MultiDaemon:       0.23
+    Net::DNSBL::MultiDaemon:       0.26
     Net::SMTP:                     2.10
     Net::Whois::IP:                0.35
     NetAddr::IP::Lite:             0.02

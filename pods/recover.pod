@@ -89,6 +89,14 @@ If the DB fails to verify, then type:
   cd /var/run/dbtarpit
   mv tarpit.new tarpit
 
+=head2 Last resort recovery
+
+Ok, so none of that worked either. As a last resort, you can dump a damaged
+database file using Berkeley DB's db_dump and the reload it with db_load.
+
+=for html See: <a
+href="http://www.oracle.com/technology/documentation/berkeley-db/db/ref/dumpload/utility.html">The db_dump and db_load utilities</a>
+on the Oracle / BerkeleyDB web site.
 
 =head2 Reinitializing the database environment
 

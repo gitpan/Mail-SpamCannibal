@@ -74,7 +74,7 @@ print "did not expect to find $expect\nnot "
 my $pidexp = 0;
 my $pid = &{"${TCTEST}::t_pidrun"}();
 print "found pid $pid, expected $pidexp\nnot "
-	unless $pidexp = $pid;
+	unless $pidexp == $pid;
 &ok;
 
 ## test 6 - create valid pid file

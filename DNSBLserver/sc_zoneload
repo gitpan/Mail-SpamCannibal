@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# sc_zoneload v0.01, 6-22-04
+# sc_zoneload v0.02, 11-16-08
 #
 # load a BIND or 'dig' compatible zonefile into the database.
 # only loads A and TXT records, the zone name is not examined
@@ -9,6 +9,7 @@
 use strict;
 use IPTables::IPv4::DBTarpit::Inst qw(hard_fail);
 use IPTables::IPv4::DBTarpit::Tools qw(inet_aton);
+use File::SafeDO qw(doINCLUDE);
 use Mail::SpamCannibal::PidUtil 0.02 qw(
 	if_run_exit
 	zap_pidfile
@@ -83,7 +84,7 @@ hard_fail('could not find dnsbls configuration file')
 
 exit 1 if eval q|system($perl, '-w', $DNSBLS)|;
 
-$DNSBLS = do $DNSBLS;
+$DNSBLS = doINCLUDE($DNSBLS);
 
 my @required = qw(
 	127.0.0.2

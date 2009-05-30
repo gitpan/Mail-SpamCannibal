@@ -1,6 +1,6 @@
 /* ns.c
  *
- * Copyright 2003, Michael Robinton <michael@bizsystems.com>
+ * Copyright 2003 - 2009, Michael Robinton <michael@bizsystems.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+#include <string.h>
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
 #include <arpa/nameser.h>
@@ -54,23 +55,23 @@
 	from arpa/nameser_compat.h (ignoring endianness)
 
   typedef struct {
-        unsigned        id :16;         /* query identification number 
-                        /* fields in third byte 
-        unsigned        qr: 1;          /* response flag 
-        unsigned        opcode: 4;      /* purpose of message 
-        unsigned        aa: 1;          /* authoritive answer 
-        unsigned        tc: 1;          /* truncated message, forces the use of TCP 
-        unsigned        rd: 1;          /* recursion desired 
-                        /* fields in fourth byte 
-        unsigned        ra: 1;          /* recursion available 
-        unsigned        unused :1;      /* unused bits (MBZ as of 4.9.3a3) 
-        unsigned        ad: 1;          /* authentic data from named 
-        unsigned        cd: 1;          /* checking disabled by resolver 
-        unsigned        rcode :4;       /* response code 
-        unsigned        qdcount :16;    /* number of question entries 
-        unsigned        ancount :16;    /* number of answer entries 
-        unsigned        nscount :16;    /* number of authority entries 
-        unsigned        arcount :16;    /* number of resource entries 
+        unsigned        id :16;         query identification number 
+                      fields in third byte 
+        unsigned        qr: 1;          response flag 
+        unsigned        opcode: 4;      purpose of message 
+        unsigned        aa: 1;          authoritive answer 
+        unsigned        tc: 1;          truncated message, forces the use of TCP 
+        unsigned        rd: 1;          recursion desired 
+                      fields in fourth byte 
+        unsigned        ra: 1;          recursion available 
+        unsigned        unused :1;      unused bits (MBZ as of 4.9.3a3) 
+        unsigned        ad: 1;          authentic data from named 
+        unsigned        cd: 1;          checking disabled by resolver 
+        unsigned        rcode :4;       response code 
+        unsigned        qdcount :16;    number of question entries 
+        unsigned        ancount :16;    number of answer entries 
+        unsigned        nscount :16;    number of authority entries 
+        unsigned        arcount :16;    number of resource entries 
   } HEADER;
 
   #define NOERROR	0  ns_r_noerror	 No error occurred
@@ -450,7 +451,7 @@ int
 not_numericIP(char * ip)
 {
   register u_char * vcp = validchars;
-  register u_char * cp = ip;
+  register u_char * cp = (u_char *)ip;
   while(*cp != '\0') {
 /* printf("cp=%02X, vcp=%02X\n",*cp,vcp[*cp]); */
 	if (! vcp[*cp++])
@@ -468,11 +469,11 @@ name_skip(char * cp)
 
   for(i=0;i<MAXDNAME;i++) {
     if ( ((u_char)*(cp + i)) == 0 )
-      return((u_char *)(cp +i + 1));
+      return((char *)(cp +i + 1));
     else if ( ((u_char)*(cp + i)) < 0xC0 )
       continue;
     else 
-      return((u_char *)(cp +i + 2));
+      return((char *)(cp +i + 2));
   }
 /* ERROR, should not reach	*/
   return(NULL);
@@ -588,11 +589,9 @@ int
 munge_msg(int fd, size_t msglen, int is_tcp)
 {
   extern u_char ns_msgbuf[];
-  extern char * dbhome;
   extern char * errormsg;
   extern char * local_name;
   extern char * contact;
-  extern int local_name_len;
   extern char * zone_name;
   extern int zone_name_len;
   extern int zoneEQlocal;
@@ -600,13 +599,11 @@ munge_msg(int fd, size_t msglen, int is_tcp)
   extern struct in_addr stdResp, stdRespBeg, stdRespEnd, serial_rec;
   extern u_int32_t refresh, retry, expire, minimum, soa_ttl, localip[];
   extern int h_name_ctr, mxmark[], visibleMAXeth;
-  extern int bflag, datalog, zflag, run, dflag;
+  extern int bflag, datalog, zflag;
   extern struct sockaddr_in client;
   extern struct sockaddr * cin_ptr;
-  extern char mybuffer[], * rtn;
-  extern int fdUDP, fdTCPlisten, fdTCP;
-  extern char str30[], * stdErr_response;
-  extern pid_t parent;
+  extern char mybuffer[];
+  extern char * stdErr_response;
   
   register HEADER * hp = (HEADER *) ns_msgbuf;
   register u_char * cp;
@@ -614,10 +611,10 @@ munge_msg(int fd, size_t msglen, int is_tcp)
   u_char **lastdnptr, **dpp;
   u_char dnbuf[MAXDNAME];			/* maximum expanded sz	*/
   int rcode;
-  u_char * eom, * Txt_resp;
-  int type, class, n, i, qnlen, AA = 0, TC = 0, ci;
+  u_char * eom;
+  int type = 0, class = 0, n, i, qnlen, AA = 0, TC = 0, ci;
   char * notThisA, * Hptr, hostpart[MAXDNAME], * cHptr;
-  u_int32_t serial, ixfr_ser, axfrc = 0, * Aptr, * Astart, * A_resp;
+  u_int32_t serial = 0, ixfr_ser, axfrc = 0, * Aptr, * Astart, * A_resp;
   u_short len;
   struct in_addr rev;
   u_int ancount = 0, arcount = 0, nscount = 0, ixfrcnt;
@@ -682,7 +679,7 @@ munge_msg(int fd, size_t msglen, int is_tcp)
     lastdnptr = dnptrs + sizeof dnptrs / sizeof dnptrs[0];
 
 /*	get name, stash it in dnbuf	*/
-    if ((n = dn_expand(ns_msgbuf, eom, cp, dnbuf, MAXDNAME)) < 0) {
+    if ((n = dn_expand(ns_msgbuf, eom, cp, (char *)dnbuf, MAXDNAME)) < 0) {
 	rcode = FORMERR;
 	break;
     }
@@ -706,13 +703,13 @@ munge_msg(int fd, size_t msglen, int is_tcp)
 	rcode = REFUSED;
 	break;
     }
-    qnlen = strlen(dnbuf);		/* length of question name	*/
+    qnlen = strlen((char *)dnbuf);		/* length of question name	*/
     if (qnlen < zone_name_len) {	/* too short, not this zone	*/
   	rcode = NXDOMAIN;
   	break;
     }
 /*	name ends in zone name	*/
-    if (strcasecmp((u_char *)(dnbuf - zone_name_len + qnlen), zone_name)) {
+    if (strcasecmp((char *)(dnbuf - zone_name_len + qnlen), zone_name)) {
   	rcode = NXDOMAIN;		/* no match, not this zone	*/
 	break;
     }
@@ -741,7 +738,7 @@ NS_errorExit:
   if (qnlen == zone_name_len) {	/* query is for zone name	*/
     switch (type) {
       case T_SOA:
-    NS_send_SOA:
+/*    NS_send_SOA:	keep unused label around for now	*/
 	RR_SOA(ancount);
 /* AUTH	*/
 	ADD_NS_names(nscount);
@@ -810,13 +807,13 @@ NS_errorExit:
 /* if the serial record is missing, force the transfer	*/
 	else if ((n = dbtp_get(&dbtp,DBtarpit,(void *)&serial_rec.s_addr,sizeof(serial_rec.s_addr))) == 0) {
 	  serial = *(u_int32_t *)dbtp.mgdbt.data;
-	  cp = name_skip(cp)
+	  cp = (u_char *)name_skip((char *)cp)
 		 + INT16SZ			/* TYPE			*/
 		 + INT16SZ			/* CLASS		*/
 		 + INT32SZ			/* TTL			*/
 		 + INT16SZ;			/* RDLENGTH		*/
-	  cp = name_skip(cp);			/* skip past MNAME	*/
-	  cp = name_skip(cp);			/* skip past RNAME	*/
+	  cp = (u_char *)name_skip((char *)cp);		/* skip past MNAME	*/
+	  cp = (u_char *)name_skip((char *)cp);		/* skip past RNAME	*/
 	  ixfr_ser = ntohl(*(u_int32_t *)cp);
 	  cp = ns_msgbuf + origqlen;		/* restore pointer to question end		*/	
 	  i = cmp_serial(serial,ixfr_ser);
@@ -875,8 +872,8 @@ NS_errorExit:
 		cHptr = current_name(ci);
 /*	name ends in zone name and is not local name	*/
 		if (((len = strlen(cHptr)) >= zone_name_len) &&
-		    (strcasecmp((u_char *)(cHptr - zone_name_len + len), zone_name) == 0) &&
-		     strcasecmp((u_char *)cHptr,local_name)) {
+		    (strcasecmp((char *)(cHptr - zone_name_len + len), zone_name) == 0) &&
+		     strcasecmp((char *)cHptr,local_name)) {
 		  Aptr = Astart = current_Astart(ci);
 		  do {
 		    RR_A(cHptr,Aptr,ancount);
@@ -918,7 +915,7 @@ NS_errorExit:
 			goto NS_AXFR_next;		/* do not report promiscious contributions      */
 
 		bswap32((u_char *)&rev.s_addr,(u_char *)dbtp.keydbt.data);
-		sprintf(dnbuf,"%s.%s",inet_ntoa(rev),zone_name);
+		sprintf((char *)dnbuf,"%s.%s",inet_ntoa(rev),zone_name);
 		RR_A(dnbuf,A_resp,ancount);
 		RR_TXT(dnbuf,stdErr_response,ancount);
 	    } while (is_tcp < 3 && cp - ns_msgbuf < MSGsize);
@@ -967,7 +964,7 @@ NS_errorExit:
     if (type == T_A) {				/* only A records are available for our names	*/
       for(ci=0;ci<h_name_ctr;ci++) {
         cHptr = current_name(ci);
-        if(strcasecmp(cHptr,dnbuf))		/* check for name as one of our NS or MX hosts	*/
+        if(strcasecmp(cHptr,(char *)dnbuf))	/* check for name as one of our NS or MX hosts	*/
       		continue;
         Aptr = Astart = current_Astart(ci);
         do {

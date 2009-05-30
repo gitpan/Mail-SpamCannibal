@@ -1,5 +1,5 @@
 # sc_web.conf.sample
-# version 1.08, 8-6-07
+# version 1.09, 11-16-08
 #
 # The configuration file is divided into three sections
 #
@@ -9,6 +9,13 @@
 #
 my $CONFIG = {
 
+## additional KEYS may be included with an INCLUDE statement of the form:
+#
+#  INCLUDE => 'path/to/file.conf',
+#
+#  this file may include an INCLUDE statement, as may the next, etc...
+#
+#
 #################################################
 # SECTION (1	remote admin wrapper
 #################################################

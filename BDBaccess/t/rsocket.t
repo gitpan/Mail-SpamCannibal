@@ -216,5 +216,5 @@ print "returned unknown key\nnot "
 	unless $key eq INADDR_NONE;
 &ok;
 
-kill 15,$pid;
+kill 9,$pid;
 close Daemon;

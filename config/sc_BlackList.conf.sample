@@ -2,10 +2,17 @@
 # sc_BlackList.conf, multi_dnsbl.conf
 # Configuration for sc_BLcheck.pl, sc_BLpreen.pl, and Net::DNSBL::MultiDaemon
 #
-# version 1.37, 10-17-08
+# version 1.38, 11-16-08
 #
 my $DNSBL = {
 
+## additional KEYS may be included with an INCLUDE statement of the form:
+#
+#  INCLUDE => 'path/to/file.conf',
+#
+#  this file may include an INCLUDE statement, as may the next, etc...
+#
+#
 ## Net::DNSBL::MultiDaemon parameters
 
 # the OPTIONAL name of a file that will contain 'hit' statistics for DNSBLS
@@ -296,8 +303,9 @@ my $DNSBL = {
 		'blade\d+\.LA\.inty',
 	# dd7224.kasserver.com
 		'dd\d+\.kasserver',
-	# ns6034.ovh.net
-		'ns\d+\.ovh\.net',
+        # ns6034.ovh.net
+        # rps2375.ovh.net
+                '(?:rps|ns)\d+\.ovh\.net',  
 	# segment-124-30.sify.net
 		'segment-124-30\.sify\.net',
 	# reserved-235183.rol.raiffeisen.net
@@ -688,7 +696,7 @@ my $DNSBL = {
 	# vn1132.fireboxhosting.com
 		'vn\d+\.fireboxhosting',  
 	# nameservices.net
-		'[^.]nameservices\.net',
+		'[^.]*nameservices\.net',
 	# IPADDR-085.esc3.net
 		'ipaddr-\d+\.esc3\.net',
 	# s87.loopia.se
@@ -710,7 +718,7 @@ my $DNSBL = {
 	# staticnet721916host255.idstelcom.com
 		'staticnet\d+host\d+\.idstelecom\.com',
 	# cp-out2.libero.it
-		'cp\out\d+\.libero\.it',
+		'cp-out\d+\.libero\.it',
 	# 160150.datafon.net.tr
 		'[^\w.]\d+\.datafon\.net\.tr',
 	# vds1105.sivit.org
@@ -783,6 +791,295 @@ my $DNSBL = {
                 '[^.]\d+\.unitednetworx\.com',
         # sls-ag4p10.superbservers.com
                 'sls-a[a-z]\dp\d+\.superbservers\.com',
+        # raq834.uk2.net
+                'raq\d+\.uk2\.net',
+        # rdbck-static-1061.palmer.mtaonline.ne
+                'rdbck-static-\d+\.palmer\.mtaonline\.ne',
+        # p2p-87-56-[a-z].line1.ru
+                'p2p-\d+-\d+-r\.line1.ru',
+        # dlx35299.fm.netbenefit.co.uk
+                'dlx\d+\[0-9\-]*\.fm\.netbenefit\.co\.uk',
+        # wireless-105-137.accessatc.net
+                'wireless-\d+-\d+\.accessatc.net',
+        # acmkokeccq.gs01.gridserver.com
+                'acmkok[a-z]+\.gs\d+\.gridserver\.com',
+        # 226-IPA.131.115.200.in-addr.arpa
+                '\d+-ipa\.\d+\.\d+\.\d+\.in-addr\.arpa',
+        # s176.silver.fastwebserver.de
+                's\d+\.silver\.fastwebserver\.de',
+        # ds5026.dedicated.turbodns.co.uk
+                'ds\d+\.dedicated\.turbodns\.co\.uk',
+        # 200-54.is.net.pl
+                '\d+-\d+\.is\.net\.pl',
+        # ar59.toservers.com
+                'ar\d+\.toservers\.com',
+        # optsol-238-40.ideaone.net
+                'optsol-\d+-\d+\.ideaone\.net',
+        # 82.197.kam-telecom.ru
+                '[^\.]\d+\.\d+\.kam-telecom\.ru',
+        # amh2.rev.netart.pl
+                'amh\d+\.rev\.netart\.pl',
+        # ip85.fix2.hasselt.schedom-europe.net
+                'ip\d+\.fix\d+\.[a-z]+\.schedom-europe\.net', 
+        # ip-140-155-114.phx.extremezone.com
+                'ip-\d+-\d+-\d+\.phx\.extremezone\.com',
+        # mwwb850.servidoresdns.net
+                'mw[a-z]+\d+\.servidoresdns\.net',
+        # ipvpn102149.netvigator.com
+                'ipvpn\d+\.netvigator\.com',
+        # ip-169-173.dtp.net.id
+                'ip-\d+-\d+\.dtp\.net\.id',
+        # nblzone-240-251.nblnetworks.fi
+                'nblzone-\d+-\d+\.nblnetworks.fi',
+        # corporat200-075046107.sta.etb.net.co
+                'corporat\d+-\d+\.sta\.etb\.net\.co',
+        # server708.nhsdns.com
+                'server\d+\.nhsdns\.com',
+        # out063.topica-diamond-y.com
+                'out\d+\.topica-diamond-y\.com',
+        # sd-green-dreamhost-133.dreamhost.com
+                'sd-green-dreamhost-\d+\.dreamhost',
+        # ip-131-85.protec.it
+                'ip-\d+-\d+\.protec\.it',
+        # ip008.j2web.it
+                'ip\d+\.j2web\.it',
+        # 50-tor-4.acn.waw.pl
+                '\d+-tor-\d+\.acn\.waw\.pl',
+        # dell128.s.etech.sk
+                '(?:un|ems|dell)\d+\.s\.etech\.sk',
+        # no-rdns.ord02.hostingservicesinc.net
+                'no-rdns\.ord\d+\.hostingservicesinc\.net',
+        # mydsl-135-92.online.com.kh
+                'mydsl-\d+-\d+\.online\.com\.kh',
+        # n11648142014.netvigator.com
+                '\bn\d{11}\.netvigator\.com',  
+        # placeholder.userdns.com
+                'placeholder\.userdns\.com',
+        # 04166-2.kunden.mk-netzdienste.de
+                '\b\d+-\d+\.kunden\.mk-netzdienste\.de',
+        # adsl1-1.ptt.rs
+                '\badsl\d+-\d+\.ptt\.rs',
+        # viefep20-int.chello.at
+                'viefep\d+-int\.chello\.at',
+        # vs120067.tuxtools.net
+                'vs\d+\.tuxtools\.net',
+        # ds214-224.ipowerweb.com
+                'ds\d+-\d+\.ipowerweb\.com',
+        # v000072.home.net.pl
+                '\bv\d+\.home\.net\.pl',
+        # dslstatic-236-200.ideaone.net
+                'dslstatic-\d+-\d+\.ideaone\.net',
+        # www688.sakura.ne.jp
+                'www\d+\.sakura\.ne\.jp',
+        # cust.citosec.806583-7.bih.net.ba
+                'cust\.citosec\.\d+-\d+\.bih\.net\.ba',
+        # i175.indigo.fastwebserver.de
+                'i\d+\.indigo\.fastwebserver\.de',
+        # blk-222-31-101.eastlink.ca
+                'blk-\d+-\d+-\d+\.eastlink\.ca',
+        # Hosted-By.xenosite.net
+                'hosted-by\.xenosite\.net',
+        # d3254.pppdel.vsnl.net.in
+                'd\d+\.pppdel\.vsnl\.net\.in',
+        # wcoe-138.r-195-35-224.atwork.nl
+                'wcoe-\d+\.r-\d+-\d+-\d+\.atwork\.nl',
+        # arane219.smartmanner.com
+                'arane\d+\.smartmanner\.com',
+        # cdt171-195.consuldata.com.br
+                'cdt\d+-\d+\.consuldata\.com\.br',  
+        # addr-38.nat-31.juox.ru
+                'addr-\d+\.nat-\d+\.juox\.ru',
+        # cp101.hostingshop.com.au
+                '(?:pw|cp)\d+\.hostingshop\.com\.au',
+        # heb62030.ikoula.com
+                'heb\d+\.ikoula\.com',
+        # adsl_basico_11919-45.etb.net.co
+                'adsl_basico_\d+-\d+\.etb\.net\.co',
+        # conex-ip.redip.inext.net.mx
+                'conex-ip\.redip\.inext\.net\.mx',
+        # lvs00-fl-n04.ftl.affinity.com
+                'lvs-fl-n\d+\.ftl\.affinity.com',
+        # agelid-7-72.cnt.nerim.net
+                'agelid-\d+-\d+\.cnt\.nerim\.net',
+        # onlineserversystems.com
+                '[^.]*onlineserversystems\.com',
+        # leasedchennai-199.199.61.static.vsnl.net.in
+                'leasedchennai-\d+\.\d+\.\d+\.static\.vsnl\.net\.in',
+        # ipn36372-f75389.cidr.lightship.net
+                'ipn\d+-[a-z]\d+\.cidr\.lightship\.net',
+        # hm987-5.hospedagemdesites.ws
+                'hm\d+[\d-]*\.hospedagemdesites\.ws',
+        # diup-10-245.inter.net.il
+                'diup-\d+-\d+\.inter\.net\.il',
+        # bnt5308.esp-services.com
+                'bnt\d+\.esp-services\.com',
+        # dedi117b.your-server.co.za
+                'dedi\d+[a-z]*\.your-server\.co\.za',
+        # dish4099.net.ibizdns.co
+                'dish\d+\.net\.ibizdns\.co',
+        # nettogo-69-128.nettogo.net
+                'nettogo-\d+-\d+\.nettogo\.net',
+        # ecserv7.uwaterloo.ca
+                'ecserv\d+\.uwaterloo\.ca',
+        # sd1568.sivit.org
+                'sd\d+\.sivit\.org',
+        # business-66-198.netway.com.cy
+                'business-\d+-\d+\.netway\.com\.cy',
+        # srv401.rackco.com
+                'srv\d+\.racko\.com',
+        # badger05000.apple.com
+                'badger\d+\.apple\.com',
+        # fatwire-35-120.uniserve.ca
+                'fatwire-\d+-\d+\.uniserve\.ca',
+        # kenn-benton-187.amerion.net
+                'kenn-benton-\d+\.amerion\.net',
+        # sgrid06.myinternetservices.com
+                'sgrid[0-9a-f]+\.myinternetservices\.com',
+        # d152.webcreators.nl
+                'd\d+\.webcreators\.nl',
+        # twc162.vtc.net
+                'twc\d+\.vtc\.net',
+        # c153-135.i01-7.onvol.net
+                'c\d+-\d+\.i\d+-\d+\.onvol\.net',
+        # staticnet721931host50.idstelcom.com
+                'staticnet\d+host\d+\.idstelcom\.com',
+        # c589.colo.hc.ru
+                '[a-z]\d+\.colo\.hc\.ru',
+        # dedi117.nur4-host-h.net
+        # dedi118.your-server.de
+                'dedi\d+\.(?:nur4[-.]host-h\.net|your-server\.de)',
+        # server035.webpack.hosteurope.de
+                'server\d+\.webpack\.hosteurope\.de',
+        # ip21net-80-253-246.localdedicated.com
+                'ip\d+net-\d+-\d+-\d+\.localdedicated\.com',
+        # hosted-by.leaseweb.com
+                'hosted[.-]by\.leaseweb\.com',
+        # win2k10.mygisol.com
+                'win2k\d+\.mygisol\.com',
+        # server-222.tw.nicservers.com
+                'server-\d+\.tw\.nicservers\.com',
+        # esc182.midphase.com
+                'esc\d+\.midphase.com',
+        # 81-4-3.nb.cytanet.com.cy
+                '\d+-\d+-\d+\.nb\.cytanet\.com\.cy',
+        # t112.tgv.net
+                't\d+\.tgv\.net',
+        # l67.servercity.co.uk
+                '\b[a-z]\d+\.servercity\.co\.uk',
+        # s28.lc.hostirian.com
+                '\bs\d+\.lc\.hostirian\.com',
+        # c211-74.ntt.ru
+                '\bc\d+-\d+\.ntt\.ru',
+        #  air439.startdedicated.com
+                'air\d+\.startdedicated\.com',
+        # core149.noc49.160.amigo.net.gt
+                'core\d+\.noc\d+\.\d+\.amigo\.net\.gt',
+        # atweb04.priority.at
+                'atweb\d+\.priority\.at',
+        # 82.194.70-31.dedicated.hostalia.com
+        # hs-295.dedicated.hostalia.com
+                '(?:hs-|\d+\.\d+\.\d+-)\d+\.dedicated\.hostalia\.com',
+        # libre200-144.static.metrored-telecom.com
+                'libre\d+-\d+\.static\.metrored-telecom\.com',
+        # wsl00196_static.digicelbroadband.com
+                'wsl\d+_static\.digicelbroadband\.com',
+        # d126-114.rslnmabj.optonline.net
+                'd\d+-\d+\.rslnmabj\.optonline\.net',
+        # unnamed86.herzen.spb.ru
+                'unnamed\d+\.herzen\.spb\.ru',
+        # Home02156.cluj.astral.ro
+                'home\d+\.cluj\.astral\.ro',
+        # Broadband-Static-Central129.connect.com.fj
+                'broadband-static-central\d+\.connect.com\.fj',
+        # wwwNN.yourdnshost.com
+                'www\d+\.yourdnshost\.com',
+        # srv1055.flexwebhosting.nl
+                '\bsrv\d+\.flexwebhosting\.nl',
+        # gvo038.gvodatacenter.com 
+                'gvo\d+\.gvodatacenter\.com',
+        # wcoe-138.r-195-35-224.atwork.nl
+                'wcoe-\d+\.r-\d+-\d+-\d+\.atwork\.nl',
+        # 43.grs-k0.g1.pl
+                '\b\d+\.grs-k\d+\.g\d+\.pl',
+        # net91-151-82-ip151.gigabit.web.tr
+                'net\d+-\d+-\d+-ip\d+\.gigabit\.web\.tr',
+        # Broadband-Static-Western19.connect.com.fj
+                'broadband-static-western\d+\.connect\.com\.fj',
+        # www65.keyhost.ca
+                'www\d+\.keyhost\.ca',
+        # r002212.203112.miinet.jp
+                'r\d+\.\d+\.miinet\.jp',
+        # ip-60-251-033.cyberec.com
+                'ip-\d+-\d+-\d+\.(?:cyberec\.com|abchk\.net)',
+        # hosted.by.easyhosting.nl
+                'hosted\.by\.easyhosting\.nl',
+        # f115.osiedle.net.pl
+                '\bf\d+\.osiedle\.net\.pl',
+        # ar59.toservers.com
+                '\bar\d+\.toservers\.com',
+        # lma3141.tam.us.siteprotect.com
+                'lma\d+\.tam\.us\.siteprotect\.com',
+        # r3d70.net.upc.cz
+                'r\dd\d+\.net\.upc\.cz',
+        # r5bx121.net.upc.cz
+                'r\dbx\d+\.net\.upc\.cz',
+        # 134.cpe-190-154-6-offline.gye.satnet.net
+                '\d+\.cpe-\d+-\d+-\d+-offline\.gye\.satnet\.net',
+        # sh8-21.1blu.de
+                'sh\d+-\d+\.1blu\.de',
+        # NTN-2.net82-110.psinetpa.net
+                'ntn-\d+\.net\d+-\d+\.psinetpa\.net',
+        # webs153.aruba.it              
+                'webs\d+\.aruba\.it',
+        # d51530744.access.telenet.be
+                'd[a-z0-9]+\.access\.telenet\.be',
+        # node92.worldweb2000.com
+                'node\d+\.worldweb2000\.com',
+        # 145-107.mc.cite.ne
+                '\d+-\d+\.mc\.cite\.ne',
+        # D052744B.ptr.provps.com
+                'D[a-f0-9]+\.ptr\.provps\.com',
+        # hlit37-129.harmonicinc.com
+                'hlit\d+-\d+\.harmonicinc\.com',
+        # reverse.lightup.net
+                'reverse\.lightup\.net',
+        # l02.iwsservers.com
+                'l\d+\.iwsservers\.com',
+        # d40ac666.rev.stofanet.dk
+                'd[a-f0-9]+\.rev\.stofanet\.dk',
+        # m034.home.net.pl
+                'm\d+\.home\.net\.pl',
+        # 24.5.de.static.xlhost.com
+                '[a-f0-9]{1,2}\.[a-f0-9]{1,2}\.static\.xlhost\.com',
+        # bze-access-etcdsl-210.btl.net
+                'bze-access-etcdsl-\d+\.btl\.net',
+        # tdd226.emirates.net.ae       
+                'tdd\d+\.emirates\.net\.ae',
+        # uhb10.nwt.cz   
+                'uhb\d+\.nwt\.cz',
+        # 172.78.promishlennay.westcall.net
+        # 159.78.dsl.westcall.net
+                '\d+\.\d+\.[a-z0-9-]+\.westcall\.net',
+        # ip217.glauco.it
+                'ip\d+\.glauco\.it',
+        # lisacom-2-reserved-1.rave-tt.net
+        # lisacom-dedicated-113.rave-tt.net
+                'lisacom-(?:2-reserved|dedicated)-\d+\.rave-tt\.net',
+        # ip-168-40.dnsireland.com
+                'ip-\d+-\d+\.dnsireland\.com',
+        # a10.xxxxxx.blocka-150.stargate.ca  
+                'a\d+.+blocka-\d+\.stargate.ca',
+        # pc-209-131.scpe.powergate.ca
+                'pc-\d+-\d+\.scpe\.powergate\.ca',
+        # i35.cc7221244.sbw.us
+                'i\d+\.cc\d+\.sbw\.us',
+        # rel57.tankpin.com
+        # rel57.dobbscorp.com
+        # rel57.aquaveri.com
+        # rel57.platejetter.com
+                'rel\d+\.(?:tankpin|dobbscorp|aquaveri|platejetter)\.com',
+        # raq100.raqdedicados.com
+                'raq\d+\.raqdedicados\.com',
 ####GENERIC
 # include DIALUP ranges here
 # from: http://www.sdsc.edu/~jeff/spam/dialup_zones.txt
@@ -1753,6 +2050,8 @@ my $DNSBL = {
 # all dnsbl servers must have a record a config entry as follows:
 #
 # 'zone.name'	=> {
+#	acceptany   => 'comment - treat any response as valid',
+#    # or
 #	accept	    => {	# a list of codes that are ok to add to tarpit from this DNSBL
 #	 	'127.0.0.2' => 'reason',
 #		'127.0.0.3' => 'reason',
@@ -1829,6 +2128,8 @@ my $DNSBL = {
   },
 
   'dnsbl.sorbs.net'	=> {
+#	acceptany   => 'comment - treat any response as valid',
+#     or
 	accept	=> {	# list of codes for which we tarpit
 		'127.0.0.2'  =>	'open http proxie',
 		'127.0.0.3'  =>	'open socks proxie',

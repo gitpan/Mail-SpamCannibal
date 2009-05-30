@@ -9,8 +9,8 @@ SYNOPSIS
 DESCRIPTION
     There is no perl module for "bdbaccess". This is a documentation shell.
 
-    See the IPTables::IPv4::DBTarpit::Tools manpage to manipulate and
-    examine the "bdbaccess" database(s).
+    See IPTables::IPv4::DBTarpit::Tools to manipulate and examine the
+    "bdbaccess" database(s).
 
     "bdbaccess" is a C daemon that provides access to Berkeley DB files via
     a unix domain socket. "bdbaccess" is configured for concurrent use of
@@ -218,7 +218,7 @@ AUTHOR
     Michael Robinton <michael@bizsystems.com>
 
 COPYRIGHT AND LICENCE
-      Copyright 2003 - 2007, Michael Robinton <michael@bizsystems.com>
+      Copyright 2003 - 2009, Michael Robinton <michael@bizsystems.com>
  
       This program is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published by
@@ -235,6 +235,5 @@ COPYRIGHT AND LICENCE
       Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 SEE ALSO
-    the IPTables::IPv4::DBTarpit::Tools manpage the
-    Mail::SpamCannibal::BDBclient manpage
+    IPTables::IPv4::DBTarpit::Tools Mail::SpamCannibal::BDBclient
 

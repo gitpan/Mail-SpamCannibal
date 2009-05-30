@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 #
 # sc_BLpreen.pl
-# version 1.06, 5-17-07
+# version 1.07, 11-16-08
 #
 #################################################################
 # WARNING! do not modify this script, make one with a new name. #
@@ -9,7 +9,7 @@
 # SpamCannibal.                                                 #
 #################################################################
 #
-# Copyright 2003 - 2007, Michael Robinton <michael@bizsystems.com>
+# Copyright 2003 - 2008, Michael Robinton <michael@bizsystems.com>
    
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ use lib qw(blib/lib blib/arch);
 use Mail::SpamCannibal::SiteConfig;
 use Mail::SpamCannibal::ScriptSupport 0.40 qw(
 	BLpreen
-	DO
+	doINCLUDE
 	block4zonedump
 );
 
@@ -80,7 +80,7 @@ while ($_ = shift @ARGV) {
 
 usage() unless $config;
 
-my $DNSBL = DO($config);
+my $DNSBL = doINCLUDE($config);
 usage('could not load config file')
 	unless $DNSBL;
 

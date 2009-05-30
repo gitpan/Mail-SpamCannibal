@@ -96,7 +96,7 @@ my $extralibs = '-L'. $BDBTARPIT_CONF->{DBTP_LIBRARY_DIR};
     'INC'		=> "$include", # e.g., '-I/usr/include/other'
 	# Un-comment this if you add C files to link with later:
     'OBJECT'		=> "CTest.o $objects", # link all the C files too
-    'PREREQ_PM'		=> { 'IPTables::IPv4::DBTarpit::Tools' => '0.11',
+    'PREREQ_PM'		=> { 'IPTables::IPv4::DBTarpit::Tools' => 0.11,
 			   },
     'clean'		=> { FILES	=> "$daemon *.bs *.o *~ tmp*"},
     'HTMLLIBPODS'	=> {},

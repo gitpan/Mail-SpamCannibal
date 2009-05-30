@@ -31,18 +31,6 @@
 
 u_char my_msgbuf[IP_MAXPACKET];
 
-/*	write msglen the msg to handle	*/
-
-int
-write_msg(int fd, u_char * bptr, size_t n)
-{
-  u_short len;
-  len =  htons((u_short)n);
-  if ((writen(fd,(u_char *)&len,sizeof(len))) < 0)
-  	return(-1);
-  return(writen(fd,bptr,n));
-}
-
 /*	write "n" bytes to file handle
  *	returns number of bytes actually written
  *	or -1 on error
@@ -71,6 +59,18 @@ writen(int fd, u_char * bptr, size_t n)
   }
   alarm(0);
   return((int)n);
+}
+
+/*	write msglen the msg to handle	*/
+
+int
+write_msg(int fd, u_char * bptr, size_t n)
+{
+  u_short len;
+  len =  htons((u_short)n);
+  if ((writen(fd,(u_char *)&len,sizeof(len))) < 0)
+  	return(-1);
+  return(writen(fd,bptr,n));
 }
 
 /* read data from socket, return length	*/

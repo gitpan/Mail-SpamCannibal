@@ -1,6 +1,6 @@
 /* zonefile.c
  *
- * Copyright 2004, Michael Robinton <michael@bizsystems.com>
+ * Copyright 2004 - 2009, Michael Robinton <michael@bizsystems.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -308,7 +309,6 @@ iprint(FILE * fd, char * bp)
 int
 zonefile(FILE * fd)
 {
-  extern char * dbhome;
   extern char * errormsg;
   extern char * local_name;
   extern char * contact;
@@ -316,19 +316,18 @@ zonefile(FILE * fd)
   extern int zone_name_len;
   extern int zoneEQlocal;
   extern DBTPD dbtp;
-  extern struct in_addr stdResp, stdRespBeg, stdRespEnd, serial_rec, in;
+  extern struct in_addr stdResp, serial_rec, in;
   extern u_int32_t refresh, retry, expire, minimum, soa_ttl, localip[], diskmax;
   extern int h_name_ctr, mxmark[], visibleMAXeth;
-  extern int zflag, run, dflag, qflag;
+  extern int zflag, qflag;
   extern char mybuffer[], * stdErr_response, version[];
-  extern pid_t parent;
   extern u_char ah,am,al,az,bh,bm,bl,bz,ch,cm,cl,cz,dh,dm,dl,dz,org, currArec[];
   extern struct timeval now, then;
   extern int continuity;
   
-  int type, class, n, i;
+  int i;
   char * Hptr, * bp;
-  u_int32_t serial, lserial, * Aptr, * Astart, * A_resp, numrecs;
+  u_int32_t serial, * Aptr, * Astart, * A_resp, numrecs;
   u_short len;
   u_int32_t recno = 1, lastaddr = 0, A_rec, prevrec;
   int serial_missing = 1;
@@ -393,8 +392,8 @@ zonefile(FILE * fd)
     Hptr = current_name(i);
 /*	name ends in zone name and is not local name	*/
     if (((len = strlen(Hptr)) >= zone_name_len) &&
-	(strcasecmp((u_char *)(Hptr - zone_name_len + len), zone_name) == 0) &&
-	 strcasecmp((u_char *)Hptr,local_name)) {
+	(strcasecmp((char *)(Hptr - zone_name_len + len), zone_name) == 0) &&
+	 strcasecmp((char *)Hptr,local_name)) {
       Aptr = Astart = current_Astart(i);
       memset(txa,0,512);
       if ((len = len - zone_name_len -1) > 0)
@@ -446,7 +445,7 @@ zonefile(FILE * fd)
     }
     if (recno > 2) {				/* if not a beginning record	*/
       if (dbtp_getrecno(&dbtp,DBtarpit, recno -2))
-    	return -1;				/* return on error, should not get here
+    	return -1;				/* return on error, should not get here	*/
 
 /* walk back cursor to find 'lastaddr' if the previous record has changed	*/
       prevrec =  ntohl(*(u_int32_t *)dbtp.keydbt.data);

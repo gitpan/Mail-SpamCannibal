@@ -359,5 +359,5 @@ foreach(0..$#orderedlist) {
   &ok;
 }
 
-kill 15,$pid;
+kill 9,$pid;
 close Daemon;

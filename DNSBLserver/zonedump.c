@@ -1,6 +1,6 @@
 /* zonedump.c
  *
- * Copyright 2004, Michael Robinton <michael@bizsystems.com>
+ * Copyright 2004 - 2009, Michael Robinton <michael@bizsystems.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 */
 
 #include "config.h"
+#include "zonefile.h"
 
 void
 zonedump()
@@ -63,7 +64,7 @@ zonedump()
       fdUDP = 0;
       parent = 0;
       savpid(pidpath());
-      if (dbtp_init(&dbtp,dbhome,-1))
+      if (dbtp_init(&dbtp,(u_char *)dbhome,-1))
 	goto ZoneExit;
     }
   }
@@ -102,7 +103,7 @@ zonedump()
   rename(zonepath,rtn);
 
  ZoneExit:
-  if (! stat(zonepath,&fs) && (fs.st_mode & S_IFMT == S_IFREG))
+  if (! stat(zonepath,&fs) && ((fs.st_mode & S_IFMT) == S_IFREG))
     unlink(zonepath);				/* remove lingering tmp file	*/
   sprintf(rtn,"zone dump done, status=%d",zresult);
   LogPrint(rtn);

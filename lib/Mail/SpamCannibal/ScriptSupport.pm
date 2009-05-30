@@ -10,11 +10,11 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.55 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.58 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
-use Config;
+use File::SafeDO;
 use IPTables::IPv4::DBTarpit::Tools;
 
 use NetAddr::IP::Lite;
@@ -74,7 +74,8 @@ use Net::DNSBL::Utilities qw(
 );
 *list2NetAddr = \&Net::DNSBL::Utilities::list2NetAddr;
 *matchNetAddr = \&Net::DNSBL::Utilities::matchNetAddr;
-*DO = \&Net::DNSBL::Utilities::DO;
+*DO = \&File::SafeDO::DO;
+*doINCLUDE = \&File::SafeDO::doINCLUDE;
 
 require Net::DNS::ToolKit::Utilities;	# these subroutines have been moved to:
 *id		= \&Net::DNS::ToolKit::Utilities::id;
@@ -99,6 +100,7 @@ require Exporter;
 
 @EXPORT_OK = qw(
 	DO
+	doINCLUDE
 	SerialEntry
 	TarpitEntry
 	DNSBL_Entry
@@ -148,6 +150,7 @@ Mail::SpamCannibal::ScriptSupport - A collection of script helpers
 
   use Mail::SpamCannibal::ScriptSupport qw(
 	DO
+	doINCLUDE
 	SerialEntry
 	TarpitEntry
 	DNSBL_Entry
@@ -187,7 +190,8 @@ Mail::SpamCannibal::ScriptSupport - A collection of script helpers
 
 =head1 FUNCTIONS
 
-  $rv = DO($file);
+  $rv = DO($file,$nowarnings);
+  $rv = doINCLUDE($file,$nowarnings);
   $packedIPaddr = SerialEntry()
   $packedIPaddr = TarpitEntry();
   $packedIPaddr = DNSBL_Entry();
@@ -242,9 +246,9 @@ cannibal.cgi.
 
 =over 4
 
-=item * $rv = DO($file);
+=item * $rv = DO($file,$nowarnings);
 
-Imported from Net::DNSBL::Utilities for legacy applications.
+Imported from File::SafeDO for legacy applications.
 
 This is a fancy 'do file'. It first checks that the file exists and is
 readable, then does a 'do file' to pull the variables and subroutines into
@@ -254,6 +258,14 @@ the current name space.
   returns:	last value in file
 	    or	undef on error
 	    prints warning
+
+=item * $rv = doINCLUDE($file,$nowarnings);
+
+Imported from File::SafeDO for legacy applications.
+
+Similar to above but supports INCLUDE keys.
+
+See: L<File::SafeDO>
 
 =item * $packedIPaddr = SerialEntry();
 
@@ -281,17 +293,18 @@ sub rbldns_combined {
 ';
 }
 
-1;
-__END__
-
 my $_suppress_warnings = sub {	# during debug
   DNSBL_Entry();
   TarpitEntry();
   dns_udpresp();
   dns_udpsend();
   DO();
+  do_INCLUDE();
   dns_ns();
 };
+
+1;
+__END__
 
 ############################################
 ############################################
@@ -733,7 +746,7 @@ Check if an IP address appears in a list of NetAddr objects.
 =item * $rv = BLcheck(\%DNSBL,\%default);
 
 This function checks the each IP address found in the 'archive' database
-{SPMCNBL_DB_ARCHIVE} against the list of DNSBL's found in the
+{SPMCNBL_DB_ARCHIVE} against the list of DNSBLs found in the
 "sc_addspam.conf" configuration file. IP addresses which match the
 acceptance criteria are added to the 'tarpit' database {SPMCNBL_DB_TARPIT}
 and a corresponding entry is made in the 'blcontrib' database {SPMCNBL_DB_CONTRIB}
@@ -895,36 +908,26 @@ sub BLcheck {
 # check the A records for acceptable codes until one is found
       my $netA;
       foreach $netA (@$aptr) {
+	my $reason;
 	my $ipA = inet_ntoa($netA);
-	foreach(keys %{$DNSBL->{"$zone"}->{accept}}) {
-	  next unless ($_ eq $ipA);
-  # found one, enter it in the tarpit
-  # $netA contains the accepted code
-  # find or create the TXT entry
-	  my $reason = $DNSBL->{"$zone"}->{accept}->{"$_"};
-	CheckTxt:
-	  while(1) {
-	    last CheckTxt unless @$tptr;
-	    if (grep($_ =~ /spam/i,@$tptr)) {
-	      foreach (@$tptr) {
-		next unless $_ =~ /spam/i;
-		$reason = $_;
-		last CheckTxt;
-	      }
-	    } elsif (grep($_ =~ /smtp/i,@$tptr)) {
-	      foreach (@$tptr) {
-		next unless $_ =~ /smtp/i;
-		$reason = $_;
-		last CheckTxt;
-	      }
-	    } else {
-	      $reason = $tptr->[0];
-	    }
-	    last CheckTxt;
-	  }
+	if (exists $DNSBL->{"$zone"}->{acceptany}) {
+	  $reason = $DNSBL->{"$zone"}->{acceptany};
+	  _CheckTxt(\$reason,$tptr);
 	  _addTPentry($tool,$reason,$error,$IP,$expire,\%count,$zone,$ipA,$dnresp,$tarpit,$netA,$key,$contrib,$DEBUG,$VERBOSE);
 	  $zapped = 1;
 	  last CheckZone;
+	} else {
+	  foreach(keys %{$DNSBL->{"$zone"}->{accept}}) {
+	    next unless ($_ eq $ipA);
+  # found one, enter it in the tarpit
+  # $netA contains the accepted code
+  # find or create the TXT entry
+	    $reason = $DNSBL->{"$zone"}->{accept}->{"$_"};
+	    _CheckTxt(\$reason,$tptr);
+	    _addTPentry($tool,$reason,$error,$IP,$expire,\%count,$zone,$ipA,$dnresp,$tarpit,$netA,$key,$contrib,$DEBUG,$VERBOSE);
+	    $zapped = 1;
+	    last CheckZone;
+	  }
 	}
       }
     } # CheckZone
@@ -1081,7 +1084,7 @@ sub checkclct {
   return undef unless exists $DNSBL->{ALLIPS};
   my $allips;
   if ($DNSBL->{ALLIPS} && -e $DNSBL->{ALLIPS}) {
-    $allips = DO($DNSBL->{ALLIPS});
+    $allips = doINCLUDE($DNSBL->{ALLIPS});
   }
   $allips = {} unless $allips;
   my $caller = caller;
@@ -1155,6 +1158,36 @@ This routine will return if it catches a SIGTERM. The longest it will wait is
 the timeout interval for a DNS query.
 
 =cut
+
+# check for text records and update reason as required
+#
+# input:	\$reason, $tptr
+# returns:	nothing
+#
+
+sub _CheckTxt {
+  my($rptr,$tptr) = @_;
+CheckTxt:
+  while(1) {
+    last CheckTxt unless @$tptr;
+    if (grep($_ =~ /spam/i,@$tptr)) {
+      foreach (@$tptr) {
+	next unless $_ =~ /spam/i;
+	$$rptr = $_;
+	last CheckTxt;
+      }
+    } elsif (grep($_ =~ /smtp/i,@$tptr)) {
+      foreach (@$tptr) {
+	next unless $_ =~ /smtp/i;
+	$$rptr = $_;
+	last CheckTxt;
+      }
+    } else {
+      $$rptr = $tptr->[0];
+    }
+    last CheckTxt;
+  }
+}
 
 sub BLpreen {
   my($DNSBL,$default) = @_;
@@ -1415,35 +1448,25 @@ sub BLpreen {
     CheckZone:
       foreach $netA (@$aptr) {
         my $ipA = inet_ntoa($netA);
-        foreach(keys %{$DNSBL->{"$zon"}->{accept}}) {
-	  next unless ($_ eq $ipA);
+	my $reason;
+	if (exists $DNSBL->{"$zon"}->{acceptany}) {
+	  $reason = $DNSBL->{"$zon"}->{acceptany};
+	  $validate = 1;
+	  _CheckTxt(\$reason,$tptr);
+	  last CheckZone
+	    if _updateTpentry($tool,$reason,$error,$IP,$expire,$ipA,$dnresp,$netA,$zon,$contrib,$key,$tarpit,$DEBUG,$VERBOSE);
+        } else {
+	  foreach(keys %{$DNSBL->{"$zon"}->{accept}}) {
+	    next unless ($_ eq $ipA);
   # found one, enter it in the tarpit
   # $netA contains the accepted code
   # find or create the TXT entry
-	  $validate = 1;
-	  my $reason = $DNSBL->{"$zon"}->{accept}->{"$_"};
-        CheckTxt:
-	  while(1) {
-	    last CheckTxt unless @$tptr;
-	    if (grep($_ =~ /spam/i,@$tptr)) {
-	      foreach (@$tptr) {
-	        next unless $_ =~ /spam/i;
-	        $reason = $_;
-	        last CheckTxt;
-	      }
-	    } elsif (grep($_ =~ /smtp/i,@$tptr)) {
-	      foreach (@$tptr) {
-	        next unless $_ =~ /smtp/i;
-	        $reason = $_;
-	        last CheckTxt;
-	      }
-	    } else {
-	      $reason = $tptr->[0];
-	    }
-	    last CheckTxt;
+	    $validate = 1;
+	    $reason = $DNSBL->{"$zon"}->{accept}->{"$_"};
+	    _CheckTxt(\$reason,$tptr);
+	    last CheckZone
+	      if _updateTpentry($tool,$reason,$error,$IP,$expire,$ipA,$dnresp,$netA,$zon,$contrib,$key,$tarpit,$DEBUG,$VERBOSE);
 	  }
-	  last CheckZone
-	    if _updateTpentry($tool,$reason,$error,$IP,$expire,$ipA,$dnresp,$netA,$zon,$contrib,$key,$tarpit,$DEBUG,$VERBOSE);
         }
       } # end CheckZone
     }
@@ -1558,7 +1581,6 @@ sub _flush_BLp_cache {
     }
   }
 }
-    
 
 =item * @err=mailcheck($fh,\%MAILFILTER,\%DNSBL,\%default,\@NAignor)
 
@@ -2099,7 +2121,6 @@ sub _chkgenhash {
   return ($regexptr,$iptr,$string,$agressive);
 }
 
-
 =item * block4zonedump($environment);
 
 Checks to see if a dnsbl zonedump is in progress and blocks until the zonedump is complete
@@ -2303,7 +2324,6 @@ sub rbldns_compress {
   return $line;
 }
 
-
 =item * $firstline = $object->rbldns_combined($type);
 
 Write the first line of an B<rbldns> combined dataset of type 
@@ -2398,6 +2418,7 @@ sub rbldnst_done {
 =head1 EXPORT_OK
 
 	DO
+	doINCLUDE
 	SerialEntry
 	TarpitEntry
 	DNSBL_Entry

@@ -2,13 +2,13 @@
  *
  *
 	Externals
-  char hostbuf[MAXns * MAXDNAME];		/* buffer space for real names
-  u_int32_t A_records[MAXns * MAXipbuf];	/* A records
-  char local_name_buf[MAXDNAME];		/* local host name for SOA
+  char hostbuf[MAXns * MAXDNAME];		buffer space for real names
+  u_int32_t A_records[MAXns * MAXipbuf];	A records
+  char local_name_buf[MAXDNAME];		local host name for SOA
   char * local_name = local_name_buf;
-  int gh_error;					/* get hostent error
+  int gh_error;					get hostent error
 
-  int h_name_ctr = 0;				/* name record count
+  int h_name_ctr = 0;				name record count
 
  */
 

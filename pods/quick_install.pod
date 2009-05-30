@@ -6,7 +6,7 @@ SpamCannibal Quick Install
   Jonathan Baker-Bates E<lt>jonathan_AT_bakerbates.comE<gt>
   Michael Robinton E<lt>michael@bizsystems.comE<gt>
 
-  Last Update - April 28, 2006
+  Last Update - February 11, 2009
 
 =head2 DESCRIPTION
 
@@ -87,7 +87,7 @@ Then install the following if you don't already have them:
  Proc::PidUtil
  Sys::Hostname::FQDN
  Net::Netmask
- Net::DNSB::MultiDaemon
+ Net::DNSBL::MultiDaemon
 
 =head3 GeoIP
 

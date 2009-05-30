@@ -1,5 +1,5 @@
 #
-# my version 1.33, 9-20-06 michael@bizsystems.com
+# my version 1.34, 11-16-08 michael@bizsystems.com
 # -*- Perl -*-
 #***********************************************************************
 #
@@ -8,7 +8,7 @@
 # Suggested filter for use with SpamCannibal & SpamAssassin
 # to protect Microsoft Windows clients, plus
 #
-# Copyright (C) 2004, Michael Robinton, michael@bizsystems.com
+# Copyright (C) 2004 - 2008, Michael Robinton, michael@bizsystems.com
 # Copyright (C) 2002 Roaring Penguin Software Inc.
 #
 # This program may be distributed under the terms of the GNU General
@@ -213,7 +213,7 @@ foreach (@Relay_domain_list) {
 use Net::DNSBL::Utilities qw(
 	list2NetAddr
 	matchNetAddr
-	DO
+	doINCLUDE
 );
 
 my $havecache = 0;
@@ -229,7 +229,7 @@ if (	$Relay_WhiteCache &&
 	? (stat($Relay_WhiteCache .'/relaywhitelist.cache'))[9]
 	: 1;
   if ($metime > $cshtim || $sctime > $cshtim) {
-    my $scSptr = DO($Relay_Blacklistfile);		# spamcannibal Stuff pointer
+    my $scSptr = doINCLUDE($Relay_Blacklistfile);	# spamcannibal Stuff pointer
     $scSptr = $scSptr->{IGNORE} if $scSptr;
     $scSptr = [] unless $scSptr;			# must point to some array
     push @Relay_whitelist, @$scSptr;
@@ -248,7 +248,7 @@ EOF
       die "could not open ${Relay_WhiteCache}/relaywhitelist.cache for write";
     }
   } else {
-    $havecache = DO($Relay_WhiteCache .'/relaywhitelist.cache');
+    $havecache = doINCLUDE($Relay_WhiteCache .'/relaywhitelist.cache');
     die "could not open ${Relay_WhiteCache}/relaywhitelist.cache for read"
 	unless $havecache;
     @Relay_whitelist = @$havecache;

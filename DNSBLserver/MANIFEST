@@ -58,4 +58,3 @@ t/zone_basics.t
 t/zoneiprint.t
 t/zoneoflush.t
 t/zoneratelimit.t
-META.yml                                 Module meta-data (added by MakeMaker)

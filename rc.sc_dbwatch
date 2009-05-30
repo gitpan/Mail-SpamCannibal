@@ -2,7 +2,7 @@
 #
 # rc.sc_dbwatch
 #
-# version 1.03, 4-13-05
+# version 1.04, 11-16-08
 #
 #################################################################
 # WARNING! do not modify this script, make one with a new name. #
@@ -10,7 +10,7 @@
 # SpamCannibal.                                                 #
 #################################################################
 #
-# Copyright 2003, Michael Robinton <michael@bizsystems.com>
+# Copyright 2003 - 2008, Michael Robinton <michael@bizsystems.com>
    
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ use Mail::SpamCannibal::ScriptSupport 0.10 qw(
 	dbjob_chk
 	dbjob_kill
 	dbjob_recover
-	DO
+	doINCLUDE
 );
 
 use Mail::SpamCannibal::PidUtil 0.03 qw(
@@ -74,7 +74,7 @@ usage() unless $action;
 my $config = shift @ARGV;
 usage() unless $config;
 
-$watchconfig = DO($config);
+$watchconfig = doINCLUDE($config);
 usage('could not load config file')
 	unless $watchconfig;
 
@@ -249,7 +249,7 @@ Michael Robinton <michael@bizsystems.com>
 
 =head1 COPYRIGHT
 
-Copyright 2003 - 2005, Michael Robinton <michael@bizsystems.com>
+Copyright 2003 - 2008, Michael Robinton <michael@bizsystems.com>
 This script is free software; you can redistribute it and/or
 modify it under the terms of the GPL software license.
 

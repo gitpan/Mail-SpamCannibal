@@ -1,6 +1,6 @@
 /* main.c
  *
- * Copyright 2003, Michael Robinton <michael@bizsystems.com>
+ * Copyright 2003 - 2009, Michael Robinton <michael@bizsystems.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,6 +49,7 @@
 #include "godaemon.c"
 #include "util_pid_func.h"
 #include "netio_func.h"
+#include "misc_func.h"
 
 #define MY_DBerrorstatus 1
 
@@ -74,7 +75,7 @@ int realMain(int argc, char **argv)
       
   char getoptstr[] = "r:f:s:ip:dlVvT?ho";
   char c, * pidpathname, shortbuf[255];
-  int testflag = 0, dbnp = 0, i, status, fdlisten, fd = 0;
+  int testflag = 0, dbnp = 0, i, status, fdlisten = 0, fd = 0;
   sigset_t set;
   size_t msglen;
   struct stat sbuf;
@@ -229,7 +230,7 @@ int realMain(int argc, char **argv)
       if((msglen = read_msg(fd)) > 0) {
 	if (datalog) {
 	  rtn = mybuffer;
-	  strcpy(rtn,my_msgbuf +5);
+	  strcpy(rtn,(char *)(my_msgbuf +5));
 	  strcat(rtn,", ");
 	}
 	if ((i = dbtp_index(&dbtp,(char *)(my_msgbuf +5))) < 0) {
@@ -244,13 +245,13 @@ int realMain(int argc, char **argv)
 	  write_msg(fd,(u_char *)notfound,8);
 	  goto CleanUp;
 	}
-	if (status = dbtp_init(&dbtp,dbhome,i))
+	if ((status = dbtp_init(&dbtp,(u_char *)dbhome,i)))
 	  goto ReturnNotFound;
 
 	if((how = *my_msgbuf) < 2) {			/* normal - single item read	*/
 	  memcpy((u_char *)&atmp,my_msgbuf +1,4);	/* move address pointer off odd address boundry */
 /*	  if (notfound[MY_DBerrorstatus] = (int32_t)dbtp_readOne(&dbtp,how,i,(void *)&atmp,1)) */
-	  if (status = dbtp_readOne(&dbtp,how,i,(void *)&atmp,1))
+	  if ((status = dbtp_readOne(&dbtp,how,i,(void *)&atmp,1)))
 		goto ReturnNotFound;
 		
 	  memcpy(my_msgbuf,dbtp.keydbt.data,dbtp.keydbt.size);
@@ -266,7 +267,7 @@ int realMain(int argc, char **argv)
 	  *my_msgbuf = 0;			/* record count		*/
 	  while (*my_msgbuf < how) {
   /* note that the 'is_network' parameter is set to zero since 'recno' is converted to host order */
-	    if (status = dbtp_readOne(&dbtp,1,i,(void *)&recno,0))
+	    if ((status = dbtp_readOne(&dbtp,1,i,(void *)&recno,0)))
 	    	break;
 	    memcpy((u_char *)(my_msgbuf + msglen),dbtp.keydbt.data,dbtp.keydbt.size);	      
 	    msglen += dbtp.keydbt.size;

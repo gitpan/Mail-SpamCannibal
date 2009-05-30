@@ -3,10 +3,17 @@
 # sc_dbwatch.conf
 # Configuration for sc_dbwatch
 #
-# version 1.00, 10-5-03
+# version 1.01, 11-16-08
 #
 my $DBWATCH = {
 
+## additional KEYS may be included with an INCLUDE statement of the form:
+#
+#  INCLUDE => 'path/to/file.conf',
+#
+#  this file may include an INCLUDE statement, as may the next, etc...
+#
+#
 # how often to recheck for a crashed db task
 
   RECHECK	=> '5m',	# automatically set to 60 seconds if smaller

@@ -19,6 +19,11 @@ href="http://sourceforge.net/projects/spamcannibal/">sourceforge - SpamCannibal<
 web site. For support, register for the <a href="http://lists.sourceforge.net/lists/listinfo/spamcannibal-users/">spamcannibal-users</a>
 mail list.
 <p>
+At the moment, the sourceforge project has been suspended and all new builds
+are directily uploaded to CPAN. If there is enough interest, the project can
+be resumed. The sourceforge mail list is still alive and I will answer
+questions posted to the list.
+<p>
 If you are interested in participating in the SpamCannibal project, subscribe to the <a
 href="http://lists.sourceforge.net/lists/listinfo/spamcannibal-devel/">spamcannibal-devel</a>
 mail list and send me a brief summary of your coding background and your area 
@@ -69,6 +74,12 @@ adduser.
 
 =head1 Recompiling Linux 2.4x kernel with IPTABLES
 
+Most newer kernels do NOT need this step. What is needed is the
+iptables-devel headers, see the next section.
+
+You can check the "config" file in your /boot directory or linux kernel
+directory to see if the NF_QUEUE directives are activated.
+
 L<http://www.kernel.org/>
 
 Recompile your kernel to include B<iptables>.
@@ -99,13 +110,21 @@ COMMENT: Our firewall runs with...
 I've seen as many as several thousand threads in the tarpit without affecting
 performance on an aging 486 with not much memory. It's not a big deal.
 
+=head1 iptables-devel
+
+iptables-devel headers are required for SpamCannibal. Either download the
+iptables-devel package for your system or rebuild iptables (the version
+installed on your system) and make and install the developer portion.
+
+  iptables -V will tell you the version.
+
+iptables source downloads available from:
+
+  L<http://www.netfilter.org/downloads.html>
+
 =head1 libnet-1.x.x
 
-L<http://www.packetfactory.net/libnet/>
-
-L<ftp://ftp.sunfreeware.com/pub/freeware/intel/10/>
-
-L<http://www.filewatcher.com/m/libnet-1.1.2.1.tar.gz.1021236.0.0.html>
+L<http://libnet.sourceforge.net/>
 
 Google "libnet mirrors"
 
@@ -120,6 +139,8 @@ Google "libnet mirrors"
    - optional -
   5. make supp
   6. make util
+
+For RPM's, Google "libnet RPM's" and check for your distro.
 
 =head1 Adding PGP support
 

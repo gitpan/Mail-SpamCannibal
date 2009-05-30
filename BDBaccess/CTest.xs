@@ -1,6 +1,6 @@
 /* CText.xs
  *
- * Copyright 2003, Michael Robinton <michael@bizsystems.com>
+ * Copyright 2003 - 2009, Michael Robinton <michael@bizsystems.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,8 @@
 */
 #include <stdio.h>
 
+/* for local subs	*/
+#include "misc_func.h"
 
 /* for BerkeleyDB interface - bdbtarpit.c	*/
 #include <bdbtarpit.h>
@@ -80,13 +82,9 @@ mydb_dump(int secondary,char * filename)
 {
   extern DBTPD dbtp;
 
-  DB * dbp;
   int status;
   u_int32_t cursor = 1, netcursor;
-  DBC * dbcp;
   struct in_addr inadr;
-  int i, c; 
-  char * cp;
   char dumpbuf[1000];		/* arbitrary buffer */
 
   netcursor = htonl(cursor);
@@ -98,7 +96,7 @@ mydb_dump(int secondary,char * filename)
       printf("%16s => %s\n", inet_ntoa(inadr),dumpbuf);
     }
     else
-      printf("%16s => %10ld\n", inet_ntoa(inadr), htonl(*(u_int32_t *)(dbtp.mgdbt.data)));
+      printf("%16s => %10ld\n", inet_ntoa(inadr),(long int)htonl(*(u_int32_t *)(dbtp.mgdbt.data)));
     dbtp.keydbt.data = &cursor;
     dbtp.keydbt.size = sizeof(cursor);
     cursor++;
@@ -155,7 +153,7 @@ t_main(...)
 	extern int opterr;
     CODE:
 	if (items > 20) {
-	    RETVAL = 0;  
+	    i = 0;  
 	} else {
 	    for (i=0; i < items; i++)
 	    {
@@ -185,16 +183,18 @@ int
 t_pidrun()
     CODE:
 	RETVAL = (int)pidrun;
+    OUTPUT:
+	RETVAL
 
 void
 t_savpid(path)
-	unsigned char * path
+	char * path
     CODE:
 	savpid(path);
 
 void
 t_chk4pid(path)
-	unsigned char * path
+	char * path
     PREINIT:
 	SV * out;
     PPCODE:
@@ -286,7 +286,6 @@ t_getrecno(which, name, cursor)
 	U32 cursor
     PREINIT:
 	SV * netaddr, * tmp;		/* older perl does not know about newSVuv */
-	U32 datasize;
     PPCODE:
 	cursor = htonl(cursor);
 	if (dbtp_readDB(&dbtp,1,name,&cursor,1)) {
@@ -323,7 +322,7 @@ t_bdbversion()
     PREINIT:
 	char version[256];
 	int major, minor, patch;
-    PCODE:
+    PPCODE:
 	(void)db_version(&major,&minor,&patch);
 	(void)sprintf(version,"%d.%d.%d",major,minor,patch);
 	XPUSHs(sv_2mortal(newSVpv(version,0)));

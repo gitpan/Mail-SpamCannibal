@@ -208,7 +208,7 @@ int
 set_local_name()
 {
   struct hostent * hep;
-  extern char * local_name, * zone_name;
+  extern char * local_name;
   extern int h_name_ctr, gh_error;
   extern u_int32_t localip[];
   int i, j;

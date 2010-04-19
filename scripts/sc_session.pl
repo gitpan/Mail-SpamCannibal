@@ -2,7 +2,7 @@
 #
 # sc_session.pl
 #
-# version 1.11, 4-28-06
+# version 1.12, 9-12-09
 #
 #################################################################
 # WARNING! if you modify this script, make a backup copy.	#
@@ -14,7 +14,7 @@
 # Update passwords
 # insert and delete tarpit records
 #
-# Copyright 2003 - 2006, Michael Robinton <michael@bizsystems.com>
+# Copyright 2003 - 2009, Michael Robinton <michael@bizsystems.com>
    
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -142,6 +142,11 @@ Syntax:	sc_session.pl command [arg1] [arg2] ...
 
   delete	returns OK or (error text)
 		deletes dot.quad.ip.addr in all databases
+
+	NOTE:	if the config paramater "userdelOK" is true then
+		the session id should be "" and validation of
+		the session will not be attempted, however the
+		IP will be unconditionally deleted
 
   delBLK	returns OK or (error text)
 		deletes CIDR/24 described by dot.quad.ip.addr
@@ -550,10 +555,13 @@ sub InsEBLK {
   return 'OK';
 }
 
+# for user IP remove, enter with sesid = "none"
 sub Delete {
   my ($sesid,$expire,$addr) = @ARGV;
-  validate($session_dir,$sesid,$secret,\$error,$expire)
-	or return $error;
+  unless (($sesid ne 'none' && validate($session_dir,$sesid,$secret,\$error,$expire)) ||
+	  $CONFIG->{userdelOK}) {	# validate unless user delete is OK
+    return $error;
+  }
   (my $saddr = getip($addr)) 
 	or return "input addr, $error";
   $db_config{dbfile} = [$DBCONFIG->{SPMCNBL_DB_TARPIT},

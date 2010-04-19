@@ -5,9 +5,9 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 2.16, 11-16-08
+# version 2.18, 11-12-09
 #
-# Copyright 2003 - 2008, Michael Robinton <michael@bizsystems.com>
+# Copyright 2003 - 2009, Michael Robinton <michael@bizsystems.com>
 #   
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -335,8 +335,8 @@ onMouseOver="return(show('lookup |. $IP .qq|'));" onMouseOut="return(off());">$I
   if ($query{page} =~ /^sendmsg/) {
     die "email contact not configured" unless $CONFIG->{email};
     my($sc,$bc,$socket,@hostname);
-    my $IP = ($query{IP} && $query{IP} =~ /\d+\.\d+\.\d+\.\d+/)
-	? $& : '';
+    my $IP = ($query{IP} && $query{IP} =~ /(\d+\.\d+\.\d+\.\d+)/)
+	? $1 : '';
 
     if ($IP) {
       require Mail::SpamCannibal::SiteConfig;
@@ -388,6 +388,8 @@ Invalid IP address.
       $query{page} = 'contact';
       $html = '';
       next PageGen;
+    } elsif ($CONFIG->{userdelOK}) {
+      ;	# some stuff to check lookup? and do a delete
     } else {
       require Mail::SpamCannibal::SMTPsend;
       if ($CONFIG->{altMXhosts}) {
@@ -562,23 +564,33 @@ function wDelete() {
 	  use integer;
 	  my $found = 0;
 	  my $related = '';
-	  $IP =~ /\d+\.\d+\.\d+\./;
-	  my $cidr = $&;
+	  $IP =~ /(\d+\.\d+\.\d+\.)/;
+	  my $cidr = $1;
 # get CIDR differential data and recover minus's
 	  ($_ = sesswrap("$admin getC24 $sess $expire $IP")) =~ s/;/:-/g;
 	  if ($_ =~ /^OK\s+(.+)/) {
 	    my($vec,@vals) =  split(':',$1);	# differential values to @vals
 	    @_ = split('',$vec);
 	    my $timetag = 0;
+	    my $lastime = 0;
+	    my $lastim2 = 0;
 	    foreach(0..$#_) {
 	      next unless $_[$_];
 	      $timetag += shift @vals;
 	      my $addr = "${cidr}$_";
 	      next if $addr eq $IP;
 	      $found += 1;
+	      my $font = '';
+	      my $nfont = '';
+	      if ($lastime && ($lastime != $timetag && $timetag != $lastim2)) {
+		$font = '<font color="#FF0000">';
+		$nfont = '</font>';
+	      }
+	      $lastim2 = $lastime;
+	      $lastime = $timetag;
 	      $related .= q|<tr><td><a href="#top" onMouseOver="return(show('lookup |. $addr .q|'));" onMouseOut="return(off());"
-  onClick="lookup.lookup.value='|. $addr .q|';lookup.submit();return false;">|. $addr .q|</a></td><td>|.
-	      scalar localtime($timetag) .q|</td><td align=center><input name=rm type=checkbox value="|. $addr .q|"></td></tr>
+  onClick="lookup.lookup.value='|. $addr .q|';lookup.submit();return false;">|. $addr .q|</a></td><td>|. $font .
+	      scalar localtime($timetag) . $nfont .q|</td><td align=center><input name=rm type=checkbox value="|. $addr .q|"></td></tr>
 |;
 	    }
 	  } else {	# response was NOT OK
@@ -664,8 +676,8 @@ self.close();
 	) {
       html_cat(\$html,$_,$CONFIG,\%ftxt);
     }
-    $sess =~ /^[\w-]+/;
-    $user = $&;
+    $sess =~ /^([\w-]+)/;
+    $user = $1;
     $html .= q|<center>
 <table border=0>
 <tr><td class=bld colspan=2>Access granted for:</td></tr>

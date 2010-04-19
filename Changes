@@ -1,5 +1,22 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+1.03  Mon Apr 19 16:05:27 PDT 2010
+	Correct typo in sc_web.conf.sample for 'altMXhosts'
+	Update Makefile.PL insert of "all clean_CTest relink_subdirs"
+	to work around bug in certain redHat distro's of perl
+
+1.02  Thu Nov 12 12:47:40 PST 2009
+	correct error (typo in code) introduced in last revision
+	of public_html/cannibal.cgi
+
+	modify cannibal.cgi to highlight date changes in admin LOOKUP display
+
+1.01  Mon Sep 14 17:34:53 PDT 2009
+	Add 'userdelOK' paramater to config/sc_web.conf.sample v1.10 and 
+	implement check for non-administrative (user) deletes of IP
+	addresses in scripts/sc_session.pl v1.12 and 
+	public_html/cannibal.cgi v2.17
+
 1.00  Sat May 30 10:34:23 PDT 2009
 	Bug note added about missing internal MakeMaker parameter names
 

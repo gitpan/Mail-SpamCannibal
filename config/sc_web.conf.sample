@@ -1,5 +1,5 @@
 # sc_web.conf.sample
-# version 1.09, 11-16-08
+# version 1.11, 2-1-10
 #
 # The configuration file is divided into three sections
 #
@@ -40,6 +40,12 @@ my $CONFIG = {
 
 #  secret	=> 'some secret string',
 
+# allow or deny non-administrative (user)
+# IP delete privileges. This must be set on both the
+# local and remote sides to work properly
+
+#  userdelOK	=> 0,	# set to true to allow
+
 #################################################
 # SECTION (3	web service
 #################################################
@@ -77,7 +83,7 @@ my $CONFIG = {
 # Alternate MX host(s) if sending direct
 # to the target MX host is not desired
 #
-#  altMXhosts	=> qw( mx1.host.com mx2.hots.com),
+#  altMXhosts	=> [qw( mx1.host.com mx2.hots.com)],
 
 # Set session expiration for the admin pages
 #

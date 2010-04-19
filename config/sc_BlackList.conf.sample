@@ -2,7 +2,7 @@
 # sc_BlackList.conf, multi_dnsbl.conf
 # Configuration for sc_BLcheck.pl, sc_BLpreen.pl, and Net::DNSBL::MultiDaemon
 #
-# version 1.38, 11-16-08
+# version 1.40, 4-19-10
 #
 my $DNSBL = {
 
@@ -216,11 +216,14 @@ my $DNSBL = {
 #	],
 	regexp	  => [	# test for these regular expression (case insensitive)
 		'\d+[a-z_\-\.]\d+[a-z_\-\.]\d+[a-z_\-\.]\d+|\d{12}',
-	# 180.Red-80-34-112.staticIP.rima-tde.net
-	# ip-90.net-89-3-110.rev.numericable.fr
-	# 216.subnet125-161-2.speedy.telkom.net.id
-	# 122.sub-75-199-30.myvzw.com
-		'\d+\.(?i:sub|subnet|net|Red)\-?\d+[a-zA-Z_\-\.]\d+[a-zA-Z_\-\.]\d+',
+        # 180.Red-80-34-112.staticIP.rima-tde.net
+                '\d+\.red-\d+-\d+-\d+\.staticip\.rima-tde\.net',
+        # 216.subnet125-161-2.speedy.telkom.net.id
+                '\d+\.subnet\d+-\d+-\d+\.speedy\.telkom\.net\.id',
+        # 122.sub-75-199-30.myvzw.com
+                '\d+\.sub-\d+-\d+-\d+\.myvzw\.com',
+        # ip-90.net-89-3-110.rev.numericable.fr
+                'ip-\d+\.net-\d+-\d+-\d+\.rev\.numericable\.fr',
 	# athedsl-07371.home.otenet.gr
 		'athedsl-\d+',
 	# i59F4FA6C.versanet.de
@@ -490,7 +493,8 @@ my $DNSBL = {
 	# dun-pm-158-30.t2.net
 		'dun-pm-\d+-\d+\.t2\.net',
 	# d51530682.access.telenet.be
-		'd[a-f0-9]+\.access\.telenet\.be',
+        # d51530B14.static.telenet.be
+                'd[a-f0-9]+\.(?:static|access)\.telenet\.be',
 	# gw55.partner-work.dk
 		'gw\d+\.partner-work\.dk',
 	# ip3-vg2.iplannetworks.net
@@ -503,7 +507,7 @@ my $DNSBL = {
 	# 0706ds1-ro.0.fullrate.dk
 		'\d+ds\d+-ro\.\d+\.fullrate\.dk',
 	# hs-339.dedicated.hostalia.com
-		'hs-\d+\.dedicated\.hostalia',
+                'hs-(?:\d+|\d+-\d+)\.dedicated\.hostalia',
 	# eb01.ebhost9.com
 	# g.eb02.ebhost9.com
 		'[a-z]?\.?eb\d+\.ebhost\d+\.com',
@@ -1080,6 +1084,257 @@ my $DNSBL = {
                 'rel\d+\.(?:tankpin|dobbscorp|aquaveri|platejetter)\.com',
         # raq100.raqdedicados.com
                 'raq\d+\.raqdedicados\.com',
+        # nn-ipshare-4122341187
+                'nn-ipshare-\d+\b',
+        # 255-101.fixip.hu.inter.net
+                '\d+-\d+\.fixip\.hu\.inter\.net',
+        # m174.class147.petrotel.pl
+                'm\d+\.class\d+\.petrotel\.pl',
+        # datacenter200-144.static.nixval.com
+                'datacenter\d+-\d+\.static\.nixval\.com',
+        # 211.cpe-190-10-135-hfc.gye.satnet.net
+                '\d+\.cpe-\d+-\d+-\d+-hfc\.gye\.satnet\.net',
+        # o133.orange.fastwebserver.de
+                'o\d+\.orange\.fastwebserver\.de',
+        # mbos141-171.alpenstock.jp
+                'mbos\d+-\d+\.alpenstock\.jp',
+        # ica-hs-209.151.141-ip018.ica.net
+                'ica-hs-\d+\.\d+\.\d+-ip\d+\.ica\.net',
+        # hostXX.punch.ca
+                'host\d+\.punch\.ca',
+        # r11cb229.net.upc.cz
+                'r\d+cb\d+\.net\.upc\.cz',
+        # vz-linux-01-vps-236.datacomm.ch
+                'vz-linux-\d+-vps-\d*\.datacomm\.ch',
+        # llsa735-a03.servidoresdns.net
+                'lls[a-f]\d+-[a-f]\d+\.servidoresdns\.net',   
+        # 221.133.intelnet.net.gt
+                '\d+\.\d+\.intelnet\.net\.gt',
+        # host064110.metrored.net.mx
+                'host\d+\.metrored\.net\.mx',
+        # 54.60.in-addr.arpa
+                '54\.60\.in-addr\.arpa',
+        # absis-60-20.cnt.nerim.net
+                'absis-\d+-\d+\.cnt\.nerim\.net',
+        # cfd117.cfdynamics.com
+                'cfd\d+\.cfdynamics\.(?:com|net)',
+        # r3av27.net.upc.cz
+                'r\d+av\d+\.net\.upc\.cz',
+        # mumbai-116-226.primenet.in
+                'mumbai-\d+-\d+\.primenet\.in',
+        # rs12.whbdns.com
+                'rs\d+\.whbdns\.com',
+        # 42.13.vivanet.hu
+                '\b\d+[.-]\d+\.vivanet\.hu',
+        # dutch63.vdx.nl
+                'dutch\d+\.vdx\.nl',
+        # wbt130.asiawhere.com
+                'wbt\d+\.asiawhere\.com',
+        # cras49p1.navix.net
+                'cras\d+p\d+\.navix\.net',
+        # D2575.servadmin.com
+                'd\d+\.servadmin\.com',
+        # serv2.onkelhost.com
+                'serv\d\.onkelhost\.com',
+        # llgd634.servidoresdns.net
+                'llg[a-f0-9]+\.servidoresdns\.net',
+        # ipa109.208.tellas.gr
+                'ipa\d+\.\d+\.tellas\.gr',
+        # iberweb-1b.servidorpt.com
+                'iberweb\-?\d[a-f]\.servidorpt\.com',
+        # rb5bw246.net.upc.cz
+                'rb\d+bw\d+\.net\.upc\.cz',
+        # ip179-201.ghnet.pl
+                'ip\d+-\d+\.ghnet\.pl',
+        # dedi47.cpt1.host-h.net
+                'dedi\d+\.cpt\d+\.host-h\.net',
+        # h11.plesklogin.net
+        # h11-1.plesklogin.net
+                'h\d+\-?\d*\.plesklogin\.net',
+        # map1.network49.185.tigo.net.gt
+                'map\d+\.network\d+\.\d+\.tigo\.net\.gt',
+        # 71-41.skknet.net
+                '\d+-\d+\.skknet\.net',
+        # s104.superhost.pl
+                '\bs\d+\.superhost\.pl',
+        # ewhserver393.edgewebhosting.net
+                'ewhserver\d+\.edgewebhosting\.net',
+        # nbl17-194.static.cytanet.com.cy
+                'nbl\d+-\d+\.static\.cytanet\.com\.cy',
+        # elite244.inmotionhosting.co
+                '(?:|advanced|dedicated|elite)\d+\.inmotionhosting\.com',
+        # 216.cpe-190-154-103-AC4-2.gye.satnet.net
+                '\d+\.cpe-\d+-\d+-\d+-ac\d+-\d+\.gye\.satnet\.net',
+        # hostNNN.hostmonster.com
+                'host\d+\.hostmonster\.com',
+        # st66.servidoraweb.net
+                'st\d+\.servidoraweb\.net',
+        # 143-90.mc.charlevoix.net
+                '\d+-\d+\.mc\.charlevoix\.net',
+        # net-147-057.mweb.net
+                'net-\d+-\d+\.mweb\.net',
+        # 95.219.in-addr.arpa.static.tm.net.my
+                '\d+\.\d+\.in-addr\.arpa\.static\.tm\.net\.my',
+        # undefined.datagroup.com.ua
+                'undefined\.datagroup\.com\.ua',
+        # hl05.dinaserver.com
+                'hl\d+\.dinaserver\.com',
+        # pro-237-96.rediffmailpro.com
+                'pro-\d+-\d+\.rediffmailpro\.com',
+        # agaacqmDDD.c03.gridserver.com
+                'agaacqm[a-z]{3}\.c\d+\.gridserver\.com',
+        # dsl165-217.jdcs.jo
+                'dsl\d+-\d+\.jdcs\.jo',
+        # srv-174.catenaria.cl
+                'srv-\d+\.catenaria\.cl',
+        # 93-117.jesenice.net
+                '\d+-\d+\.jesenice\.net',
+        # WARSL404PIP3.highway.telekom.at
+                'warsl\d+pip\d+\.highway\.telekom\.at',
+        # sv127.visun.vn
+                'sv\d+\.visun\.vn',
+        # drim13051.drim.com
+                'drim\d+\.drim\.com',
+        # server4246x.masterweb.net
+                'server\d+\w?\.masterweb\.net',
+        # s4.n136.n172.n72.static.myhostcenter.com
+                's\d+\.n\d+\.n\d+\.n\d+\.static\.myhostcenter\.com',
+        # linux15.dnsprimario.com
+                'linux\d+[a-z]?\.dnsprimario\.com',
+        # 6116172ddd.flyjac.com
+                '\d{10}\.flyjac\.com',
+        # box268.bluehost.com
+                'box\d+\.bluehost\.com',
+        # dedserv51.levonline.com
+                'dedserv\d+\.levonline\.com',
+        # 140.bint.interhost.co.il      
+                '\d+\.bint\.interhost\.co\.il',
+        # sv16.net-housting.de
+                '(?:sv|vs)\d+\.net-housting\.de',
+        # llce404-z.servidoresdns.net
+                'llc[a-f]\d+-[a-z0-9]+\.servidoresdns\.net',
+        # 27-244.static.lacdelage.com
+        # 27-3.mc.ccapcable.com
+                '\d+-\d+\.(?:static|mc)\.(?:lacdelage|ccapcable)\.com',
+        # gwa4.webcontrolcenter.com
+        # gw4.webcontrolcenter.com
+                'gw[a]?\d+\.webcontrolcenter\.com',
+        # raq26.amenworld.com
+        # raq24.host7x24.com
+                'raq\d+\.(?:host7x24|amenworld)\.com',
+        # box15.vistapages.com
+                'box\d+\.vistapages\.com',
+        # wwwNN.cpt1.host-h.net
+                'www\d+\.cpt1\.host-h\.net',
+        # tot-56k-NNN-tpgi.com.au
+                'tot-56k-\d+\.tpgi\.com\.au',
+        # echo.supportedns.com
+                'echo\.supportedns\.com',
+        # DBH19VC1.redplaid.com
+                'd[0-9a-z]+1\.redplaid\.com',
+	# not-assigned.privatedns.com
+		'not-assigned\.privatedns\.com',
+        # jagdsl2-57.smig.net
+                'jagdsl\d+-\d+\.smig\.net',
+        # unknown-NNNN.agava.net
+                'unknown-\d+\.agava\.net',
+        # pc3-66.gwardii.osi.pl
+                'pc\d+-\d+\.gwardi.os.pl',
+        # 130.subnet203-130-195.astinet.telkom.net.id
+                '\d+\.subnet\d+-\d+-\d+\.astinet\.telkom\.net\.id',
+        # dwhsNNN.dwhs.net
+                'dwhs\d+\.dwhs\.net',
+        # unassigned.singlehop.net
+                'unassigned\.singlehop\.net',
+        # 089-101-062008.ntlworld.ie
+                '\d+-\d+-\d{6}\.ntlworkd\.ie',
+        # virtNNxenNN.drecomm.nl
+        # serverNN.drecomm.nl
+                '(?:virt\d+xen|server)\d+\.drecomm\.nl',
+        # nsNNN.ipnames.net
+        # nsNNN.ip-asia.com
+                'ns\d+\.ip(?:\-asia\.com|names\.net)',
+        # 214-218.btc-net.bg
+                '\d+-\d+\.btc-net\.bg',
+        # pod-174.dolphin-server.co.uk
+                'pod-\d+\.dolphin-server\.co\.uk',
+        # 210-245-52-fiber-net-static-ip.fpt.vn
+                '\d+-\d+-\d+-fiber-net-static-ip\.fpt\.vn',
+        # sfa84.servidoraweb.net
+                'sfa\d+\.servidoraweb\.net',
+        # rev.nuthost.com
+                'rev\.nuthost\.com',
+        # gvo140142.gvocom.com
+                'gvo\d+\.gvo(?:com|datacenter)\.com',
+        # v35196.1blu.de
+                'v\d+\.1blu\.de',
+        # dNN.dinaserver.com
+                '\bd\d+\.dinaserver\.com',
+        # hostNNN.bangalorebabywear.com 
+                'host\d+\.bangalorebabywear\.com',
+        # 8323316517-host.servainet.com
+                '8\d+-host\.servainet\.com',
+        # loft1918.serverloft.eu, com, de, net, etc...
+                'loft\d+\.serverloft\.',
+        # toberemoved
+                'toberemoved.com',
+        # vm, hst
+                '(?:jn|vm|hst)\d+\.jn-hebergement\.com',
+        # cs10239.servidoresdns.net
+                'cs\d+\.servidoresdns\.net',
+        # contactlab37-bk-7.contactlab.it
+                'contactlab37-bk-\d+\.contactlab\.it',
+        # roNNNNN.plusserver.de
+                'ro\d+\.plusserver\.de',
+        # roNNNNN.plusserver.de
+                'ro\d+\.plusserver\.de',
+        # li7-94.members.linode.com
+                'li\d+-\d+\.members\.linode\.com',
+        # inet3162.inetservices.com
+                'inet\d+\.inetservices\.com',
+        # no-mans-land.uh-hosting.co.uk
+                'no-mans-land\.uh-hosting\.co\.uk',
+        # generic.gogax.com
+                'generic\.gogax\.com',
+	# talk-242-92.talkadsl.com
+		'talk-\d+-\d+\.talkadsl\.com',
+	# webbox1243.server-home.net
+		'webbox\d+\.server-home\.net',
+	# srv163.one.com
+		'srv\d+\.one\.com',
+        # 202.134.hostcini.com
+                '\d+\.\d+\.hostcini\.com',
+        # unassigned.calpop.com
+        # unknown.calpop.com
+                'un(?:assigned|known)\.calpop\.com',
+        # plesk35.hospedagemdesites.ws
+                '(?:plesk|pleskwin)\d+\.hospedagemdesites\.ws',
+        # inet3170.ecsihosting.com
+                'inet\d+\.(?:inetservices.com|serviceregistry.org|linkspectrum.net|ecsihosting.com)',
+        # acmkoke[a-z].gs01.gridserver.com
+                'acmkoke[a-z]+\.gs\d+\.gridserver.com',
+        # 130.itglobal.es
+                '\d+\.itglobal\.es',
+        # ip127.procesos.com
+                '\bip\d+\.procesos\.com',
+        # noptr.midphase.com
+                'noptr\.midphase\.com',
+        # squ031.squ.edu.om
+                'squ\d+\.squ\.edu\.om',
+        # ds38-178.lax1.coolhandle.com
+                'ds\d+-\d+\.lax1\.coolhandle\.com',
+        # lasvegas-nv-datacenter.com
+                'lasvegas-nv-datacenter\.com',
+        # vps010-09.vps.securehostserver.com
+                'vps\d+.+?securehostserver\.com', 
+        # vhost23.startlogic.com
+                'vhost\d+\.startlogic\.com',
+        # fwusersNNN.cancercare.on.ca
+                'fwusers\d+\.cancercare\.on\.ca',
+        # fpc1-grth2-0-0-cust10.sgyl.static.cable.virginmedia.com
+                'fpc\d+-(?:livi|linl|grth|sgyl|dund)\d+-\d+-\d+-cust\d+\.sgyl\.static\.cable\.virginmedia\.com',
+        # iweb.com junk like "reclaaaalaaaaaaaaaam.ca.ma.com"
+                'r[e]+[c]+[l]+[a]+.+\.[md]a\.',
 ####GENERIC
 # include DIALUP ranges here
 # from: http://www.sdsc.edu/~jeff/spam/dialup_zones.txt

@@ -352,7 +352,7 @@ sub MY::install {
   $inherited =~ s/(\ninstall\s+::)(.+doc.+install)/$1 install_daemon install_spamcannibal${2} install_sc_permissions/;
   $inherited =~ s/(\ninstall_perl\s+::(.+doc.+install))/$1 install_daemon install_spamcannibal${2} install_sc_permissions/;
   $inherited =~ s/(\ninstall_site\s+::)(.+doc.+install)/$1 install_daemon install_spamcannibal${2} install_sc_permissions/;   
-  $inherited =~ s/\s+all\s+/ all clean_CTest /g;
+  $inherited =~ s/(\s+)all(\s+)/${1}all clean_CTest${2}/g;
 #  $inherited =~ s|(pure_site_install\s+::.*)|$1\n\t\@\$\(MKPATH\) \$\(INSTALLHTMLSITELIBDIR\)|;
   if ($workaround) {
     $inherited = pf_psias($inherited);

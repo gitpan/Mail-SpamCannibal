@@ -5,7 +5,7 @@ use strict;
 #use diagnostics;
 use vars qw($VERSION);
 
-$VERSION = do { my @r = (q$Revision: 1.00 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 1.03 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 sub DESTROY {};
 

@@ -2,7 +2,7 @@
 # sc_BlackList.conf, multi_dnsbl.conf
 # Configuration for sc_BLcheck.pl, sc_BLpreen.pl, and Net::DNSBL::MultiDaemon
 #
-# version 1.40, 4-19-10
+# version 1.41, 4-20-10
 #
 my $DNSBL = {
 
@@ -1335,6 +1335,8 @@ my $DNSBL = {
                 'fpc\d+-(?:livi|linl|grth|sgyl|dund)\d+-\d+-\d+-cust\d+\.sgyl\.static\.cable\.virginmedia\.com',
         # iweb.com junk like "reclaaaalaaaaaaaaaam.ca.ma.com"
                 'r[e]+[c]+[l]+[a]+.+\.[md]a\.',
+        # 2209.vh.cnolnic.com
+                '\b\d+\.vh\.cnolnic\.com',
 ####GENERIC
 # include DIALUP ranges here
 # from: http://www.sdsc.edu/~jeff/spam/dialup_zones.txt

@@ -2,7 +2,7 @@
 #
 # sc_mailfilter.pl
 #
-# version 1.11, 11-16-08
+# version 1.12, 4-23-10
 #
 #################################################################
 # WARNING! do not modify this script, make one with a new name. #
@@ -10,7 +10,7 @@
 # SpamCannibal.                                                 #
 #################################################################
 #
-# Copyright 2003 - 2008 Michael Robinton <michael@bizsystems.com>
+# Copyright 2003 - 2010 Michael Robinton <michael@bizsystems.com>
    
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -202,9 +202,10 @@ local $SIG{TERM} = sub { $run = 0 };
 # this is set up so that it can be enhanced to pass a file handle in a
 # loop for batch message processing
 #
+my @spaminfo;
 my $fh = *STDIN;
 {	# while loop
-  if ( $run &&  (@_ = mailcheck($fh,$MAILFILTER,$DNSBL,\%default,\@NAignor)) &&
+  if ( $run &&  (@_ = mailcheck($fh,$MAILFILTER,$DNSBL,\%default,\@NAignor,\@spaminfo)) &&
      ( $X ||	($MAILFILTER->{REPORT} &&
 	$MAILFILTER->{REPORT} =~ /$emailfmt/))) {
     my($verb,$err) = @_;
@@ -217,7 +218,7 @@ my $fh = *STDIN;
         sendmessage($err,$MAILFILTER->{REPORT})
 	  if $VERBOSE || $verb > 1;
       }
-    }
+    } 
   }
   elsif (exists $MAILFILTER->{SPAMCOUNT} &&					# spam counting active
 	$MAILFILTER->{SPAMCOUNT} =~ m|.+/| &&					# extract directory portion
@@ -231,6 +232,19 @@ my $fh = *STDIN;
       truncate(FILE, tell(FILE));
     }      
     close FILE;
+# if spam copy to standard addresses needed
+    if (	exists $MAILFILTER->{spamCC} && 
+		@{$MAILFILTER->{spamCC}} &&
+		@spaminfo
+		) {
+      foreach my $target(@{$MAILFILTER->{spamCC}}) {
+	next unless $target =~ /$emailfmt/;
+	sendmessage("X-abuse-target: $target\n".
+                'Subject: spam from '. $spaminfo[0] ."\n\n". $spaminfo[1],
+                $target
+        );
+      }
+    }
   }
 } # end while
 

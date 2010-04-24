@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # sc_mailfilter.conf
-# version 1.08, 11-16-08
+# version 1.09, 4-23-10
 # Configuration for sc_mailfilter.pl, sc_abuse.pl
 
 my $MAILFILTER = {
@@ -196,56 +196,87 @@ my $MAILFILTER = {
 	},
 
 # FOR sc_abuse.pl
-# If the of the originating spammer server is found as the key of the 
+# send copies of spam to fixed destinations for every abuse complaint
+# [ OPTIONAL ]
+#
+        spamCC  => [
+                'spam@uce.gov',         # FTC's spam collection database
+        ],
+
+# FOR sc_abuse.pl
+# If the of the originating spammer server is found as the key of the
 # ABUSE hash, instead of an abuse message being sent to abuse@domain.com,
 # if the domainkey is found in the ABUSE hash, the abuse message is
 # sent to the address(s) found in the corresponding data array
 #
-# [ OPTIONAL ] 
+# [ OPTIONAL ]
 
-	ABUSE	  => {
-		'bellsouth.net'	=> [qw(
-				ipoperations@bellsouth.net
-				postmaster@bellsouth.net
-				root@bellsouth.net
-				abuse@bellsouth.net
-		)],
-		'blueyonder.co.uk' => [qw(
-				abuse@blueyonder.co.uk
-				abuse@telewest.co.uk
-		)],
-		'earthlink.net' => [qw(
-				abuse@earthlink.net
-				postmaster@earthlink.net
-				root@earthlink.net
-				openrelay@abuse.earthlink.net
-				junkmail@earthlink.net
-		)],
-		'eircom.net'	=> [qw(
-				cd@eircom.net
-				dcurran@eircom.net
-				abuse@ericom.net
-				postmaster@ericom.net
-				root@ericom.net
-				tech@indigo.ie
-				ross@eircom.net
-		)],
-		'hotmail.com'	=> [qw(
-				abuse@hotmail.com
-				abuse@msn.com
-				postmaster@hotmail.com
-				postmaster@msn.com
-		)],
-		'yahoo.com'	=> [qw(
-				netblockadmin@yahoo-inc.com
-				abuse@yahoo.com
-				abuse@yahoo-inc.com
-				postmaster@yahoo.com
-				postmaster@yahoo-inc.com
-				root@yahoo-inc.com
-		)],
-		'myvzw.com'	=> [qw(
-				abuse@verizon.net
-		)],
-	},
+        ABUSE   => {
+                'adelphia.net'  => [qw(
+                                abuse@adelphia.net
+                                postmaster@adelphia.net
+                )],
+                'cox.net'       => [qw(
+                                abuse@cox.net
+                )],
+                'bellsouth.net' => [qw(
+                                ipoperations@bellsouth.net
+                                postmaster@bellsouth.net  
+                                abuse@bellsouth.net
+                )],
+                'blueyonder.co.uk' => [qw(
+                                abuse@blueyonder.co.uk
+                                abuse@telewest.co.uk  
+                )],
+                'cp.net'        => [qw(
+                                abuse@abuse.criticalpath.net
+                )],
+                'earthlink.net' => [qw(
+                                abuse@abuse.earthlink.net
+                                junkmail@earthlink.net   
+                                root@earthlink.net
+                                postmaster@earthlink.net
+                                epasupport@earthlink.net
+                )],
+                'eircom.net'    => [qw(
+                                cd@eircom.net
+                                dcurran@eircom.net
+                                abuse@ericom.net  
+                                postmaster@ericom.net
+                                root@ericom.net
+                                tech@indigo.ie 
+                                ross@eircom.net
+                )],
+                'tfbnw.net'     => [qw(
+                                abuse@facebook.com
+                )],
+                'hotmail.com'   => [qw(
+                                report_spam@hotmail.com
+                )],
+                'msn.com'       => [qw(
+                                report_spam@msn.com
+                )],
+                'yahoo.com'     => [qw(
+                                netblockadmin@yahoo-inc.com
+                                abuse@yahoo.com
+                                postmaster@yahoo.com
+                                postmaster@yahoo-inc.com
+                                root@yahoo-inc.com
+                                hank@yahoo-inc.com
+                )],
+                'myvzw.com'     => [qw(
+                                abuse@verizon.net
+                )],
+                'networksolutionsemail.com' => [qw(
+                                abuse@networksolutions.com
+                )],
+                'google.com'    => [qw(
+                                abuse@google.com
+                                bchang@google.com
+                )],
+                'btconnect.com' => [qw(
+                        abuse@bt.com   
+                        dnsreg@bt.com  
+                )],
+        },
 };

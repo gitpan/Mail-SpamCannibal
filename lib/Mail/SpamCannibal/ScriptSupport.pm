@@ -10,7 +10,7 @@ BEGIN {
   $_scode = inet_aton('127.0.0.0');
 }
 
-$VERSION = do { my @r = (q$Revision: 0.58 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.59 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 use AutoLoader 'AUTOLOAD';
 
@@ -222,7 +222,7 @@ Mail::SpamCannibal::ScriptSupport - A collection of script helpers
   $hashref = checkclct($DNSBL);
   $rv = dumpIPs($DNSBL, $allipsHASHptr);
   $rv = BLpreen(\%DNSBL,\%default);
-  @err=mailcheck($fh,\%MAILFILTER,\%DNSBL,\%default,\@NAignor)
+  @err=mailcheck($fh,\%MAILFILTER,\%DNSBL,\%default,\@NAignor,\$spamsource)
   $rv=zap_one($tool,$netaddr,$db,$verbose,$comment);
   zap_pair($tool,$netaddr,$pri,$sec,$debug,$verbose,$comment);
   $rv = is_GENERIC($conf->{GENERIC},@hostnames);
@@ -1582,7 +1582,7 @@ sub _flush_BLp_cache {
   }
 }
 
-=item * @err=mailcheck($fh,\%MAILFILTER,\%DNSBL,\%default,\@NAignor)
+=item * @err=mailcheck($fh,\%MAILFILTER,\%DNSBL,\%default,\@NAignor,\$spamrcd)
 
 This function extracts the sending mail server address, headers, and message
 content from an "email message" that may [optionally] be PGP encoded. If an
@@ -1596,6 +1596,7 @@ configuration and details on optional settings.
 		dnsbl config hash ptr,
 		default config hash ptr,
 		net object ptr,
+		[optional] spam info array pointer 
   output:	empty array on success,
 		(verbosity, err msg) on failure
 	where verbosity is false on success,
@@ -1610,14 +1611,26 @@ configuration and details on optional settings.
 	PGPLIM	=> $CHAR_READ_LIMIT,
   );
 
+  [optional] spam info array pointer
+  $spamip = ['spam source name or ip','spam headers + message']
+  This array will be filled by mail check if it is present
+
 =cut
 
 sub mailcheck {
-  my($fh,$MAILFILTER,$DNSBL,$default,$NAignor) = @_;
+  my($fh,$MAILFILTER,$DNSBL,$default,$NAignor,$spamip) = @_;
 
   my $tarpit	= $default->{dbfile}->[0];
   my $archive	= $default->{dbfile}->[1];
   my $evidence	= $default->{txtfile}->[0];
+
+# if optional bad guy pointer is present, clear it first
+  if ($spamip && ref $spamip eq 'ARRAY') {
+    @$spamip = ();
+  } else {
+    $spamip = undef;
+  }
+  my $spamsav;
 
 # read up to 10,000 characters
   my $savlim	= $default->{LIMIT} || 10000;	# internal default is 1000
@@ -1706,6 +1719,9 @@ sub mailcheck {
 
 #  undef @discard;
 
+# save spam for later use
+  $spamsav = array2string(\@lines);
+ 
 # extract headers
   my @headers;
 #  if ($MAILFILTER->{DIRTY}) {
@@ -1739,7 +1755,7 @@ sub mailcheck {
 # extract bad guy address
   my $noprivate = ($MAILFILTER->{NOPRIVATE})
 	? 1 : 0;
-  my $spamsource = firstremote(\@mtas,$MAILFILTER->{MXhosts},$noprivate);
+  my $spamsource = $$spamsp = firstremote(\@mtas,$MAILFILTER->{MXhosts},$noprivate);
   return (1,'no spam source found')
 	unless $spamsource;
 
@@ -1784,6 +1800,9 @@ sub mailcheck {
 	: ();
     }
     $tool->closedb;
+  }
+  if ($spamip) {	# if reporting desired
+    @$spamip = ($spamsource,$spamsav);
   }
   return @err;
 }
@@ -2451,7 +2470,7 @@ sub rbldnst_done {
 
 =head1 COPYRIGHT
 
-Copyright 2003 - 2008, Michael Robinton <michael@bizsystems.com>
+Copyright 2003 - 2010, Michael Robinton <michael@bizsystems.com>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

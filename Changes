@@ -1,5 +1,19 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+1.04  Fri Apr 23 15:00:08 PDT 2010
+	Add optional array pointer to call to ScriptSupport::mailcheck 
+	so that the name of the spam source and spam content is available
+	to the calling routine
+
+	update sc_mailfilter.conf to include KEY spamCC => [email@addr]
+	which contains email address's that all spam and abuse reports
+	should be sent a copy to.
+
+	update sc_abuse.pl to send 'spamCC' reports
+	update sc_mailfilter.pl to send 'spamCC' reports
+
+	require IPTables v0.43 for redHat distro bug repair
+
 1.03  Mon Apr 19 16:05:27 PDT 2010
 	Correct typo in sc_web.conf.sample for 'altMXhosts'
 	Update Makefile.PL insert of "all clean_CTest relink_subdirs"

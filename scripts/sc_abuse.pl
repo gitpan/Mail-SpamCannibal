@@ -2,7 +2,7 @@
 #
 # sc_abuse.pl
 #
-# version 1.08, 11-16-08
+# version 1.09, 4-23-10
 #
 #################################################################
 # WARNING! do not modify this script, make one with a new name. #
@@ -10,7 +10,7 @@
 # SpamCannibal.                                                 #
 #################################################################
 #
-# Copyright 2003 - 2008 Michael Robinton <michael@bizsystems.com>
+# Copyright 2003 - 2010 Michael Robinton <michael@bizsystems.com>
    
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -197,6 +197,10 @@ my $fh = *STDIN;
       @target = ('abuse@'. $target)
 	unless @target;
 
+# if copies of spam need to be sent to standard addresses, add them now
+      if (exists $MAILFILTER->{spamCC} && @{$MAILFILTER->{spamCC}}) {
+	push @target, @{$MAILFILTER->{spamCC}};
+      }
       foreach $target (@target) {
 	next unless $target =~ /$emailfmt/;
 	my $to = ($DEBUG) ? $admin : $target;

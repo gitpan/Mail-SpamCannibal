@@ -3,7 +3,7 @@
 
 SpamCannibal - How It Works
 
-=for html <!-- last updated 11-13-04 -->
+=for html <!-- last updated 4-13-11 -->
 <font size="+1">What is SpamCannibal?</font>
 <p>
 SpamCannibal is a free software toolkit to help stop UBE (Unsolicited Bulk
@@ -12,7 +12,7 @@ A subset of SpamCannibal's modules can be used to mount and effective
 defense against DoS attacks.
 SpamCannibal is published under the GNU General Public License and is
 available for download from <b>CPAN</b>. For specific download instructions
-and links, click the <a href="#top" onMouseOver="status='DOWNLOAD';return true;" onMouseOut="status='';return true;"
+and links, click the <a href="#top" onMouseOver="title='DOWNLOAD';return true;" onMouseOut="title='';return true;"
 onClick="self.location = location.pathname + '/../?page=download';return false;">Download</a> link.
 <p>
 SpamCannibal's primary functional modules are:

@@ -2,7 +2,7 @@
 #
 # sc_mailfilter.pl
 #
-# version 1.12, 4-23-10
+# version 1.14, 11-27-10
 #
 #################################################################
 # WARNING! do not modify this script, make one with a new name. #
@@ -154,6 +154,14 @@ my %default = (
 	PGPLIM  => $CHAR_READ_LIMIT,
 );
 
+my $children = (exists $MAILFILTER->{CHILDREN})
+	? $MAILFILTER->{CHILDREN} : 1;
+# limit number of kids
+$children = 1 if $children < 1;
+$children = 10 if $children > 10;
+
+
+
 my $sname = get_script_name();
 my $pidfile = $environment .'/'. $sname .'.'. $$ .'.pid';
 make_pidfile($pidfile);
@@ -163,7 +171,8 @@ make_pidfile($pidfile);
 my $delay = 0;
 do {
   my $dead = 0;
-  my $inc = -1;
+# set this negative to the number of desired running scripts
+  my $inc = -$children;
   opendir(D,$environment) or die "can't open $environment\n";
   my @others = sort grep(/$sname\.\d+\.pid/, readdir(D));
   closedir D;

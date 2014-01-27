@@ -1,5 +1,8 @@
 Revision history for Perl extension Mail::SpamCannibal::BDBreader
 
+0.25  Mon Jan 27 11:59:58 PST 2014
+        modify Makefile.PL to bypass missing 'pod2text'
+
 0.24  Tue May 12 18:49:41 PDT 2009
 	edited CTest.xs, main.c, netio.c, misc_func.h, godaemon.c,
 	 and util_pid.c to kill warnings from newer gcc versions

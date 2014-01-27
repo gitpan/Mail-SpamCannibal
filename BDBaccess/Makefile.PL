@@ -110,7 +110,17 @@ if ( -f '../fixup/perl2html.pl' ) {	# if building withing SpamCannibal tree
 WriteMakefile(%makeparms);
 
 sub MY::post_constants {
-  my $post_constants = q|
+  my $post_constants = $Config{scriptdirexp} .'/pod2text';
+  if (-e $post_constants) {
+    $post_constants = q|   
+MY_POD2TEXT = |. $post_constants .q|
+|;
+  } else {
+    $post_constants = q|
+MY_POD2TEXT = echo "perl distro missing 'pod2text' to convert "
+|;
+  }
+  $post_constants .= q|
 |. $configtxt .q|
 
 MY_POD2TEXT = |. $Config{scriptdirexp} .'/pod2text' .q|

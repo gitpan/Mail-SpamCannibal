@@ -95,6 +95,8 @@ crash('PGP exe file missing or not executable by effective UID');
 $copy->{ExeFile} = 'tlib/not_there';
 crash('PGP exe file missing or not executable by effective UID');
 
+chmod 0644, 'tlib/exists_but_dead';
+
 ## test 8 -- ExeFile not executable
 $copy->{ExeFile} = 'tlib/exists_but_dead';
 crash('PGP exe file missing or not executable by effective UID');

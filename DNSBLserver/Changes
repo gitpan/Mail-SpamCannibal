@@ -1,5 +1,8 @@
 Revision history for Perl extension Mail::SpamCannibal::DNSBLserver.
 
+0.55  Mon Jan 27 12:47:58 PST 2014
+	modify Makefile.PL to bypass missing 'pod2text'
+
 0.54  Tue May 12 19:20:35 PDT 2009
 	edit CText.xs, godaemon.c, hostinfo.c, hostinfo_func.h, main.c,
 	misc.c, misc_func.h, mung_macros.c, metio.c, ns.c, ns_func.h,

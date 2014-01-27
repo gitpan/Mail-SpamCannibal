@@ -1,3 +1,4 @@
+<!-- version 1.03 1-24-14 -->
 <center>
 <form name=login action="" method=POST>
 <font size="-1">Enter your PASSWORD:</font><br>
@@ -8,8 +9,4 @@
 </center>
 <script language=javascript1.1>
 document.login.passwd.focus();
-function tohome() {
-  document.cookie = "SpamCannibal=";
-  return true;
-}
 </script>

@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # sc_mailfilter.conf
-# version 1.09, 4-23-10
+# version 1.13, 11-27-10
 # Configuration for sc_mailfilter.pl, sc_abuse.pl
 
 my $MAILFILTER = {
@@ -54,12 +54,21 @@ my $MAILFILTER = {
 	)],
 
 
+# Set the number of processes to run similtaneously
+#
+# Note: each running process takes 4 to 10 megabytes of memory
+# and can use substantial DNS processing. Default value is 1
+#
+# [ OPTIONAL ]
+
+#	CHILDREN => 1,
+
 # Do not automatically include private network addresses in MXhosts.
 #	127./8, 10./8, 172.16/12, 192.168/16
 #
 # [ OPTIONAL ]
 
-#	NOPRIVATE => 1;
+#	NOPRIVATE => 1,
 
 
 # Report exceptions and failed entry attempts

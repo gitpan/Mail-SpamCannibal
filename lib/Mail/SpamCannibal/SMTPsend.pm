@@ -28,7 +28,7 @@ require Exporter;
 
 @ISA = qw(Exporter);
 
-$VERSION = do { my @r = (q$Revision: 0.05 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.06 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 @EXPORT_OK = qw(
 	getMXhosts
@@ -161,7 +161,7 @@ sub sendmessage {
 
   my $smtp;
   foreach(@mxhosts) {
-    $smtp = Net::SMTP::->new($_);
+    $smtp = Net::SMTP::->new($_,Hello => fqdn());
     last if $smtp;
   }
   return 0 unless $smtp;

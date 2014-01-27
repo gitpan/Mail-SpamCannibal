@@ -1,5 +1,27 @@
 Revision history for Perl extension Mail::SpamCannibal
 
+1.07   Mon Jan 27 11:59:58 PST 2014
+        modify Makefile.PL to bypass missing 'pod2text'
+
+1.06  Fri Jan 24 12:01:12 PST 2014
+	updated cannibal.cgi to show IP time tag in admin mode
+	updated cannibal.cgi to add FLIP for IP addresses
+	updated cannibal.cgi to allow '-'s in IP address
+	update passwd.incl v1.03 to remove cookie code
+	update login.incl v1.02 to add cookie deletion code
+
+1.05  Tue Mar 13 14:43:17 PDT 2012
+	Modify Mail::Spamcannibal::SMTPsen to add "Hello => fqdn()" 
+	so that HELO/ELOH does not say "localhost.localdomain"
+
+	Add "CHILDREN" parameter to sc_mailfilter.conf to allow
+	configuration of the number of running mail filter scripts
+
+	Modify sc_mailfilter.pl to use CHILDREN parameter
+
+	correct corner case build error where tlib/exists_but_dead
+	has the wrong mode
+
 1.04  Fri Apr 23 15:00:08 PDT 2010
 	Add optional array pointer to call to ScriptSupport::mailcheck 
 	so that the name of the spam source and spam content is available

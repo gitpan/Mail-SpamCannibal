@@ -5,9 +5,9 @@ package Mail::SpamCannibal::PageIndex;
 # cannibal.cgi or cannibal.plx
 # link admin.cgi or admin.plx
 #
-# version 2.18, 11-12-09
+# version 2.22, 11-26-12
 #
-# Copyright 2003 - 2009, Michael Robinton <michael@bizsystems.com>
+# Copyright 2003 - 2012, Michael Robinton <michael@bizsystems.com>
 #   
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -89,6 +89,11 @@ my ($admin,$sess,%extraheaders);
 my $expire	= $CONFIG->{expire} || 300;		# default expiration 5 minutes
 my $log_expire	= $CONFIG->{log_expire} || 180;		# default expiration 3 minutes
 my %query	= get_query();
+
+# allow dashes (-) in ip address
+if ($query{lookup} && $query{lookup} =~ /(\d+[\.-]\d+[\.-]\d+[\.-]\d+)/) {
+  ($query{lookup} = $1) =~ s/\-/\./g;
+}
 
 # check for query from LaBrea client & convert if necessary
 if ($query{query} && $query{query} =~ /(\d+\.\d+\.\d+\.\d+)/) {
@@ -468,12 +473,14 @@ function wIP(ip) {
 <input type=hidden name=page value=whois>
 <table border=0><tr valign=middle><td>Click for WhoisIP: |. $substr . $cc;
 
+	my $ipTtag = '';
+
 	if ($admin) {
 	  $html .= q
 |</td><td width=10>&nbsp;</td><td><table cellspacing=0 cellpadding=2 border=1>
 <tr><td class=hot><a href="#top" class=hot onMouseOver="return(show('delete |. $IP .q|'));" onMouseOut="return(off());"
   onClick="return(wDelete());">X</a></td></tr></table></td><td>delete</td>
-    <td><table cellspacing=0 cellpadding=2 border=1>
+    <td><table cellspacing=0 cellpadding=2 border=1><tr>
       <td class=hot nowrap><a href="#top" class=hot onMouseOver="return(show('delete CIDR/24 |. $IP .q|'));" onMouseOut="return(off());"
   onClick="if (confirm('do you really want to delete a 256 address block?')) { self.location = location.pathname + '?page=delBLK&remove=' + '|.
 	  $IP .q|'; } return false;">X CIDR/24</a></td></tr></table>|;
@@ -497,10 +504,13 @@ function wIP(ip) {
 	my $ip_found = 1;
 	if ($admin && $text =~ /^not\s+in\s+\w+\s+database/) {
 	  $ip_found = 0;
+	  $IP =~ /(\d+)\.(\d+)\.(\d+)\.(\d+)/;
+	  my $revip = "$4.$3.$2.$1";
 	  $html .= q|
 <td width=20>&nbsp;</td><td><table cellspacing=0 cellpadding=2 border=1><tr>
     <td class=cold><a href="#top" class=cold onMouseOver="return(show('tarpit |. $IP .q|'));" onMouseOut="return(off());"
-  onClick="self.location = location.pathname + '?page=spamlst&host=' + '|. $IP .q|'; return false;">&#164;</a></td></tr></table><td>add to tarpit</td>|;
+  onClick="self.location = location.pathname + '?page=spamlst&host=' + '|. $IP .q|'; return false;">&#164;</a></td></tr></table></td><td>+ tarpit&nbsp;&nbsp;</td><td><table cellspacing=0 cellpadding=2 border=1><tr>
+<td class=hot><a href="#top" class=hot onClick="document.forms['lookup']['lookup'].value = '|. $revip .q|';return false;" title="rev IP">&gt;&lt;</a></td></tr></table>|;
 	}
 	my @hostname = rlook_rcv($socket,$timeout);
 	$html .= '</td></tr></table>';
@@ -509,19 +519,20 @@ function wIP(ip) {
 	  foreach(@hostname) {
 	    $hostname .= $_ . "<br>\n";
 	  }
-	  $html .= q|<table cellspacing=0 cellpadding=0 border=0><tr><td width=10>&nbsp;</td><td>|. $hostname .q|</td>|;
+	  $html .= q|<table cellspacing=0 cellpadding=0 border=0><tr><td width=10>&nbsp;</td><td>|. $hostname;
 	}
 	else {
-	  $html .= q|<table cellspacing=0 cellpadding=0 border=0><tr><td width=10>&nbsp;</td>|;
+	  $html .= q|<table cellspacing=0 cellpadding=0 border=0><tr><td width=10>&nbsp;|;
 	}
 	if ($admin) {
 	  $html .= q|<td width=10>&nbsp;</td><td valign=top><table cellspacing=0 cellpadding=1 border=1><tr><td class=hot><a
 href="#top" class=hot onMouseOver="return(show('PTR records'));" onMouseOut="return(off());"
-onClick="document.rdnsblk.lookup.value='|. $IP .q|'; document.rdnsblk.submit(); return false;">&nbsp;PTR's&nbsp;</a></td>
-</tr></table></td>
+onClick="document.rdnsblk.lookup.value='|. $IP .q|'; document.rdnsblk.submit(); return
+false;">&nbsp;PTR's&nbsp;</a></td>
+</tr></table>
 |;
 	}
-	$html .= q|</td><td width=50>&nbsp;</td><td valign=top>|. $ccs[2] .q|</tr></table>
+	$html .= q|</td><td width=20>&nbsp;</td><td valign=middle>|. $ccs[2] .q|</td><td width=20>&nbsp;</td><td><span id=ipttag></span></td></tr></table>
 |. $results .q|
 </form>
 |;
@@ -578,7 +589,11 @@ function wDelete() {
 	      next unless $_[$_];
 	      $timetag += shift @vals;
 	      my $addr = "${cidr}$_";
-	      next if $addr eq $IP;
+	      if ($addr eq $IP) {	# put time tag in top of page
+		$ipTtag = scalar localtime($timetag);
+		next;
+	      }
+#	      next if $addr eq $IP;
 	      $found += 1;
 	      my $font = '';
 	      my $nfont = '';
@@ -604,7 +619,14 @@ function wDelete() {
   <tr><td align=center>host address</td><td align=center>last contact</td><td>delete<input
 type=hidden name=page value=delete><input type=hidden name=remove value='|. $IP .q|'></td></tr>|.
 	    $related .q|
-</table></blockquote></form>
+</table>|;
+	    if ($ipTtag) {
+	      $html .= q|<script language=javascript>
+document.getElementById('ipttag').innerHTML = "|. $ipTtag .q|";
+</script>
+|;
+	    }
+	    $html .= q|</blockquote></form>
 <center><a href="#top">TOP</a></center>
 |;
 	  }

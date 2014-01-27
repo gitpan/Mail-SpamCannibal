@@ -9,8 +9,8 @@ SYNOPSIS
 DESCRIPTION and OPERATION
     There is no perl module for "dnsbls". This is a documentation shell.
 
-    See IPTables::IPv4::DBTarpit::Tools to manipulate and examine the
-    "dnsbls" database(s).
+    See the IPTables::IPv4::DBTarpit::Tools manpage to manipulate and
+    examine the "dnsbls" database(s).
 
     "dnsbls" is a C daemon that is a specialized name server providing DNSBL
     domain name services for the Mail::SpamCannibal set of programs from
@@ -93,6 +93,7 @@ INSTALLATION
     the data.
 
   sc_zoneload
+
     The script sc_zoneload can be used to load a BIND zone file or a file
     created by the BIND 'dig' utility or the Net::DNS::ToolKit - dig.pl
     utility into the dnsbls database. Please note that ALL 127.0.0.2
@@ -547,7 +548,7 @@ DATABASE FORMAT
 APPLICATIONS
     ... aahhh! now you come to the fun part.
 
-    See Mail::SpamCannibal
+    See the Mail::SpamCannibal manpage
 
     Used with "dbtarpit", it "eats" the spammer for lunch. In less graphic
     terms, SpamCannibal is a set of tools that helps you identify the
@@ -577,7 +578,7 @@ AUTHOR
     Michael Robinton <michael@bizsystems.com>
 
 COPYRIGHT AND LICENCE
-      Copyright 2003 - 2009, Michael Robinton <michael@bizsystems.com>
+      Copyright 2003 - 2014, Michael Robinton <michael@bizsystems.com>
  
       This program is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published by
@@ -594,5 +595,5 @@ COPYRIGHT AND LICENCE
       Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 SEE ALSO
-    IPTables::IPv4::DBTarpit::Tools
+    the IPTables::IPv4::DBTarpit::Tools manpage
 

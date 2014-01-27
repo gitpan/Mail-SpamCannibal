@@ -217,12 +217,21 @@ require './fixup/perl2html.pl';
 my $workaround = pf_html_check(\%makeparms);
 
 sub MY::post_constants {
-  my $post_constants = q|
+  my $post_constants = $Config{scriptdirexp} .'/pod2text';
+  if (-e $post_constants) {
+    $post_constants = q|   
+MY_POD2TEXT = |. $post_constants .q|
+|;
+  } else {
+    $post_constants = q|
+MY_POD2TEXT = echo "perl distro missing 'pod2text' to convert "
+|;
+  }
+  $post_constants .= q|
 |. $configtxt .q|
 SPAMUID= |. $uid .q|
 SPAMGID= |. $gid .q|
 
-MY_POD2TEXT = |. $Config{scriptdirexp} .'/pod2text' .q|
 |;
   if ($workaround) {
     $post_constants .= pf_handy_list(\%makeparms);
